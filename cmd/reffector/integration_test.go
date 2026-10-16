@@ -16,7 +16,7 @@ import (
 	"testing"
 	"time"
 
-	"reffector/internal/analyzer"
+	"github.com/Version2beta/reffector/internal/analyzer"
 )
 
 type record struct {
@@ -171,7 +171,7 @@ func TestAnalysisCLI(t *testing.T) {
 		"Generic": "env.read", "(Box[T]).Load": "fs.read", "GenericUse": "env.read fs.read",
 		"HTTP": "net.connect", "Connect": "net.connect", "Listen": "net.listen",
 		"Exec": "env.read fs.read process.exec", "Environment": "env.read env.write", "Database": "db.exec db.query",
-		"FileMethods": "fs.read fs.write", "OpenFile": "fs.read", "OpenFileUnknown": "fs.create fs.read fs.write", "OpenFileWrite": "fs.create fs.write", "Root": "fs.create fs.read fs.write", "Exit": "process.exit", "(fileWriter).Write": "fs.write", "WriteFile": "fs.write", "(stringer).String": "fs.read",
+		"FileMethods": "fs.read fs.write", "OpenFile": "fs.read", "OpenFileUnknown": "fs.create fs.read fs.write", "OpenFileWrite": "fs.create fs.write", "Root": "fs.create fs.read fs.write", "Exit": "process.exit", "(fileWriter).Write": "fs.write", "WriteFile": "fs.write", "(stringer).String": "fs.read", "Fatal": "process.exit", "LoggerFatal": "process.exit",
 	}
 	if !reflect.DeepEqual(actual, want) {
 		t.Errorf("effects mismatch\ngot:  %v\nwant: %v", actual, want)
@@ -272,6 +272,37 @@ func TestAnalysisCLI(t *testing.T) {
 	})
 }
 
+func TestSkillInstallCLI(t *testing.T) {
+	home := t.TempDir()
+	out, diagnostic, status := invoke(t, fixtureSource, []string{"HOME=" + home}, "skill", "install")
+	if status != 0 || diagnostic != "" || !strings.Contains(out, "Installed skill:") {
+		t.Fatalf("install: stdout %q stderr %q exit %d", out, diagnostic, status)
+	}
+	installed, err := os.ReadFile(filepath.Join(home, ".agents", "skills", "reffector", "SKILL.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	canonical, err := os.ReadFile("../../skills/reffector/SKILL.md")
+	if err != nil || !bytes.Equal(installed, canonical) {
+		t.Fatalf("skill content mismatch: %v", err)
+	}
+	out, diagnostic, status = invoke(t, fixtureSource, []string{"HOME=" + home}, "skill", "install")
+	if status != 0 || diagnostic != "" || !strings.Contains(out, "Skill is current:") {
+		t.Fatalf("repeat install: stdout %q stderr %q exit %d", out, diagnostic, status)
+	}
+	_, diagnostic, status = invoke(t, fixtureSource, nil, "skill", "remove")
+	if status != 2 || !strings.Contains(diagnostic, "Usage: reffector skill install") {
+		t.Fatalf("bad subcommand: stderr %q exit %d", diagnostic, status)
+	}
+}
+
+func TestCanonicalModulePath(t *testing.T) {
+	data, err := os.ReadFile("../../go.mod")
+	if err != nil || !strings.HasPrefix(string(data), "module github.com/Version2beta/reffector\n") {
+		t.Fatalf("module path: %q, %v", data, err)
+	}
+}
+
 func TestCLIUsageAndErrors(t *testing.T) {
 	for _, flag := range []string{"-h", "-help"} {
 		out, diagnostic, status := invoke(t, fixtureSource, nil, flag)
@@ -340,7 +371,7 @@ func TestWorkspaceAndReadonlyModules(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	mustWrite(t, filepath.Join(module, "go.mod"), strings.Replace(string(mod), "module reffector", "module example.com/missing-sums", 1))
+	mustWrite(t, filepath.Join(module, "go.mod"), strings.Replace(string(mod), "module github.com/Version2beta/reffector", "module example.com/missing-sums", 1))
 	mustWrite(t, filepath.Join(module, "main.go"), "package main\nimport _ \"golang.org/x/tools/go/packages\"\nfunc main() {}\n")
 	before = snapshot(t, module)
 	out, diagnostic, status = invoke(t, module, []string{"GOFLAGS=-mod=mod"})

@@ -1,4 +1,4 @@
-module reffector
+module github.com/Version2beta/reffector
 
 go 1.26.0
 

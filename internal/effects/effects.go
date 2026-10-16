@@ -181,6 +181,7 @@ func buildSummaries() map[string]Set {
 	add("os", EnvWrite, "Setenv", "Unsetenv", "Clearenv")
 	add("os", ProcessExec, "StartProcess")
 	add("os", ProcessExit, "Exit")
+	add("log", ProcessExit, "Fatal", "Fatalln", "Fatalf", "(*Logger).Fatal", "(*Logger).Fatalln", "(*Logger).Fatalf")
 	add("os", 0, "(*File).Close")
 	add("os", 0, "(*Process).Kill", "(*Process).Signal", "(*Process).Wait", "Pipe")
 	add("path/filepath", FSRead, "Abs", "EvalSymlinks", "Glob")

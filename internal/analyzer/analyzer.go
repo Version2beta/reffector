@@ -12,7 +12,7 @@ import (
 	"golang.org/x/tools/go/ssa"
 	"golang.org/x/tools/go/ssa/ssautil"
 
-	"reffector/internal/effects"
+	"github.com/Version2beta/reffector/internal/effects"
 )
 
 type Options struct {

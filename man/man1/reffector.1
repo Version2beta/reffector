@@ -5,6 +5,8 @@ reffector \- report statically reachable Go side effects
 .B reffector
 .RI [ flags ]
 .RI [ packages ]
+.br
+.B reffector skill install
 .SH DESCRIPTION
 .B reffector
 analyzes Go source without running its functions, initializers, or tests.
@@ -37,6 +39,21 @@ Write function-summary JSON instead of text pairs.
 .TP
 .BR -h , " " -help
 Print usage and exit successfully.
+.SH SKILL INSTALLATION
+.B reffector skill install
+installs the bundled Codex skill at
+.BR ~/.agents/skills/reffector/SKILL.md .
+The canonical embedded Markdown is written on first installation and a copy
+previously installed by reffector is updated on repeated installation. An
+unmanaged or locally modified SKILL.md is refused rather than overwritten.
+The command creates needed directories and reports the destination.
+.PP
+The skill is optional. In Codex, use
+.B $reffector find
+with an optional Go package argument for an advisory analysis of opportunities
+to separate computation from external effects. It makes no code changes; only
+.B find
+is implemented.
 .SH OUTPUT
 Default output contains sorted, deduplicated function/effect pairs:
 .PP

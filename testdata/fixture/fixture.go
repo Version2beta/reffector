@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go/types"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -117,6 +118,8 @@ func OpenFile()                             { _, _ = os.OpenFile("not-executed",
 func OpenFileUnknown(flags int)             { _, _ = os.OpenFile("not-executed", flags, 0) }
 func OpenFileWrite()                        { _, _ = os.OpenFile("not-executed", os.O_WRONLY|os.O_CREATE, 0600) }
 func Exit()                                 { os.Exit(1) }
+func Fatal()                                { log.Fatal("never") }
+func LoggerFatal(l *log.Logger)             { l.Fatalf("never") }
 func Root(r *os.Root)                       { _, _ = r.ReadFile("never"); _ = r.WriteFile("never", nil, 0600) }
 func Format() string                        { return fmt.Sprintf("memory") }
 func FormatInteger() string                 { return fmt.Sprintf("%d", 42) }

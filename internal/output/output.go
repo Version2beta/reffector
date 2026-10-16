@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"reffector/internal/analyzer"
+	"github.com/Version2beta/reffector/internal/analyzer"
 )
 
 func Write(w io.Writer, records []analyzer.Record, asJSON bool) error {

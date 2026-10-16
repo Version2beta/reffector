@@ -7,13 +7,18 @@ import (
 	"io"
 	"os"
 
-	"reffector/internal/analyzer"
-	"reffector/internal/output"
+	"github.com/Version2beta/reffector/internal/analyzer"
+	"github.com/Version2beta/reffector/internal/output"
+	"github.com/Version2beta/reffector/internal/skillinstall"
+	"github.com/Version2beta/reffector/skills/reffector"
 )
 
 func main() { os.Exit(run(os.Args[1:], os.Stdout, os.Stderr)) }
 
 func run(args []string, stdout, stderr io.Writer) int {
+	if len(args) > 0 && args[0] == "skill" {
+		return runSkill(args[1:], stdout, stderr)
+	}
 	flags := flag.NewFlagSet("reffector", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	direct := flags.Bool("direct", false, "report only direct effects")
@@ -38,6 +43,29 @@ func run(args []string, stdout, stderr io.Writer) int {
 	if err := output.Write(stdout, records, *json); err != nil {
 		fmt.Fprintln(stderr, "reffector:", err)
 		return 1
+	}
+	return 0
+}
+
+func runSkill(args []string, stdout, stderr io.Writer) int {
+	if len(args) != 1 || args[0] != "install" {
+		fmt.Fprintln(stderr, "Usage: reffector skill install")
+		return 2
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Fprintln(stderr, "reffector: determine home directory:", err)
+		return 1
+	}
+	result, err := skillinstall.Install(skillinstall.Config{Home: home, Name: "reffector", Content: reffectorskill.Content})
+	if err != nil {
+		fmt.Fprintln(stderr, "reffector:", err)
+		return 1
+	}
+	if result.Updated {
+		fmt.Fprintln(stdout, "Installed skill:", result.Path)
+	} else {
+		fmt.Fprintln(stdout, "Skill is current:", result.Path)
 	}
 	return 0
 }

@@ -5,10 +5,11 @@ functions. It analyzes code only: it does not execute functions, initializers,
 or tests, and does not modify analyzed source.
 
 ```sh
-go install ./cmd/reffector
+go install github.com/Version2beta/reffector/cmd/reffector@latest
 reffector ./...
 reffector -direct ./internal/...
 reffector -tests -json example.com/project/billing
+reffector skill install
 man "$PWD/man/man1/reffector.1"
 ```
 
@@ -16,6 +17,17 @@ It requires Go 1.26+ and the Go toolchain on `PATH`. Package patterns use
 `golang.org/x/tools/go/packages`; no arguments means `.`. Dependencies are
 inspected to propagate effects, but output normally contains only selected
 packages. `-tests` includes internal and external test-file functions.
+
+## Optional Codex skill
+
+`reffector skill install` installs the bundled canonical skill at
+`~/.agents/skills/reffector/SKILL.md`. In Codex, invoke `$reffector find` with
+an optional package argument to request an advisory effect-boundary review.
+`find` runs the analyzer and investigates code and uncertainty, but makes no
+code changes. The analyzer remains fully useful without installing the skill.
+
+Repeated installation updates a copy previously installed by reffector. A
+pre-existing or locally modified skill is refused rather than overwritten.
 
 ## Output
 
