@@ -1,0 +1,295 @@
+.TH REFFECTOR 1 "2026-08-14" "reffector" "User Commands"
+.SH NAME
+reffector \- report statically reachable side effects of Go functions
+.SH SYNOPSIS
+.B reffector
+.RI [ flags ]
+.RI [ packages ]
+.SH DESCRIPTION
+.B reffector
+analyzes Go functions and methods and prints their possible externally
+observable interactions, including effects inherited through function calls.
+It does not modify the analyzed source or execute application functions,
+initializers, or tests.
+It performs analysis only, not automated refactoring.
+.PP
+Package arguments use Go package-pattern syntax, resolved by
+.BR golang.org/x/tools/go/packages .
+Examples include
+.BR . ,
+.BR ./billing ,
+.BR ./... ,
+.BR ./internal/... ,
+and full import paths.
+With no arguments, the current package is selected.
+Dependencies are inspected as needed, but functions displayed belong to
+selected packages, not ordinarily their dependencies.
+The current GOOS, GOARCH, Go toolchain, and build constraints determine which
+files are loaded.
+.PP
+Module loading uses
+.BR -mod=readonly ,
+even if GOFLAGS requests a different module mode.
+Vendor mode is not used.
+Missing module metadata produces an error instead of repairs to go.mod or
+go.sum.
+Workspace metadata is copied to temporary files, with paths rebased, so Go
+checksum updates do not alter the original go.work.sum.
+The trusted Go toolchain may download dependencies or toolchains and write
+its caches outside the analyzed source tree.
+.SH OPTIONS
+Flags precede package arguments.
+.TP
+.B -direct
+Report only effects attributed directly to each function, rather than all
+transitively reachable effects.
+.TP
+.B -tests
+Include functions defined in internal and external test files in selected
+packages.
+Ordinary and test variants are merged by source function identity.
+Generated test executables are not displayed.
+Tests and test initializers are not run.
+Without this option, test files are excluded.
+.TP
+.B -json
+Write a JSON array instead of text pairs.
+.TP
+.BR -h ", " -help
+Print usage to standard error and exit successfully.
+.SH OUTPUT
+Text output contains one unique function/effect pair per line:
+.PP
+.nf
+example.com/app.Load fs.read
+example.com/app.Process fs.read
+example.com/app.(*Store).Save db.exec
+.fi
+.PP
+Functions are qualified with full package import paths.
+Methods include their receiver type, including pointer receivers.
+Anonymous functions append lexical suffixes such as
+.BR $1 .
+Explicit initialization functions have SSA-numbered names, such as
+.BR init#1 .
+Synthetic
+.B init
+represents package variable initialization and effects inherited from imported
+package initialization.
+Functions without identified effects are omitted.
+.PP
+Records are sorted by package import path, function identity, and effect.
+Identical pairs are deduplicated.
+No explanations or scores are written in normal output.
+Diagnostics go to standard error.
+.PP
+JSON output is an array of objects with these fields:
+.TP
+.B package
+Full package import path.
+.TP
+.B function
+Package-local function identity, including the receiver for methods.
+.TP
+.B effect
+Effect identifier from the vocabulary below.
+.TP
+.B direct
+Boolean: true for an effect attributed directly to this function; false for
+an inherited effect.
+If the same effect is both direct and inherited, only one record is emitted,
+with this field true.
+.PP
+No results produce empty text output or the JSON array
+.BR [] .
+An absent record is not proof that a function is pure.
+.SH SIDE EFFECTS
+Assignments to local variables are not effects.
+The version-one vocabulary concentrates on externally observable operations:
+.TP
+.B fs.read
+Read filesystem contents or metadata.
+.TP
+.B fs.write
+Modify filesystem contents, metadata, or state, including writes through
+an os.File handle.
+The actual handle may refer to a device, pipe, or standard output.
+.TP
+.B fs.create
+Create filesystem entries.
+.TP
+.B fs.remove
+Remove filesystem entries.
+.TP
+.B net.connect
+Initiate a network connection.
+.TP
+.B net.listen
+Listen for or accept network connections.
+.TP
+.B process.exec
+Start an external process.
+.TP
+.B env.read
+Read process environment values.
+.TP
+.B env.write
+Modify process environment values.
+.TP
+.B db.query
+Execute a database query operation.
+.TP
+.B db.exec
+Execute a database command operation, including summarized transaction and
+prepare operations.
+.TP
+.B unknown.call
+Reach an unresolved or opaque call whose effects cannot be reliably resolved,
+or an interaction outside the supported vocabulary.
+Examples include reflection invocation, assembly, cgo, unresolved function
+parameters, and built-in print operations.
+.PP
+Known APIs are recognized by resolved package and receiver identities, not
+names such as Read or Query alone.
+The centralized table in internal/effects/effects.go is the authoritative list.
+It includes common os filesystem and environment operations, os.File and
+os.Root methods, selected path/filepath and io/ioutil operations,
+net and crypto/tls connection/listener operations, net/http client/server
+operations, os/exec process operations, and database/sql queries and commands.
+.PP
+An operation may have several classifications.
+For example, os.WriteFile can create and write a file.
+The flags passed to os.OpenFile are not evaluated: reading, writing, and
+creation are all reported.
+The operation exec.Command can inspect PATH and filesystem metadata;
+Cmd.Run and Cmd.Start add process.exec.
+Database queries are summarized as db.query without inferring a network
+connection, because drivers need not use a network.
+.SH DIRECT AND TRANSITIVE EFFECTS
+A call to a recognized API summary is an effect directly attributed to the
+calling function.
+An unresolved call is also directly attributed at its call site.
+A call to an ordinary helper inherits that helper's reachable effects.
+.PP
+For example:
+.PP
+.nf
+func Load() {
+    _, _ = os.ReadFile("config.json")
+}
+func Process() {
+    Load()
+}
+.fi
+.PP
+Default results include both functions:
+.PP
+.nf
+example.com/app.Load fs.read
+example.com/app.Process fs.read
+.fi
+.PP
+With
+.BR -direct ,
+only Load is reported.
+More generally, reachable effects are a function's direct effects union the
+reachable effects of its callees.
+A monotone worklist reaches a stable result even for recursive and mutually
+recursive functions.
+.SH EXAMPLES
+Analyze the current package, including inherited effects:
+.PP
+.nf
+reffector .
+.fi
+.PP
+Analyze all packages under the current directory:
+.PP
+.nf
+reffector ./...
+.fi
+.PP
+Report only direct effects in internal packages:
+.PP
+.nf
+reffector -direct ./internal/...
+.fi
+.PP
+Include tests and write machine-readable output:
+.PP
+.nf
+reffector -tests -json ./billing
+.fi
+.PP
+Analyze an import path available in the current Go environment:
+.PP
+.nf
+reffector example.com/project/billing
+.fi
+.SH LIMITATIONS
+A statically reachable effect means the analysis found a possible path to an
+operation, not that it will execute.
+This is not a purity proof, a security score, or a complete effect system.
+No paths, URLs, destinations, permissions, or resource boundaries are inferred.
+Shared-memory mutation is outside the vocabulary.
+.PP
+Typed SSA provides static calls, methods, closures, local function values,
+phi merges, instantiated generics, and calls across packages.
+Both deferred and goroutine calls are followed.
+The graph is demand-driven from selected functions, including unused ones;
+it does not require a main function.
+.PP
+Known concrete interface values are resolved to their methods.
+Open interface calls use class-hierarchy analysis: all compatible concrete
+types found in loaded source and SSA runtime types are possible receivers.
+These calls also receive unknown.call because implementations outside the
+loaded set may exist.
+This works on libraries, but may produce false positives from types never
+actually used at a call site.
+It is not a context-sensitive points-to analysis.
+.PP
+Function values flowing through memory, parameters, or returned values are
+reported as unknown rather than resolved interprocedurally.
+Known local values and closures can be resolved.
+Reflection invocation is opaque.
+Assembly, cgo, and functions without Go bodies are opaque.
+Code outside the loaded Go program is not inspected.
+.PP
+API summaries stop traversal into the summarized implementation.
+They describe primary operation kinds, not every possible secondary effect
+of custom drivers, hooks, or implementations.
+HTTP summaries additionally include unknown.call for hidden hooks or handlers.
+Specific effects of callbacks hidden behind summary boundaries or unresolved
+value flows may therefore be missed.
+unknown.call does not enumerate or bound those missing effects.
+.PP
+The analysis does not evaluate branch feasibility or argument values and may
+report effects on paths impossible at runtime.
+Its API table is intentionally incomplete.
+Build-selected files and dependencies are analyzed for the current environment,
+not every platform, optional plugin, or build tag.
+Failure to identify an effect must never be interpreted as proof of purity.
+.PP
+Loading invokes trusted Go tools; this command is not a sandbox for malicious
+toolchains, package drivers, or build environments.
+.SH EXIT STATUS
+.TP
+.B 0
+Analysis and output succeeded, including when effects are found or no records
+are produced; also successful help requests.
+.TP
+.B 1
+Package loading, analysis, or output failed.
+Loading errors prevent partial normal output.
+.TP
+.B 2
+Invalid command-line flags.
+.SH SEE ALSO
+.BR go (1),
+.BR go-test (1),
+.BR go-vet (1),
+.BR man (7)
+.PP
+Go package loading: https://pkg.go.dev/golang.org/x/tools/go/packages
+.PP
+Go SSA: https://pkg.go.dev/golang.org/x/tools/go/ssa
