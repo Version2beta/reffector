@@ -21,11 +21,18 @@ type Options struct {
 	Direct bool
 }
 
+// Record is one function's analysis result. Effects are omitted from text
+// output when empty, but Uncertain remains available in JSON.
 type Record struct {
-	Package  string `json:"package"`
-	Function string `json:"function"`
-	Effect   string `json:"effect"`
-	Direct   bool   `json:"direct"`
+	Package   string   `json:"package"`
+	Function  string   `json:"function"`
+	Effects   []Effect `json:"effects"`
+	Uncertain bool     `json:"uncertain"`
+}
+
+type Effect struct {
+	Identifier string `json:"identifier"`
+	Direct     bool   `json:"direct"`
 }
 
 // Analyze uses the current build environment (GOOS, GOARCH, build constraints).
@@ -58,22 +65,7 @@ func Analyze(patterns []string, opts Options) ([]Record, error) {
 	}
 	prog, _ := ssautil.AllPackages(pkgs, ssa.InstantiateGenerics)
 	prog.Build()
-	g := &graph{prog: prog, nodes: make(map[*ssa.Function]*node), invokeCache: make(map[invokeKey][]*ssa.Function)}
-	// Collect all declared concrete types, not just types instantiated by main.
-	// This is a library-friendly class hierarchy analysis, not points-to analysis.
-	packages.Visit(pkgs, nil, func(p *packages.Package) {
-		if p.TypesInfo == nil {
-			return
-		}
-		for _, obj := range p.TypesInfo.Defs {
-			if tn, ok := obj.(*types.TypeName); ok && !tn.IsAlias() {
-				if t, ok := tn.Type().(*types.Named); ok && t.TypeParams().Len() == 0 && !types.IsInterface(t) {
-					g.concrete = append(g.concrete, t, types.NewPointer(t))
-				}
-			}
-		}
-	})
-	g.concrete = append(g.concrete, prog.RuntimeTypes()...)
+	g := &graph{prog: prog, nodes: make(map[*ssa.Function]*node)}
 
 	type identity struct{ pkg, name string }
 	selected := make(map[*ssa.Function]identity)
@@ -119,16 +111,20 @@ func Analyze(patterns []string, opts Options) ([]Record, error) {
 
 	// Test variants and generic instantiations may share a source identity.
 	// Merge before emitting so each function/effect pair appears exactly once.
-	type sets struct{ direct, reachable effects.Set }
+	type sets struct {
+		direct, reachable effects.Set
+		uncertain         bool
+	}
 	merged := make(map[identity]sets)
 	for fn, id := range selected {
 		n := g.nodes[fn]
 		s := merged[id]
 		s.direct |= n.direct
 		s.reachable |= n.reachable
+		s.uncertain = s.uncertain || n.uncertain
 		merged[id] = s
 	}
-	records := make([]Record, 0)
+	records := make([]Record, 0, len(merged))
 	for id, s := range merged {
 		set := s.reachable
 		if opts.Direct {
@@ -138,21 +134,28 @@ func Analyze(patterns []string, opts Options) ([]Record, error) {
 		for _, name := range s.direct.Names() {
 			direct[name] = true
 		}
+		r := Record{Package: id.pkg, Function: id.name, Effects: []Effect{}, Uncertain: s.uncertain}
 		for _, name := range set.Names() {
-			records = append(records, Record{id.pkg, id.name, name, direct[name]})
+			r.Effects = append(r.Effects, Effect{Identifier: name, Direct: direct[name]})
+		}
+		if len(r.Effects) != 0 || r.Uncertain {
+			records = append(records, r)
 		}
 	}
 	sort.Slice(records, func(i, j int) bool {
-		a, b := records[i], records[j]
-		if a.Package != b.Package {
-			return a.Package < b.Package
+		if records[i].Package != records[j].Package {
+			return records[i].Package < records[j].Package
 		}
-		if a.Function != b.Function {
-			return a.Function < b.Function
-		}
-		return a.Effect < b.Effect
+		return records[i].Function < records[j].Function
 	})
 	return records, nil
+}
+
+func isStandardLibrary(fn *ssa.Function) bool {
+	if fn.Pkg == nil || fn.Pkg.Pkg == nil {
+		return false
+	}
+	return !strings.Contains(strings.Split(fn.Pkg.Pkg.Path(), "/")[0], ".")
 }
 
 func localName(obj *types.Func) string {
@@ -163,20 +166,14 @@ func localName(obj *types.Func) string {
 type node struct {
 	fn                *ssa.Function
 	direct, reachable effects.Set
+	uncertain         bool
 	callers           map[*node]bool
 }
 
-type invokeKey struct {
-	iface  *types.Interface
-	method *types.Func
-}
-
 type graph struct {
-	prog        *ssa.Program
-	nodes       map[*ssa.Function]*node
-	pending     []*node
-	concrete    []types.Type
-	invokeCache map[invokeKey][]*ssa.Function
+	prog    *ssa.Program
+	nodes   map[*ssa.Function]*node
+	pending []*node
 }
 
 func (g *graph) ensure(fn *ssa.Function) *node {
@@ -194,16 +191,29 @@ func summary(fn *ssa.Function) (effects.Set, bool) {
 	return effects.Lookup(obj)
 }
 
+func summaryCall(fn *ssa.Function, call *ssa.CallCommon) (effects.Set, bool) {
+	obj, _ := fn.Object().(*types.Func)
+	return effects.LookupCall(obj, call.Args)
+}
+
+func applySummary(n *node, set effects.Set) {
+	if set&effects.Unknown != 0 {
+		n.uncertain = true
+		set &^= effects.Unknown
+	}
+	n.direct |= set
+}
+
 func (g *graph) build() {
 	for len(g.pending) > 0 {
 		n := g.pending[len(g.pending)-1]
 		g.pending = g.pending[:len(g.pending)-1]
 		if s, ok := summary(n.fn); ok {
-			n.direct |= s
+			applySummary(n, s)
 			continue
 		}
 		if len(n.fn.Blocks) == 0 {
-			n.direct |= effects.Unknown // assembly, cgo, or missing implementation
+			n.uncertain = true // assembly, cgo, or missing implementation
 		}
 		for _, b := range n.fn.Blocks {
 			for _, instr := range b.Instrs {
@@ -214,7 +224,7 @@ func (g *graph) build() {
 				call := site.Common()
 				if builtin, ok := call.Value.(*ssa.Builtin); ok {
 					if builtin.Name() == "print" || builtin.Name() == "println" {
-						n.direct |= effects.Unknown // Output outside the v1 vocabulary.
+						n.uncertain = true // Output is outside the effect vocabulary.
 					}
 					continue
 				}
@@ -228,13 +238,13 @@ func (g *graph) build() {
 					targets, unknown = functionTargets(call.Value, make(map[ssa.Value]bool))
 				}
 				if unknown {
-					n.direct |= effects.Unknown
+					n.uncertain = true
 				}
 				for _, target := range targets {
-					if s, ok := summary(target); ok {
-						n.direct |= s
-					} else if len(target.Blocks) == 0 {
-						n.direct |= effects.Unknown
+					if s, ok := summaryCall(target, call); ok {
+						applySummary(n, s)
+					} else if len(target.Blocks) == 0 || isStandardLibrary(target) {
+						n.uncertain = true
 					} else {
 						g.ensure(target).callers[n] = true
 					}
@@ -273,8 +283,9 @@ func functionTargets(v ssa.Value, seen map[ssa.Value]bool) ([]*ssa.Function, boo
 	}
 }
 
-// concreteValues resolves finite interface assignments. An open receiver still
-// gets CHA targets, plus unknown.call for implementations outside the load set.
+// concreteValues resolves only values proven by local SSA flow. It deliberately
+// does not use class-hierarchy analysis: an arbitrary implementation of (for
+// example) io.Writer is not evidence that it reaches this particular call.
 func concreteValues(v ssa.Value, seen map[ssa.Value]bool) ([]types.Type, bool) {
 	if seen[v] {
 		return nil, false
@@ -301,33 +312,26 @@ func concreteValues(v ssa.Value, seen map[ssa.Value]bool) ([]types.Type, bool) {
 }
 
 func (g *graph) invoke(call *ssa.CallCommon) ([]*ssa.Function, bool) {
-	concrete, open := concreteValues(call.Value, make(map[ssa.Value]bool))
+	concrete, uncertain := concreteValues(call.Value, make(map[ssa.Value]bool))
 	iface := call.Value.Type().Underlying().(*types.Interface)
-	key := invokeKey{iface, call.Method}
-	if open {
-		if cached, ok := g.invokeCache[key]; ok {
-			return cached, true
-		}
-		concrete = append(append([]types.Type(nil), concrete...), g.concrete...)
-	}
 	var targets []*ssa.Function
 	seen := make(map[*ssa.Function]bool)
 	for _, t := range concrete {
 		if types.IsInterface(t) || !types.Implements(t, iface) {
+			uncertain = true
 			continue
 		}
 		sel := g.prog.MethodSets.MethodSet(t).Lookup(call.Method.Pkg(), call.Method.Name())
-		if sel != nil {
-			if fn := g.prog.MethodValue(sel); fn != nil && !seen[fn] {
-				seen[fn] = true
-				targets = append(targets, fn)
-			}
+		if sel == nil {
+			uncertain = true
+			continue
+		}
+		if fn := g.prog.MethodValue(sel); fn != nil && !seen[fn] {
+			seen[fn] = true
+			targets = append(targets, fn)
 		}
 	}
-	if open {
-		g.invokeCache[key] = targets
-	}
-	return targets, open || (len(concrete) > 0 && len(targets) == 0)
+	return targets, uncertain || len(targets) == 0
 }
 
 // Monotone reverse worklist: each node can gain at most twelve effect bits.
@@ -345,12 +349,18 @@ func (g *graph) propagate() {
 		queue = queue[1:]
 		queued[n] = false
 		for caller := range n.callers {
+			changed := false
 			if next := caller.reachable | n.reachable; next != caller.reachable {
 				caller.reachable = next
-				if !queued[caller] {
-					queued[caller] = true
-					queue = append(queue, caller)
-				}
+				changed = true
+			}
+			if n.uncertain && !caller.uncertain {
+				caller.uncertain = true
+				changed = true
+			}
+			if changed && !queued[caller] {
+				queued[caller] = true
+				queue = append(queue, caller)
 			}
 		}
 	}

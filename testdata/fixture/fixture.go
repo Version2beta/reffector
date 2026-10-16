@@ -1,7 +1,11 @@
 package fixture
 
 import (
+	"bytes"
 	"database/sql"
+	"fmt"
+	"go/types"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -100,14 +104,26 @@ func Generic[T any](v T) T { _ = os.Getenv("NOT_EXECUTED"); return v }
 
 type Box[T any] struct{ V T }
 
-func (Box[T]) Load()         { Read() }
-func GenericUse()            { _ = Generic(1); Box[int]{}.Load() }
-func HTTP()                  { _, _ = http.Get("http://not-executed.invalid") }
-func Connect()               { _, _ = net.Dial("tcp", "not-executed.invalid:80") }
-func Listen()                { _, _ = net.Listen("tcp", ":0") }
-func Exec()                  { _ = exec.Command("not-executed").Run() }
-func Environment()           { _, _ = os.LookupEnv("NOT_EXECUTED"); _ = os.Unsetenv("NOT_EXECUTED") }
-func Database(db *sql.DB)    { _, _ = db.Query("not executed"); _, _ = db.Exec("not executed") }
-func FileMethods(f *os.File) { _, _ = f.Read(nil); _, _ = f.Write(nil) }
-func OpenFile()              { _, _ = os.OpenFile("not-executed", os.O_RDONLY, 0) }
-func Root(r *os.Root)        { _, _ = r.ReadFile("never"); _ = r.WriteFile("never", nil, 0600) }
+func (Box[T]) Load()               { Read() }
+func GenericUse()                  { _ = Generic(1); Box[int]{}.Load() }
+func HTTP()                        { _, _ = http.Get("http://not-executed.invalid") }
+func Connect()                     { _, _ = net.Dial("tcp", "not-executed.invalid:80") }
+func Listen()                      { _, _ = net.Listen("tcp", ":0") }
+func Exec()                        { _ = exec.Command("not-executed").Run() }
+func Environment()                 { _, _ = os.LookupEnv("NOT_EXECUTED"); _ = os.Unsetenv("NOT_EXECUTED") }
+func Database(db *sql.DB)          { _, _ = db.Query("not executed"); _, _ = db.Exec("not executed") }
+func FileMethods(f *os.File)       { _, _ = f.Read(nil); _, _ = f.Write(nil) }
+func OpenFile()                    { _, _ = os.OpenFile("not-executed", os.O_RDONLY, 0) }
+func OpenFileUnknown(flags int)    { _, _ = os.OpenFile("not-executed", flags, 0) }
+func OpenFileWrite()               { _, _ = os.OpenFile("not-executed", os.O_WRONLY|os.O_CREATE, 0600) }
+func Exit()                        { os.Exit(1) }
+func Root(r *os.Root)              { _, _ = r.ReadFile("never"); _ = r.WriteFile("never", nil, 0600) }
+func Format() string               { return fmt.Sprintf("memory") }
+func TypeName(t types.Type) string { return types.TypeString(t, nil) }
+func WriteMemory()                 { var b bytes.Buffer; var w io.Writer = &b; _, _ = w.Write(nil) }
+
+type fileWriter struct{ f *os.File }
+
+func (w fileWriter) Write(p []byte) (int, error) { return w.f.Write(p) }
+func WriteFile(w fileWriter)                     { var out io.Writer = w; _, _ = out.Write(nil) }
+func WriteOpen(w io.Writer)                      { _, _ = w.Write(nil) }

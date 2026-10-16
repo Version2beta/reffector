@@ -18,8 +18,10 @@ func Write(w io.Writer, records []analyzer.Record, asJSON bool) error {
 		return enc.Encode(records)
 	}
 	for _, r := range records {
-		if _, err := fmt.Fprintf(w, "%s.%s %s\n", r.Package, r.Function, r.Effect); err != nil {
-			return err
+		for _, effect := range r.Effects {
+			if _, err := fmt.Fprintf(w, "%s.%s %s\n", r.Package, r.Function, effect.Identifier); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

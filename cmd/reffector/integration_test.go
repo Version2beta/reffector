@@ -19,6 +19,11 @@ import (
 	"reffector/internal/analyzer"
 )
 
+type record struct {
+	Package, Function, Effect string
+	Direct                    bool
+}
+
 var executable, fixtureSource string
 
 func TestMain(m *testing.M) {
@@ -72,11 +77,17 @@ func success(t *testing.T, dir string, args ...string) string {
 	return out
 }
 
-func records(t *testing.T, text string) []analyzer.Record {
+func records(t *testing.T, text string) []record {
 	t.Helper()
-	var result []analyzer.Record
-	if err := json.Unmarshal([]byte(text), &result); err != nil || result == nil {
+	var summaries []analyzer.Record
+	if err := json.Unmarshal([]byte(text), &summaries); err != nil || summaries == nil {
 		t.Fatalf("invalid JSON array: %v: %s", err, text)
+	}
+	var result []record
+	for _, summary := range summaries {
+		for _, effect := range summary.Effects {
+			result = append(result, record{summary.Package, summary.Function, effect.Identifier, effect.Direct})
+		}
 	}
 	return result
 }
@@ -149,26 +160,44 @@ func TestAnalysisCLI(t *testing.T) {
 		actual[r.Function] += r.Effect
 	}
 	want := map[string]string{
-		"Read": "fs.read", "Write": "fs.create fs.write", "Remove": "fs.remove", "External": "unknown.call",
+		"Read": "fs.read", "Write": "fs.create fs.write", "Remove": "fs.remove",
 		"Multiple": "fs.create fs.read fs.write", "Middle": "fs.create fs.read fs.write", "Top": "fs.create fs.read fs.write",
 		"Cross": "fs.read", "(*Pointer).Save": "fs.create fs.write", "(Value).Load": "fs.read", "(Other).Load": "env.write", "(private).unused": "fs.read",
-		"KnownInterface": "fs.read", "OpenInterface": "env.write fs.read unknown.call", "MissingInterface": "unknown.call",
-		"Recursive": "fs.read", "MutualA": "fs.create fs.write", "MutualB": "fs.create fs.write",
-		"Unknown": "unknown.call", "ForwardUnknown": "unknown.call", "ReturnedValue": "unknown.call", "Reflect": "unknown.call",
+		"KnownInterface": "fs.read",
+		"Recursive":      "fs.read", "MutualA": "fs.create fs.write", "MutualB": "fs.create fs.write",
+
 		"KnownValue": "fs.read", "PhiValue": "fs.create fs.read fs.write", "BoundMethod": "fs.create fs.write", "BoundSink": "fs.read",
 		"Closure": "fs.read", "Closure$1": "fs.read", "Spawn": "fs.create fs.read fs.write",
 		"Generic": "env.read", "(Box[T]).Load": "fs.read", "GenericUse": "env.read fs.read",
-		"HTTP": "net.connect unknown.call", "Connect": "net.connect", "Listen": "net.listen",
+		"HTTP": "net.connect", "Connect": "net.connect", "Listen": "net.listen",
 		"Exec": "env.read fs.read process.exec", "Environment": "env.read env.write", "Database": "db.exec db.query",
-		"FileMethods": "fs.read fs.write", "OpenFile": "fs.create fs.read fs.write", "Root": "fs.create fs.read fs.write",
+		"FileMethods": "fs.read fs.write", "OpenFile": "fs.read", "OpenFileUnknown": "fs.create fs.read fs.write", "OpenFileWrite": "fs.create fs.write", "Root": "fs.create fs.read fs.write", "Exit": "process.exit", "(fileWriter).Write": "fs.write", "WriteFile": "fs.write",
 	}
 	if !reflect.DeepEqual(actual, want) {
 		t.Errorf("effects mismatch\ngot:  %v\nwant: %v", actual, want)
 	}
+	var summaries []analyzer.Record
+	if err := json.Unmarshal([]byte(base), &summaries); err != nil {
+		t.Fatal(err)
+	}
+	uncertain := map[string]bool{}
+	for _, summary := range summaries {
+		uncertain[summary.Function] = summary.Uncertain
+	}
+	for _, name := range []string{"Unknown", "ForwardUnknown", "ReturnedValue", "Reflect", "External", "OpenInterface", "MissingInterface", "HTTP", "WriteOpen"} {
+		if !uncertain[name] {
+			t.Errorf("%s should be marked uncertain", name)
+		}
+	}
+	for _, name := range []string{"Pure", "NotSinks", "KnownInterface", "Read", "OpenFile", "Format", "TypeName", "WriteMemory"} {
+		if uncertain[name] {
+			t.Errorf("%s should not be marked uncertain", name)
+		}
+	}
 
 	t.Run("direct", func(t *testing.T) {
 		direct := records(t, success(t, dir, "-direct", "-json", "."))
-		want := make([]analyzer.Record, 0)
+		want := make([]record, 0)
 		for _, r := range all {
 			if r.Direct {
 				want = append(want, r)
@@ -354,14 +383,14 @@ func Leaf() { _, _ = os.ReadFile("never") }
 func Both() { Leaf(); _, _ = os.ReadFile("never") }
 `)
 	result := records(t, success(t, dir, "-json"))
-	var got []analyzer.Record
+	var got []record
 	for _, r := range result {
 		if r.Function == "Both" {
 			got = append(got, r)
 		}
 	}
 	sort.Slice(got, func(i, j int) bool { return got[i].Effect < got[j].Effect })
-	want := []analyzer.Record{{Package: "example.com/precedence", Function: "Both", Effect: "fs.read", Direct: true}}
+	want := []record{{Package: "example.com/precedence", Function: "Both", Effect: "fs.read", Direct: true}}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("direct precedence: %v", got)
 	}

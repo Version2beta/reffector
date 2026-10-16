@@ -4,8 +4,12 @@
 package effects
 
 import (
+	"go/constant"
 	"go/types"
+	"os"
 	"sort"
+
+	"golang.org/x/tools/go/ssa"
 )
 
 type Set uint16
@@ -22,13 +26,15 @@ const (
 	EnvWrite
 	DBQuery
 	DBExec
+	ProcessExit
+	// Unknown is an internal uncertainty marker, never an output effect.
 	Unknown
 )
 
 var names = map[Set]string{
 	FSRead: "fs.read", FSWrite: "fs.write", FSCreate: "fs.create", FSRemove: "fs.remove",
 	NetConnect: "net.connect", NetListen: "net.listen", ProcessExec: "process.exec",
-	EnvRead: "env.read", EnvWrite: "env.write", DBQuery: "db.query", DBExec: "db.exec", Unknown: "unknown.call",
+	EnvRead: "env.read", EnvWrite: "env.write", DBQuery: "db.query", DBExec: "db.exec", ProcessExit: "process.exit",
 }
 
 func (s Set) Names() []string {
@@ -59,9 +65,64 @@ func Lookup(fn *types.Func) (Set, bool) {
 	return s, ok
 }
 
+// LookupCall recognizes summaries whose effect depends on a constant argument.
+func LookupCall(fn *types.Func, args []ssa.Value) (Set, bool) {
+	if Key(fn) == "go/types.TypeString" {
+		if len(args) >= 2 {
+			if c, ok := args[1].(*ssa.Const); ok && c.IsNil() {
+				return 0, true
+			}
+		}
+		return Unknown, true
+	}
+	if Key(fn) == "fmt.Sprintf" || Key(fn) == "fmt.Sprint" || Key(fn) == "fmt.Sprintln" || Key(fn) == "fmt.Errorf" {
+		for _, arg := range args[1:] {
+			if !formatValueIsBasic(arg) {
+				return Unknown, true // Stringer/Error/Formatter may execute application code.
+			}
+		}
+		return 0, true
+	}
+	if Key(fn) == "os.OpenFile" {
+		if len(args) < 2 {
+			return FSRead | FSWrite | FSCreate, true
+		}
+		if c, ok := args[1].(*ssa.Const); ok && c.Value != nil {
+			if flags, ok := constant.Int64Val(c.Value); ok {
+				set := Set(0)
+				if flags&int64(os.O_WRONLY|os.O_RDWR) != 0 {
+					set |= FSWrite
+				} else {
+					set |= FSRead
+				}
+				if flags&int64(os.O_CREATE) != 0 {
+					set |= FSCreate
+				}
+				if flags&int64(os.O_TRUNC) != 0 {
+					set |= FSWrite
+				}
+				return set, true
+			}
+		}
+		return FSRead | FSWrite | FSCreate, true
+	}
+	return Lookup(fn)
+}
+
+func formatValueIsBasic(v ssa.Value) bool {
+	if _, ok := v.(*ssa.Const); ok {
+		return true
+	}
+	if v, ok := v.(*ssa.MakeInterface); ok {
+		_, ok := v.X.Type().Underlying().(*types.Basic)
+		return ok
+	}
+	return false
+}
+
 // These are operation-kind summaries, not resource or permission models.
-// OpenFile's flags are not evaluated: all permitted operation kinds are kept.
-// Constructors are summarized separately from operations that start work.
+// OpenFile flags are evaluated when SSA provides a constant; unknown flags keep
+// all possible operation kinds. Constructors are separate from operations that start work.
 var summaries = buildSummaries()
 
 func buildSummaries() map[string]Set {
@@ -72,10 +133,10 @@ func buildSummaries() map[string]Set {
 		}
 	}
 	add("os", FSRead, "ReadFile", "ReadDir", "Stat", "Lstat", "Readlink", "Getwd", "Executable", "Open", "(*File).Read", "(*File).ReadAt", "(*File).ReadDir", "(*File).Readdir", "(*File).Readdirnames", "(*File).Stat")
-	add("os", FSWrite, "Truncate", "Chmod", "Chown", "Lchown", "Chtimes", "Chdir", "(*File).Write", "(*File).WriteAt", "(*File).WriteString", "(*File).Truncate", "(*File).Chmod", "(*File).Chown", "(*File).Chdir", "(*File).Sync", "(*File).Close")
+	add("os", FSWrite, "Truncate", "Chmod", "Chown", "Lchown", "Chtimes", "Chdir", "(*File).Write", "(*File).WriteAt", "(*File).WriteString", "(*File).Truncate", "(*File).Chmod", "(*File).Chown", "(*File).Chdir", "(*File).Sync")
 	add("os", FSCreate|FSWrite, "WriteFile", "Create", "CreateTemp")
 	add("os", FSCreate, "Mkdir", "MkdirAll", "MkdirTemp", "Link", "Symlink")
-	add("os", FSRead|FSWrite|FSCreate, "OpenFile")
+	// OpenFile is handled by LookupCall.
 	add("os", FSRemove, "Remove", "RemoveAll")
 	add("os", FSRemove|FSCreate, "Rename")
 	add("os", FSRead, "OpenRoot", "OpenInRoot", "(*Root).Open", "(*Root).OpenRoot", "(*Root).ReadFile", "(*Root).Stat", "(*Root).Lstat", "(*Root).Readlink", "(*rootFS).Open", "(*rootFS).ReadFile", "(*rootFS).ReadDir", "(*rootFS).Stat", "(*rootFS).Lstat", "(*rootFS).ReadLink")
@@ -88,7 +149,9 @@ func buildSummaries() map[string]Set {
 	add("os", EnvRead, "Getenv", "LookupEnv", "Environ", "ExpandEnv", "UserHomeDir", "UserCacheDir", "UserConfigDir", "TempDir")
 	add("os", EnvWrite, "Setenv", "Unsetenv", "Clearenv")
 	add("os", ProcessExec, "StartProcess")
-	add("os", Unknown, "Exit", "(*Process).Kill", "(*Process).Signal", "(*Process).Wait", "Pipe")
+	add("os", ProcessExit, "Exit")
+	add("os", 0, "(*File).Close")
+	add("os", 0, "(*Process).Kill", "(*Process).Signal", "(*Process).Wait", "Pipe")
 	add("path/filepath", FSRead, "Abs", "EvalSymlinks", "Glob")
 	add("io/ioutil", FSRead, "ReadFile", "ReadDir")
 	add("io/ioutil", FSCreate|FSWrite, "WriteFile", "TempFile")
@@ -119,7 +182,12 @@ func buildSummaries() map[string]Set {
 	}
 	add("database/sql", DBExec, "(*DB).Begin", "(*DB).BeginTx", "(*Conn).BeginTx", "(*Tx).Commit", "(*Tx).Rollback", "(*DB).Prepare", "(*DB).PrepareContext", "(*Tx).Prepare", "(*Tx).PrepareContext", "(*Conn).PrepareContext")
 	add("database/sql", Unknown, "(*DB).Ping", "(*DB).PingContext", "(*DB).Conn")
-	add("reflect", Unknown, "(Value).Call", "(Value).CallSlice", "(Value).Method", "(Value).MethodByName")
+	add("reflect", 0, "(Value).Method", "(Value).MethodByName")
+	// In-memory standard-library operations are summary boundaries, preventing
+	// their internal io.Writer plumbing from being mistaken for file writes.
+	add("fmt", 0, "Appendf", "Append", "Appendln")
+	add("go/types", 0, "ObjectString", "SelectionString", "Id", "NewContext")
+	add("bytes", 0, "(*Buffer).Write", "(*Buffer).WriteString", "(*Buffer).WriteByte", "(*Buffer).WriteRune", "(*Buffer).Read")
 	add("errors", 0, "New")
 	return m
 }
