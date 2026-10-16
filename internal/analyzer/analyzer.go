@@ -65,7 +65,15 @@ func Analyze(patterns []string, opts Options) ([]Record, error) {
 	}
 	prog, _ := ssautil.AllPackages(pkgs, ssa.InstantiateGenerics)
 	prog.Build()
-	g := &graph{prog: prog, nodes: make(map[*ssa.Function]*node)}
+	g := &graph{prog: prog, nodes: make(map[*ssa.Function]*node), standard: make(map[*types.Package]bool)}
+	// Module metadata, rather than import-path spelling, identifies standard
+	// packages. A loaded package with a module (including module "reffector")
+	// is application or third-party code even when its path contains no dot.
+	packages.Visit(pkgs, nil, func(p *packages.Package) {
+		if p.Types != nil && p.Module == nil {
+			g.standard[p.Types] = true
+		}
+	})
 
 	type identity struct{ pkg, name string }
 	selected := make(map[*ssa.Function]identity)
@@ -151,11 +159,8 @@ func Analyze(patterns []string, opts Options) ([]Record, error) {
 	return records, nil
 }
 
-func isStandardLibrary(fn *ssa.Function) bool {
-	if fn.Pkg == nil || fn.Pkg.Pkg == nil {
-		return false
-	}
-	return !strings.Contains(strings.Split(fn.Pkg.Pkg.Path(), "/")[0], ".")
+func (g *graph) isStandardLibrary(fn *ssa.Function) bool {
+	return fn.Pkg != nil && fn.Pkg.Pkg != nil && g.standard[fn.Pkg.Pkg]
 }
 
 func localName(obj *types.Func) string {
@@ -171,9 +176,10 @@ type node struct {
 }
 
 type graph struct {
-	prog    *ssa.Program
-	nodes   map[*ssa.Function]*node
-	pending []*node
+	prog     *ssa.Program
+	nodes    map[*ssa.Function]*node
+	pending  []*node
+	standard map[*types.Package]bool
 }
 
 func (g *graph) ensure(fn *ssa.Function) *node {
@@ -243,7 +249,7 @@ func (g *graph) build() {
 				for _, target := range targets {
 					if s, ok := summaryCall(target, call); ok {
 						applySummary(n, s)
-					} else if len(target.Blocks) == 0 || isStandardLibrary(target) {
+					} else if len(target.Blocks) == 0 || g.isStandardLibrary(target) {
 						n.uncertain = true
 					} else {
 						g.ensure(target).callers[n] = true

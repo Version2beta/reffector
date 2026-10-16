@@ -171,7 +171,7 @@ func TestAnalysisCLI(t *testing.T) {
 		"Generic": "env.read", "(Box[T]).Load": "fs.read", "GenericUse": "env.read fs.read",
 		"HTTP": "net.connect", "Connect": "net.connect", "Listen": "net.listen",
 		"Exec": "env.read fs.read process.exec", "Environment": "env.read env.write", "Database": "db.exec db.query",
-		"FileMethods": "fs.read fs.write", "OpenFile": "fs.read", "OpenFileUnknown": "fs.create fs.read fs.write", "OpenFileWrite": "fs.create fs.write", "Root": "fs.create fs.read fs.write", "Exit": "process.exit", "(fileWriter).Write": "fs.write", "WriteFile": "fs.write",
+		"FileMethods": "fs.read fs.write", "OpenFile": "fs.read", "OpenFileUnknown": "fs.create fs.read fs.write", "OpenFileWrite": "fs.create fs.write", "Root": "fs.create fs.read fs.write", "Exit": "process.exit", "(fileWriter).Write": "fs.write", "WriteFile": "fs.write", "(stringer).String": "fs.read",
 	}
 	if !reflect.DeepEqual(actual, want) {
 		t.Errorf("effects mismatch\ngot:  %v\nwant: %v", actual, want)
@@ -184,12 +184,12 @@ func TestAnalysisCLI(t *testing.T) {
 	for _, summary := range summaries {
 		uncertain[summary.Function] = summary.Uncertain
 	}
-	for _, name := range []string{"Unknown", "ForwardUnknown", "ReturnedValue", "Reflect", "External", "OpenInterface", "MissingInterface", "HTTP", "WriteOpen"} {
+	for _, name := range []string{"Unknown", "ForwardUnknown", "ReturnedValue", "Reflect", "External", "OpenInterface", "MissingInterface", "HTTP", "WriteOpen", "FormatStringer"} {
 		if !uncertain[name] {
 			t.Errorf("%s should be marked uncertain", name)
 		}
 	}
-	for _, name := range []string{"Pure", "NotSinks", "KnownInterface", "Read", "OpenFile", "Format", "TypeName", "WriteMemory"} {
+	for _, name := range []string{"Pure", "NotSinks", "KnownInterface", "Read", "OpenFile", "Format", "FormatInteger", "FormatMultiple", "TypeName", "WriteMemory"} {
 		if uncertain[name] {
 			t.Errorf("%s should not be marked uncertain", name)
 		}
@@ -306,6 +306,9 @@ func TestCLIUsageAndErrors(t *testing.T) {
 
 func mustWrite(t *testing.T, path, text string) {
 	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
+		t.Fatal(err)
+	}
 	if err := os.WriteFile(path, []byte(text), 0600); err != nil {
 		t.Fatal(err)
 	}
@@ -358,6 +361,47 @@ func TestWorkspaceAndReadonlyModules(t *testing.T) {
 	}
 	if !reflect.DeepEqual(before, snapshot(t, module)) {
 		t.Fatal("workspace checksums modified the analyzed repository")
+	}
+}
+
+func TestDotlessModuleCrossPackagePropagation(t *testing.T) {
+	dir := t.TempDir()
+	mustWrite(t, filepath.Join(dir, "go.mod"), "module example\n\ngo 1.26.0\n")
+	mustWrite(t, filepath.Join(dir, "dep", "dep.go"), `package dep
+import "os"
+func Load() { _, _ = os.ReadFile("never") }
+`)
+	mustWrite(t, filepath.Join(dir, "internal", "leaf", "leaf.go"), `package leaf
+import "os"
+func Load() { _, _ = os.ReadFile("never") }
+`)
+	mustWrite(t, filepath.Join(dir, "app", "app.go"), `package app
+import (
+ "example/dep"
+ "example/internal/leaf"
+)
+func Process() { dep.Load() }
+func InternalProcess() { leaf.Load() }
+`)
+	result := records(t, success(t, dir, "-json", "./..."))
+	found := map[string]record{}
+	for _, r := range result {
+		found[r.Package+"."+r.Function] = r
+	}
+	for _, name := range []string{"example/app.Process", "example/app.InternalProcess"} {
+		r, ok := found[name]
+		if !ok || r.Effect != "fs.read" || r.Direct {
+			t.Fatalf("dotless module did not inherit fs.read for %s: %+v", name, r)
+		}
+	}
+	var summaries []analyzer.Record
+	if err := json.Unmarshal([]byte(success(t, dir, "-json", "./...")), &summaries); err != nil {
+		t.Fatal(err)
+	}
+	for _, summary := range summaries {
+		if summary.Package == "example/app" && (summary.Function == "Process" || summary.Function == "InternalProcess") && summary.Uncertain {
+			t.Fatalf("dotless application package marked uncertain: %+v", summary)
+		}
 	}
 }
 

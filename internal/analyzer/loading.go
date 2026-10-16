@@ -16,7 +16,7 @@ import (
 // a private workspace file with absolute paths and a private checksum file.
 func loadConfig(opts Options) (*packages.Config, func(), error) {
 	cfg := &packages.Config{
-		Mode: packages.LoadAllSyntax, Dir: opts.Dir, Tests: opts.Tests,
+		Mode: packages.LoadAllSyntax | packages.NeedModule, Dir: opts.Dir, Tests: opts.Tests,
 		BuildFlags: []string{"-mod=readonly"},
 	}
 	cmd := exec.Command("go", "env", "-json", "GOWORK")

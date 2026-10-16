@@ -77,8 +77,9 @@ Direct effects come from a recognized call. Transitive effects are propagated
 through ordinary calls, methods, closures, known local function values, phi
 merges, generics, `go`, and `defer`; recursion uses a stable worklist.
 
-Interface dispatch is intentionally evidence-based. A receiver made from a
-known concrete SSA value is followed to that method. An interface parameter,
+Interface dispatch is intentionally evidence-based. Standard-library packages
+are identified from Go loader module metadata, not import-path spelling. A
+receiver made from a known concrete SSA value is followed to that method. An interface parameter,
 memory-loaded interface, or other open receiver is **not** expanded to every
 loaded implementation (for example every `io.Writer`); it is marked uncertain
 instead. This avoids inventing filesystem writes from unrelated `*os.File`

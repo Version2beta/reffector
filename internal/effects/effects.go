@@ -117,7 +117,38 @@ func formatValueIsBasic(v ssa.Value) bool {
 		_, ok := v.X.Type().Underlying().(*types.Basic)
 		return ok
 	}
+	if slice, ok := v.(*ssa.Slice); ok {
+		return formatSliceIsBasic(slice)
+	}
 	return false
+}
+
+// Go lowers a variadic call such as Sprintf("%d", n) to an allocated [N]any,
+// stores, and a slice. Inspect only that local SSA shape; anything else is
+// uncertain rather than attempting general memory dataflow.
+func formatSliceIsBasic(slice *ssa.Slice) bool {
+	alloc, ok := slice.X.(*ssa.Alloc)
+	if !ok || alloc.Referrers() == nil {
+		return false
+	}
+	count := 0
+	for _, use := range *alloc.Referrers() {
+		if use == slice {
+			continue
+		}
+		index, ok := use.(*ssa.IndexAddr)
+		if !ok || index.Referrers() == nil {
+			return false
+		}
+		for _, indexedUse := range *index.Referrers() {
+			store, ok := indexedUse.(*ssa.Store)
+			if !ok || store.Addr != index || !formatValueIsBasic(store.Val) {
+				return false
+			}
+			count++
+		}
+	}
+	return count > 0
 }
 
 // These are operation-kind summaries, not resource or permission models.
