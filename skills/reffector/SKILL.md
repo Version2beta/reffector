@@ -54,6 +54,9 @@ reffector -api 'net/http.(ResponseWriter).WriteHeader' -max-depth 2 -max-sites 2
 
 # Explore callers of unresolved interface boundaries, excluding other reasons.
 reffector -unresolved -reason interface_dispatch -max-depth 2 -max-sites 20 -max-edges 50 ./...
+
+# Add available method-set implementations as investigation leads.
+reffector -contracts -unresolved -reason interface_dispatch -operation '.Save' -max-depth 2 -max-sites 20 -max-edges 50 -json ./...
 ```
 
 Start with consequential categories → direct operation sites → source locations
@@ -82,6 +85,8 @@ Reverse edges have `resolution: established` when SSA directly supports the
 call, or `candidate_vta` when Go VTA follows values through assignments,
 arguments, returns, fields, or callbacks. A candidate is a conservative
 possible callee, not proof that it executes; unresolved boundaries remain open.
+Function JSON keeps established effects in `effects` and reports VTA-only paths
+in `possible_effects`, so an empty established list is not an absence claim.
 
 Uncertainty is separate from effects. `interface_dispatch` means the concrete
 implementation remains unresolved: a named contract summary (such as response
@@ -89,7 +94,11 @@ output or `io.Closer` release) supplies no concrete target or resource destinati
 `-unresolved` selects only effect-free unresolved leads; known-effect uncertain
 sites remain in normal groups. `-reason` filters existing reasons in either
 selection; it does not classify significance. Remove filters to inspect other
-origins, including opaque calls and callbacks. Never invent implementation edges.
+origins, including opaque calls and callbacks. `-contracts` adds available
+`contract_compatible` method-set implementations beside `established` and
+`candidate_vta` targets. Contract-compatible leads are not call edges and the
+available type universe may omit external implementations. Never invent
+implementation edges.
 
 Check coverage: selected packages/functions, selected versus dependency sites,
 identified versus matching versus emitted counts. `-all -json` adds unfiltered

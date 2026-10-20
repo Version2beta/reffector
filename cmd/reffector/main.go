@@ -30,6 +30,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	siteFilter := flags.String("site", "", "select one canonical direct site ID (effect view)")
 	unresolved := flags.Bool("unresolved", false, "switch from recognized operations to unresolved-only leads (effect view)")
 	reasonFilter := flags.String("reason", "", "filter uncertainty reasons by substring, e.g. interface_dispatch (effect view)")
+	contracts := flags.Bool("contracts", false, "include method-set-compatible implementation leads for matching interface calls (effect view)")
 	exact := flags.Bool("exact", false, "select local directory packages without subpackages")
 	all := flags.Bool("all", false, "include full source inventory, independently of effect-view filters")
 	stats := flags.Bool("stats", false, "write coverage counts as JSON to stderr")
@@ -69,13 +70,13 @@ func run(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, "reffector: reverse -max-edges requires effect view; -max-paths requires -details; traversal limits require a graph view")
 		return 2
 	}
-	if (*view != "effects" && *view != "functions") || *maxDepth < 0 || *maxPaths < 1 || *maxSites < 1 || *maxEdges < 1 || (*view == "functions" && ((!*details && *operationFilter != "") || *apiFilter != "" || *siteFilter != "" || *unresolved || *reasonFilter != "")) {
-		fmt.Fprintln(stderr, "reffector: use -view effects|functions, nonnegative depth, positive limits; -api/-site/-unresolved/-reason require effect view; -operation requires effect view or -details")
+	if (*view != "effects" && *view != "functions") || *maxDepth < 0 || *maxPaths < 1 || *maxSites < 1 || *maxEdges < 1 || (*view == "functions" && ((!*details && *operationFilter != "") || *apiFilter != "" || *siteFilter != "" || *unresolved || *reasonFilter != "" || *contracts)) {
+		fmt.Fprintln(stderr, "reffector: use -view effects|functions, nonnegative depth, positive limits; -api/-site/-unresolved/-reason/-contracts require effect view; -operation requires effect view or -details")
 		return 2
 	}
 	report, err := analyzer.AnalyzeReport(flags.Args(), analyzer.Options{
 		Direct: *direct, Tests: *tests, Exact: *exact, All: *all, Details: *details,
-		EffectView: *view == "effects", API: *apiFilter, Site: *siteFilter, Unresolved: *unresolved, Reason: *reasonFilter,
+		EffectView: *view == "effects", API: *apiFilter, Site: *siteFilter, Unresolved: *unresolved, Contracts: *contracts, Reason: *reasonFilter,
 		Package: *packageFilter, Function: *functionFilter, Effect: *effectFilter, Operation: *operationFilter,
 		MaxDepth: *maxDepth, MaxPaths: *maxPaths, MaxSites: *maxSites, MaxEdges: *maxEdges,
 	})

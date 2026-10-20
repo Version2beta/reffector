@@ -58,6 +58,12 @@ func WriteEffects(w io.Writer, report *analyzer.EffectReport, asJSON bool) error
 	for _, g := range report.Reverse {
 		graphs[g.Site] = g
 	}
+	for _, contract := range report.Contracts {
+		fmt.Fprintf(b, "\nInterface contract %s at %s (open=%t; implementation leads, not call edges):\n", contract.Method, contract.Site, contract.Open)
+		for _, implementation := range contract.Implementations {
+			fmt.Fprintf(b, "  %s.%s at %s:%d:%d [%s; effects=%s]\n", implementation.Symbol.Package, implementation.Symbol.Function, implementation.Location.File, implementation.Location.Line, implementation.Location.Column, implementation.Relationship, strings.Join(implementation.Effects, ","))
+		}
+	}
 	for _, site := range report.Sites {
 		fmt.Fprintf(b, "\n%s\n  %s.%s — %s\n  %s:%d:%d [%s; %s]\n", site.ID, site.Package, site.Function, strings.Join(site.APIs, ", "), site.Location.File, site.Location.Line, site.Location.Column, site.Kind, site.Recognition)
 		if len(site.Effects) > 0 {

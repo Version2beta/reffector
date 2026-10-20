@@ -88,6 +88,11 @@ does not filter function-summary records.
 .B -site ID
 Select one canonical direct site ID copied from output. Effect view only.
 .TP
+.B -contracts
+Include method-set-compatible implementation leads for matching interface call
+sites. Leads are labelled established, candidate_vta, or contract_compatible;
+the latter is not a call edge. Effect view only.
+.TP
 .B -unresolved
 Switch from the default recognized operation sites to unresolved leads without
 recognized effects, not confirmed operation sites. Effect view only. Semantic
@@ -155,13 +160,17 @@ cycle and truncated flags. This is a bounded subgraph, not one shortest path.
 .B nodes, edges
 Shared variant-specific SSA-node definitions and edges. Nodes carry source
 symbols, variants, selected/dependency status and direct/inherited uncertainty.
-Edges reference caller/callee node IDs and source call evidence. Synthetic
-forwarding has synthetic=true and no fabricated source location. Never join
+Edges reference caller/callee node IDs and source call evidence. Source
+resolution is established or candidate_vta; candidates are possible VTA flow,
+not execution. Synthetic forwarding has synthetic=true and no fabricated source
+location. Never join
 nodes by source-symbol names: that can invent paths across incompatible generic
 instantiations or test variants.
 .TP
 .B coverage, inventory
-Coverage plus optional -all unfiltered source-function inventory.
+Coverage plus optional -all unfiltered source-function inventory and opt-in
+interface_contracts. Contract-compatible implementations are investigation
+leads, not execution edges.
 Emitted/omitted
 count the compatible summary projection, not graph size. Other counts retain
 selected packages/source functions across filters: effectful, direct, inherited,

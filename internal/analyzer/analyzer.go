@@ -26,7 +26,7 @@ type Options struct {
 	All                                    bool // Include source functions without effects or uncertainty.
 	Details                                bool
 	EffectView                             bool
-	Unresolved                             bool   // Only unresolved leads without recognized effects.
+	Unresolved, Contracts                  bool   // Contracts adds opt-in interface implementation leads.
 	API, Site                              string // Exact identities.
 	Reason                                 string // Uncertainty-reason substring in effect view.
 	Package, Function, Effect, Operation   string // Substring filters; Function accepts =name for exact matching.
@@ -60,10 +60,11 @@ type identity struct{ pkg, name string }
 // Record is one function's analysis result. Effects are omitted from text
 // output when empty, but Uncertain remains available in JSON.
 type Record struct {
-	Package   string   `json:"package"`
-	Function  string   `json:"function"`
-	Effects   []Effect `json:"effects"`
-	Uncertain bool     `json:"uncertain"`
+	Package         string   `json:"package"`
+	Function        string   `json:"function"`
+	Effects         []Effect `json:"effects"`                    // Direct or established-call effects.
+	PossibleEffects []string `json:"possible_effects,omitempty"` // VTA-candidate-only effects.
+	Uncertain       bool     `json:"uncertain"`
 }
 
 type Effect struct {
@@ -131,7 +132,7 @@ func AnalyzeReport(patterns []string, opts Options) (Report, error) {
 	prog, _ := ssautil.AllPackages(pkgs, ssa.InstantiateGenerics)
 	prog.Build()
 	g := &graph{prog: prog, nodes: make(map[*ssa.Function]*node), standard: make(map[*types.Package]bool),
-		detailed: opts.Details || opts.EffectView, packageIDs: make(map[*types.Package]string), sites: make(map[string]*Site), edges: make(map[string]CallEdge), fileKeys: make(map[string]string), siteNodes: make(map[string]map[*node]bool), candidates: make(map[ssa.CallInstruction][]*ssa.Function)}
+		detailed: opts.Details || opts.EffectView, packageIDs: make(map[*types.Package]string), sites: make(map[string]*Site), edges: make(map[string]CallEdge), fileKeys: make(map[string]string), siteNodes: make(map[string]map[*node]bool), candidates: make(map[ssa.CallInstruction][]*ssa.Function), contracts: make(map[string]*interfaceContract)}
 
 	// Module metadata, rather than import-path spelling, identifies standard
 	// packages. A loaded package with a module (including module "reffector")
@@ -199,13 +200,17 @@ func AnalyzeReport(patterns []string, opts Options) (Report, error) {
 		g.ensure(fn)
 	}
 	g.resolveCandidates(selected)
+	g.contractsEnabled = opts.Contracts
+	if opts.Contracts {
+		g.prepareContracts(selected)
+	}
 	g.build()
 	g.propagate()
 
 	// Test variants and generic instantiations may share a source identity.
 	// Merge before emitting so each function/effect pair appears exactly once.
 	type sets struct {
-		direct, reachable, inherited                   effects.Set
+		direct, reachable, inherited, possible         effects.Set
 		uncertain, directUncertain, inheritedUncertain bool
 	}
 	merged := make(map[identity]sets)
@@ -225,6 +230,7 @@ func AnalyzeReport(patterns []string, opts Options) (Report, error) {
 		s.direct |= n.direct
 		s.reachable |= n.reachable
 		s.inherited |= n.inherited
+		s.possible |= n.possible
 		s.uncertain = s.uncertain || n.uncertain
 		s.directUncertain = s.directUncertain || n.directUncertain
 		s.inheritedUncertain = s.inheritedUncertain || n.inheritedUncertain
@@ -242,15 +248,21 @@ func AnalyzeReport(patterns []string, opts Options) (Report, error) {
 		for _, name := range s.direct.Names() {
 			direct[name] = true
 		}
-		r := Record{Package: id.pkg, Function: id.name, Effects: []Effect{}, Uncertain: s.uncertain}
+		r := Record{Package: id.pkg, Function: id.name, Effects: []Effect{}, PossibleEffects: []string{}, Uncertain: s.uncertain}
 		for _, name := range set.Names() {
 			if matches(name, opts.Effect) {
 				r.Effects = append(r.Effects, Effect{Identifier: name, Direct: direct[name]})
 			}
 		}
-		full := Record{Package: id.pkg, Function: id.name, Effects: []Effect{}, Uncertain: s.uncertain}
+		for _, name := range s.possible.Names() {
+			r.PossibleEffects = append(r.PossibleEffects, name)
+		}
+		full := Record{Package: id.pkg, Function: id.name, Effects: []Effect{}, PossibleEffects: []string{}, Uncertain: s.uncertain}
 		for _, name := range s.reachable.Names() {
 			full.Effects = append(full.Effects, Effect{Identifier: name, Direct: direct[name]})
+		}
+		for _, name := range s.possible.Names() {
+			full.PossibleEffects = append(full.PossibleEffects, name)
 		}
 		inventory = append(inventory, full)
 		if s.reachable != 0 {
@@ -340,7 +352,7 @@ func localName(obj *types.Func) string {
 
 type node struct {
 	fn                                  *ssa.Function
-	direct, reachable                   effects.Set
+	direct, reachable, possible         effects.Set
 	inherited                           effects.Set
 	uncertain                           bool
 	directUncertain, inheritedUncertain bool
@@ -368,6 +380,8 @@ type graph struct {
 	fileKeys         map[string]string
 	siteNodes        map[string]map[*node]bool
 	candidates       map[ssa.CallInstruction][]*ssa.Function
+	contracts        map[string]*interfaceContract
+	contractsEnabled bool
 }
 
 func (g *graph) ensure(fn *ssa.Function) *node {
@@ -524,9 +538,17 @@ func uniqueFunctions(in []*ssa.Function) []*ssa.Function {
 	return out
 }
 
+func canonicalFunction(fn *ssa.Function) *ssa.Function {
+	if fn != nil && fn.Origin() != nil {
+		return fn.Origin()
+	}
+	return fn
+}
+
 func containsFunction(in []*ssa.Function, want *ssa.Function) bool {
+	want = canonicalFunction(want)
 	for _, fn := range in {
-		if fn == want {
+		if canonicalFunction(fn) == want {
 			return true
 		}
 	}
@@ -639,6 +661,10 @@ func (g *graph) propagate() {
 				caller.reachable = next
 				changed = true
 			}
+			if next := caller.possible | n.possible; next != caller.possible {
+				caller.possible = next
+				changed = true
+			}
 			if n.uncertain && !caller.uncertain {
 				caller.uncertain = true
 				changed = true
@@ -648,8 +674,14 @@ func (g *graph) propagate() {
 				queue = append(queue, caller)
 			}
 		}
-		// Candidate edges intentionally propagate possible effects for discovery,
-		// but are not added to inherited/direct function summaries. Their only
-		// representation is the explicitly marked effect-view graph.
+		for caller := range n.candidateCallers {
+			if next := caller.possible | n.reachable | n.possible; next != caller.possible {
+				caller.possible = next
+				if !queued[caller] {
+					queued[caller] = true
+					queue = append(queue, caller)
+				}
+			}
+		}
 	}
 }

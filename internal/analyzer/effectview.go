@@ -10,16 +10,17 @@ import (
 // EffectReport is a projection of the same graph used for function summaries
 // and forward witnesses. Source sites merge; traversal nodes never do.
 type EffectReport struct {
-	SchemaVersion int             `json:"schema_version"`
-	Groups        []EffectGroup   `json:"groups"`
-	Sites         []Site          `json:"sites"`
-	Unresolved    []string        `json:"unresolved_sites"`
-	Reverse       []ReverseGraph  `json:"reverse"`
-	Nodes         []GraphNode     `json:"nodes"`
-	Edges         []GraphEdge     `json:"edges"`
-	Coverage      EffectCoverage  `json:"coverage"`
-	Inventory     []Record        `json:"inventory,omitzero"`
-	Truncated     GraphTruncation `json:"truncated"`
+	SchemaVersion int                 `json:"schema_version"`
+	Groups        []EffectGroup       `json:"groups"`
+	Sites         []Site              `json:"sites"`
+	Unresolved    []string            `json:"unresolved_sites"`
+	Reverse       []ReverseGraph      `json:"reverse"`
+	Nodes         []GraphNode         `json:"nodes"`
+	Edges         []GraphEdge         `json:"edges"`
+	Coverage      EffectCoverage      `json:"coverage"`
+	Inventory     []Record            `json:"inventory,omitzero"`
+	Contracts     []InterfaceContract `json:"interface_contracts,omitempty"`
+	Truncated     GraphTruncation     `json:"truncated"`
 }
 
 type EffectGroup struct {
@@ -113,7 +114,7 @@ func (g *graph) effectReport(opts Options, stats Stats, inventory []Record) *Eff
 	if opts.MaxEdges <= 0 {
 		opts.MaxEdges = 1000
 	}
-	r := &EffectReport{SchemaVersion: 1, Groups: []EffectGroup{}, Sites: []Site{}, Unresolved: []string{}, Reverse: []ReverseGraph{}, Nodes: []GraphNode{}, Edges: []GraphEdge{}, Coverage: EffectCoverage{Stats: stats}}
+	r := &EffectReport{SchemaVersion: 1, Groups: []EffectGroup{}, Sites: []Site{}, Unresolved: []string{}, Reverse: []ReverseGraph{}, Nodes: []GraphNode{}, Edges: []GraphEdge{}, Coverage: EffectCoverage{Stats: stats}, Contracts: []InterfaceContract{}}
 	if opts.All {
 		r.Inventory = inventory
 	}
@@ -156,7 +157,7 @@ func (g *graph) effectReport(opts Options, stats Stats, inventory []Record) *Eff
 		} else {
 			r.Coverage.UnresolvedSites++
 		}
-		if !inQuery || !effectMatches(s.Effects, opts.Effect) || !effectMatches(s.APIs, opts.Operation) || !effectMatches(s.Reasons, opts.Reason) || (opts.API != "" && !contains(s.APIs, opts.API)) || (opts.Site != "" && s.ID != opts.Site) || (opts.Unresolved && (len(s.Effects) != 0 || !s.Uncertain)) || (!opts.Unresolved && len(s.Effects) == 0) {
+		if !inQuery || !effectMatches(s.Effects, opts.Effect) || !effectMatches(s.APIs, opts.Operation) || !effectMatches(s.Reasons, opts.Reason) || (opts.API != "" && !contains(s.APIs, opts.API)) || (opts.Site != "" && s.ID != opts.Site) || (opts.Unresolved && (len(s.Effects) != 0 || !s.Uncertain)) || (!opts.Unresolved && len(s.Effects) == 0 && !(opts.Contracts && g.contracts[s.ID] != nil)) {
 			continue
 		}
 		sites = append(sites, s)
@@ -185,8 +186,10 @@ func (g *graph) effectReport(opts Options, stats Stats, inventory []Record) *Eff
 	groups := map[string][]string{}
 	usedNodes, usedEdges := map[string]GraphNode{}, map[string]GraphEdge{}
 	budget := opts.MaxEdges // Global unique graph-edge budget, shared across sites.
+	emittedContracts := map[string]bool{}
 	for _, site := range sites {
 		r.Sites = append(r.Sites, *site)
+		emittedContracts[site.ID] = true
 		if len(site.Effects) == 0 {
 			r.Unresolved = append(r.Unresolved, site.ID)
 		}
@@ -213,6 +216,9 @@ func (g *graph) effectReport(opts Options, stats Stats, inventory []Record) *Eff
 	sort.Slice(r.Nodes, func(i, j int) bool { return r.Nodes[i].ID < r.Nodes[j].ID })
 	sort.Slice(r.Edges, func(i, j int) bool { return r.Edges[i].ID < r.Edges[j].ID })
 	r.Coverage.EmittedSites = len(r.Sites)
+	if opts.Contracts {
+		r.Contracts = g.contractReports(emittedContracts)
+	}
 	return r
 }
 

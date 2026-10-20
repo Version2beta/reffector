@@ -102,8 +102,11 @@ operations in the program.
 ```
 
 `effects` is an array (possibly empty). `direct` says that the function itself
-calls a summarized operation; otherwise the effect was inherited. `uncertain`
-means an unresolved or opaque operation is reachable. It is deliberately
+calls a summarized operation; otherwise the effect was reached through an
+established SSA call. `possible_effects`, when present, lists effects reachable
+only through one or more `candidate_vta` edges; it is never a guaranteed
+execution or an inherited `effects` entry. `uncertain` means an unresolved or
+opaque operation is reachable. It is deliberately
 separate from effects: uncertainty is not an operation and is never printed in
 function-pair text output. A function with no recognized effects and
 `uncertain: true` remains visible in function JSON; its grouped origins are leads
@@ -135,7 +138,17 @@ The versioned effect JSON object (`schema_version: 1`) contains:
 - `edges`: shared variant-specific caller/callee IDs and exact `source` call
   evidence. Synthetic forwarding has `synthetic: true` and no fabricated source
   location. Source evidence has a separate canonical source-edge ID.
-- `coverage`, report-level `truncated`, and optional unfiltered `inventory`.
+- `coverage`, report-level `truncated`, optional unfiltered `inventory`, and
+  opt-in `interface_contracts`.
+
+Use `-contracts` with an interface API/site query to list available method-set
+implementations. Each lead is labelled `established`, `candidate_vta`, or
+`contract_compatible`. The last means the type satisfies the called interface
+but has no value-flow evidence to that invocation. Contract leads are not call
+edges; `open: true` means implementations outside the loaded universe may
+remain. A practical sequence is: find `interface_dispatch` with `-unresolved
+-reason interface_dispatch`, rerun the focused query with `-contracts`, then
+inspect candidate effects and source before making an execution claim.
 
 A site is the same source-based object in both views. It groups operations at
 actual source calls, with stable IDs, containing package/function, types-based
