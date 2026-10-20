@@ -8,11 +8,12 @@ import (
 	"go/types"
 	"os"
 	"sort"
+	"strings"
 
 	"golang.org/x/tools/go/ssa"
 )
 
-type Set uint16
+type Set uint32
 
 const (
 	FSRead Set = 1 << iota
@@ -27,6 +28,11 @@ const (
 	DBQuery
 	DBExec
 	ProcessExit
+	HTTPResponse
+	ResourceAcquire
+	ResourceRelease
+	NetClose
+	FSRename
 	// Unknown is an internal uncertainty marker, never an output effect.
 	Unknown
 )
@@ -35,6 +41,7 @@ var names = map[Set]string{
 	FSRead: "fs.read", FSWrite: "fs.write", FSCreate: "fs.create", FSRemove: "fs.remove",
 	NetConnect: "net.connect", NetListen: "net.listen", ProcessExec: "process.exec",
 	EnvRead: "env.read", EnvWrite: "env.write", DBQuery: "db.query", DBExec: "db.exec", ProcessExit: "process.exit",
+	HTTPResponse: "http.response", ResourceAcquire: "resource.acquire", ResourceRelease: "resource.release", NetClose: "net.close", FSRename: "fs.rename",
 }
 
 func (s Set) Names() []string {
@@ -58,6 +65,23 @@ func Key(fn *types.Func) string {
 		key += "(" + types.TypeString(recv.Type(), func(*types.Package) string { return "" }) + ")."
 	}
 	return key + fn.Name()
+}
+
+// LookupInterface summarizes the named interface contract, not a concrete
+// implementation. It never supplies a call target. Unknown io.Writer stays
+// unclassified: its resource kind and destination are not established.
+func LookupInterface(fn *types.Func) (Set, bool) {
+	switch Key(fn) {
+	case "net/http.(ResponseWriter).Write", "net/http.(ResponseWriter).WriteHeader":
+		return HTTPResponse, true
+	case "net.(Conn).Close", "net.(PacketConn).Close", "net.(Listener).Close":
+		return NetClose | ResourceRelease, true
+	case "io.(Closer).Close":
+		// Embedded standard contracts (ReadCloser, ReadWriteCloser, etc.)
+		// retain the declaring Closer method identity. Resource kind is unknown.
+		return ResourceRelease, true
+	}
+	return 0, false
 }
 
 func Lookup(fn *types.Func) (Set, bool) {
@@ -85,11 +109,11 @@ func LookupCall(fn *types.Func, args []ssa.Value) (Set, bool) {
 	}
 	if Key(fn) == "os.OpenFile" {
 		if len(args) < 2 {
-			return FSRead | FSWrite | FSCreate, true
+			return FSRead | FSWrite | FSCreate | ResourceAcquire, true
 		}
 		if c, ok := args[1].(*ssa.Const); ok && c.Value != nil {
 			if flags, ok := constant.Int64Val(c.Value); ok {
-				set := Set(0)
+				set := ResourceAcquire
 				if flags&int64(os.O_WRONLY|os.O_RDWR) != 0 {
 					set |= FSWrite
 				} else {
@@ -104,7 +128,7 @@ func LookupCall(fn *types.Func, args []ssa.Value) (Set, bool) {
 				return set, true
 			}
 		}
-		return FSRead | FSWrite | FSCreate, true
+		return FSRead | FSWrite | FSCreate | ResourceAcquire, true
 	}
 	return Lookup(fn)
 }
@@ -169,20 +193,21 @@ func buildSummaries() map[string]Set {
 	add("os", FSCreate, "Mkdir", "MkdirAll", "MkdirTemp", "Link", "Symlink")
 	// OpenFile is handled by LookupCall.
 	add("os", FSRemove, "Remove", "RemoveAll")
-	add("os", FSRemove|FSCreate, "Rename")
+	// Preserve the existing entry-change categories while naming the operation.
+	add("os", FSRemove|FSCreate|FSRename, "Rename")
 	add("os", FSRead, "OpenRoot", "OpenInRoot", "(*Root).Open", "(*Root).OpenRoot", "(*Root).ReadFile", "(*Root).Stat", "(*Root).Lstat", "(*Root).Readlink", "(*rootFS).Open", "(*rootFS).ReadFile", "(*rootFS).ReadDir", "(*rootFS).Stat", "(*rootFS).Lstat", "(*rootFS).ReadLink")
 	add("os", FSWrite, "(*Root).Chmod", "(*Root).Chown", "(*Root).Lchown", "(*Root).Chtimes")
 	add("os", FSCreate|FSWrite, "(*Root).Create", "(*Root).WriteFile")
 	add("os", FSRead|FSWrite|FSCreate, "(*Root).OpenFile")
 	add("os", FSCreate, "(*Root).Mkdir", "(*Root).MkdirAll", "(*Root).Link", "(*Root).Symlink")
 	add("os", FSRemove, "(*Root).Remove", "(*Root).RemoveAll")
-	add("os", FSRemove|FSCreate, "(*Root).Rename")
+	add("os", FSRemove|FSCreate|FSRename, "(*Root).Rename")
 	add("os", EnvRead, "Getenv", "LookupEnv", "Environ", "ExpandEnv", "UserHomeDir", "UserCacheDir", "UserConfigDir", "TempDir")
 	add("os", EnvWrite, "Setenv", "Unsetenv", "Clearenv")
 	add("os", ProcessExec, "StartProcess")
 	add("os", ProcessExit, "Exit")
 	add("log", ProcessExit, "Fatal", "Fatalln", "Fatalf", "(*Logger).Fatal", "(*Logger).Fatalln", "(*Logger).Fatalf")
-	add("os", 0, "(*File).Close")
+	add("os", ResourceRelease, "(*File).Close", "(*Root).Close")
 	add("os", 0, "(*Process).Kill", "(*Process).Signal", "(*Process).Wait", "Pipe")
 	add("path/filepath", FSRead, "Abs", "EvalSymlinks", "Glob")
 	add("io/ioutil", FSRead, "ReadFile", "ReadDir")
@@ -215,11 +240,38 @@ func buildSummaries() map[string]Set {
 	add("database/sql", DBExec, "(*DB).Begin", "(*DB).BeginTx", "(*Conn).BeginTx", "(*Tx).Commit", "(*Tx).Rollback", "(*DB).Prepare", "(*DB).PrepareContext", "(*Tx).Prepare", "(*Tx).PrepareContext", "(*Conn).PrepareContext")
 	add("database/sql", Unknown, "(*DB).Ping", "(*DB).PingContext", "(*DB).Conn")
 	add("reflect", 0, "(Value).Method", "(Value).MethodByName")
+	add("reflect", Unknown, "(Value).Call", "(Value).CallSlice")
 	// In-memory standard-library operations are summary boundaries, preventing
 	// their internal io.Writer plumbing from being mistaken for file writes.
 	add("fmt", 0, "Appendf", "Append", "Appendln")
 	add("go/types", 0, "ObjectString", "SelectionString", "Id", "NewContext")
 	add("bytes", 0, "(*Buffer).Write", "(*Buffer).WriteString", "(*Buffer).WriteByte", "(*Buffer).WriteRune", "(*Buffer).Read")
 	add("errors", 0, "New")
+	// Resource ownership is separate from filesystem mutation. These operations
+	// return owned handles when successful; this is not leak/lifetime analysis.
+	for _, key := range []string{
+		"os.Open", "os.Create", "os.CreateTemp", "os.OpenRoot", "os.OpenInRoot", "os.Pipe",
+		"os.(*Root).Open", "os.(*Root).OpenRoot", "os.(*Root).Create", "os.(*Root).OpenFile",
+		"io/ioutil.TempFile", "database/sql.Open", "database/sql.OpenDB", "database/sql.(*DB).Conn",
+	} {
+		m[key] |= ResourceAcquire
+	}
+	for key := range m {
+		if (strings.HasPrefix(key, "net.") || strings.HasPrefix(key, "crypto/tls.")) && m[key]&(NetConnect|NetListen) != 0 {
+			m[key] |= ResourceAcquire
+		}
+	}
+	add("database/sql", ResourceRelease, "(*DB).Close", "(*Conn).Close", "(*Stmt).Close", "(*Rows).Close")
+	for _, recv := range []string{"(*conn)", "(*TCPConn)", "(*UDPConn)", "(*IPConn)", "(*UnixConn)", "(*TCPListener)", "(*UnixListener)"} {
+		add("net", NetClose|ResourceRelease, recv+".Close")
+	}
+	// Half-close changes connection state but does not release the whole handle.
+	for _, recv := range []string{"(*TCPConn)", "(*UnixConn)"} {
+		add("net", NetClose, recv+".CloseRead", recv+".CloseWrite")
+	}
+	add("crypto/tls", NetClose|ResourceRelease|Unknown, "(*Conn).Close")
+	add("crypto/tls", NetClose|Unknown, "(*Conn).CloseWrite")
+	add("net/http", NetClose|ResourceRelease|Unknown, "(*Server).Close", "(*Server).Shutdown")
+	add("net/http", NetClose|Unknown, "(*Transport).CloseIdleConnections", "(*Client).CloseIdleConnections")
 	return m
 }

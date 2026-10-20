@@ -1,0 +1,10 @@
+ README.md                         | 264 +++++++++++++++++++++++---
+ cmd/reffector/integration_test.go |  19 +-
+ cmd/reffector/main.go             |  69 ++++++-
+ internal/analyzer/analyzer.go     | 354 ++++++++++++++++++++++++++++++----
+ internal/effects/effects.go       |  66 ++++++-
+ internal/output/output.go         |   7 +
+ man/man1/reffector.1              | 386 ++++++++++++++++++++++++--------------
+ skills/reffector/SKILL.md         | 212 +++++++++++----------
+ skills/reffector/embed.go         |   2 +-
+ 9 files changed, 1051 insertions(+), 328 deletions(-)

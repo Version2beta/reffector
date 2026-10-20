@@ -1,0 +1,34 @@
+# Phase 3 / Case B — Side-effect isolation
+
+This is an independent, read-only exploratory engineering evaluation, NOT a benchmark or vulnerability hunt. A justified no-change decision is useful. You are the execution worker; execute directly (do not delegate).
+
+Repository/cwd: /Users/rob/Development/reffector/experiments/restic
+Required pinned HEAD: dd09b6bd01af220b1d5d95c0d4d7d472e05e05c4
+Required analyzer package scope: ./internal/repository/... ./internal/backend/local/...
+Exact frozen current locally installed executable: /Users/rob/Development/reffector/experiments/phase3-engineering-20261020-nYFQEJ/bin/reffector
+Expected executable SHA256: ad9f0ac67b2d512880197e24e4b6be7077553497750380a4af7bc6c8c138ff97
+Reffector source base: 5553a1d13011bf638148661f6a23bf561c3eef5a, dirty Phase 1/2 source; this is not a clean-revision build. Inspect go version -m for actual build provenance.
+Required Phase 2 skill: /Users/rob/.agents/skills/reffector/SKILL.md (phase2-1, SHA256 ea99f629183bfafaf5764bc9eee86902f5e574a39a2a55ebdf41284146173297). Read it fully before analysis. It is the only advertised skill.
+Your writable artifact directory ONLY: /Users/rob/Development/reffector/experiments/phase3-engineering-20261020-nYFQEJ/B
+You may read /Users/rob/Development/reffector/experiments/phase3-engineering-20261020-nYFQEJ/preflight.json, but not other cases or prior reports.
+
+## Objective
+Find a meaningful location where computation, decisions, and consequential filesystem/backend operations are entangled. Assess whether separating them would improve reasoning, testability, or ownership without creating a misleading abstraction or unsafe time-of-check/time-of-use split. Propose the smallest change worth making, or reject the opportunity with evidence. Do not assume purity is always better.
+
+## Common evaluation contract
+1. Verify HEAD and a clean status before analysis; if dirty/wrong, report blocker, never reset/checkout/clean/overwrite. Confirm actual model/provider/reasoning/session identity via printf of PI_PROVIDER, PI_MODEL, PI_REASONING_LEVEL, PI_SESSION_ID, PI_SESSION_FILE (no broad environment dump). Confirm the skill, go version, binary hash/build info and actual -help. Record loaded context (default Pi + global AGENTS.md, explicit skill only; read,bash,write tools; no extensions/MCP or discovered context). Do not infer model identity solely from provider metadata; these identify the selected Pi model, not an independently attested backend model.
+2. Set GOPROXY=off GOSUMDB=off GOTOOLCHAIN=local GOFLAGS=-mod=readonly for EVERY Go/Reffector load. Dependencies are prewarmed. Use analyzer loading as preflight when appropriate; no dependency downloads, environment repair, module/workspace edits, running the analyzed app, or broad tests. If required scope cannot load, the run is INVALID; report errors, not zero effects or a silently narrower scope.
+3. Quickly survey effect groups and direct sites with SELECTIVE queries, then inspect source/callers/invariants/tests/failure paths. Use documented flags only; record exact commands, cwd, build settings, output limits, load status, selected-vs-dependency coverage, uncertainty, depth/edges/sites truncation. Persist raw analyzer outputs under your artifact directory; do not overwhelm context with whole-repository dumps. Multiple callers can share one direct site; categories do not establish correctness or justify consolidation. Search for reasons NOT to recommend a change.
+4. Prioritize strongest likely engineering payoff, not frequency. Reprioritize/repeat if time permits; preserve a candidate ledger in /Users/rob/Development/reffector/experiments/phase3-engineering-20261020-nYFQEJ/B/candidates.md after each meaningful lead (explored/rejected/unresolved with reasons). Do not stop after an arbitrary number of positive findings. No idling to meet a time limit.
+5. Five-minute wall-clock budget starts at process launch: read /Users/rob/Development/reffector/experiments/phase3-engineering-20261020-nYFQEJ/B/timing.json for actual start, investigation deadline (+240 seconds), report deadline (+300 seconds). Check clock between meaningful steps. Reserve last 60 seconds for reporting and stop new investigation at investigation deadline. The supervisor enforces a 300-second cap. Save notes early so partial runs remain usable.
+6. Effects are NOT defects; proposals are NOT verified improvements; test ideas are NOT coverage. Mark important claims [R] directly in analyzer output, [F] focused source follow-up prompted by output, or [I] independently discovered in source. Distinguish observation, inference, uncertainty and what might falsify the proposal.
+7. Third-party trees, Reffector source and skills are READ-ONLY. Only write your own new artifacts under /Users/rob/Development/reffector/experiments/phase3-engineering-20261020-nYFQEJ/B. No commits, pushes, remote changes, worktree mutations, installs, repairs, network dependency loads or source edits. Never read earlier Reffector benchmark reports, known example defects, other agents' findings or other case artifacts. All investigation source inspection must stay within this repository, its pinned history, relevant dependencies and required tool/skill provenance. Do not inspect parent reports/HANDOFF files. Tool write access is for your artifact notes/report ONLY.
+
+## Short final Markdown report
+Write /Users/rob/Development/reffector/experiments/phase3-engineering-20261020-nYFQEJ/B/report.md before the deadline, then give its concise outcome as final response. Include:
+- Case, exact repository SHA/scope, binary revision/hash/dirty provenance and commands, skill used, actual Pi model/provider/reasoning/context, elapsed time and completion status.
+- Prioritized candidates (including rejections), objective, exact API/file:line/site IDs and caller relationships; shared vs independent paths; uncertainty, coverage, graph-depth and truncation limitations.
+- Strongest supported recommendation or justified no-change outcome; concrete before/after responsibilities and independent correctness obligations where relevant; tradeoffs and plausible falsifiers.
+- Existing tests vs proposed validation; no unexecuted-test success claims.
+- Evidence provenance ledger [R]/[F]/[I]; source files inspected, tool calls (transcript can provide exact commands/counts), tokens/cost only if reliably available, unexplored areas.
+Keep the report focused: roughly 800–1300 words maximum, fewer when evidence is narrow. Record the binary command lines literally, not just flag summaries. Preserve historical diff for E. Do not implement anything.

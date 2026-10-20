@@ -1,0 +1,44 @@
+Usage: reffector [flags] [packages]
+       reffector skill install
+Report statically reachable side effects; local directories recurse (default .)
+Install the bundled Pi skill with: reffector skill install
+  -all
+    	include full source inventory, independently of effect-view filters
+  -api string
+    	select an exact Go API/method identity (effect view)
+  -details
+    	write compatibility function/witness JSON (implies -view functions -json)
+  -direct
+    	direct function effects; effect view restricts origins to selected roots
+  -effect string
+    	filter effect identifiers by substring (e.g. fs.rename, resource.release); see README for vocabulary
+  -exact
+    	select local directory packages without subpackages
+  -function string
+    	select source-root functions by substring; prefix = for one exact function
+  -json
+    	write structured JSON for the selected view
+  -max-depth int
+    	maximum reverse source-call depth (or compatibility witness depth); zero shows origins (default 6)
+  -max-edges int
+    	maximum unique reverse edges (effect view) (default 1000)
+  -max-paths int
+    	compatibility -details witness budget (default 1000)
+  -max-sites int
+    	maximum source sites (default 1000)
+  -operation string
+    	filter site API identities by substring (effect view or -details)
+  -package string
+    	select source-root packages by substring (summaries in function view)
+  -reason string
+    	filter uncertainty reasons by substring, e.g. interface_dispatch (effect view)
+  -site string
+    	select one canonical direct site ID (effect view)
+  -stats
+    	write coverage counts as JSON to stderr
+  -tests
+    	include functions defined in test files
+  -unresolved
+    	switch from recognized operations to unresolved-only leads (effect view)
+  -view string
+    	output view: effects (groups/sites/reverse callers) or functions (compatible summaries) (default "effects")

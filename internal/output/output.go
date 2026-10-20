@@ -8,6 +8,13 @@ import (
 	"github.com/Version2beta/reffector/internal/analyzer"
 )
 
+// WriteReport emits the separate detailed schema, never changes Record.
+func WriteReport(w io.Writer, report analyzer.Report) error {
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(report)
+}
+
 func Write(w io.Writer, records []analyzer.Record, asJSON bool) error {
 	if asJSON {
 		if records == nil {

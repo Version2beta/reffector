@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "groups": [],
+  "sites": [
+    {
+      "id": "site:339ca75fd9589c7c05eec024452fa788ee2f1c88e798e5b88f94bac43ed1b7ef",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "loadRaw",
+      "kind": "call",
+      "api": "github.com/restic/restic/internal/backend.(Backend).Load",
+      "apis": [
+        "github.com/restic/restic/internal/backend.(Backend).Load"
+      ],
+      "operations": [
+        {
+          "api": "github.com/restic/restic/internal/backend.(Backend).Load",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/raw.go",
+        "line": 46,
+        "column": 15
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    }
+  ],
+  "unresolved_sites": [
+    "site:339ca75fd9589c7c05eec024452fa788ee2f1c88e798e5b88f94bac43ed1b7ef"
+  ],
+  "reverse": [
+    {
+      "site": "site:339ca75fd9589c7c05eec024452fa788ee2f1c88e798e5b88f94bac43ed1b7ef",
+      "origins": [
+        "node:c50983dfc0586156d0722145e7c72d8a40806272071ea1f94c4e9c6ab3d933b8"
+      ],
+      "nodes": [
+        {
+          "id": "node:c50983dfc0586156d0722145e7c72d8a40806272071ea1f94c4e9c6ab3d933b8",
+          "depth": 0
+        },
+        {
+          "id": "node:f71de81e7379d26658c4d300b3da8bebf1a730f5dcd2c79b086bc88f796bcece",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:69657350653b58eaebec22a0a48329d7478be1390b81252db85822da8aa086d1",
+        "link:b703f13a952b12fc7b17a0013064d07dedf78c23c6249ab476b3030ea264233b"
+      ],
+      "revisit": true,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node:c50983dfc0586156d0722145e7c72d8a40806272071ea1f94c4e9c6ab3d933b8",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "loadRaw",
+      "variant": "github.com/restic/restic/internal/repository|github.com/restic/restic/internal/repository.loadRaw|func(ctx context[context].Context, be github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].Backend, h github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].Handle) (buf []byte, err error)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": false
+    },
+    {
+      "id": "node:f71de81e7379d26658c4d300b3da8bebf1a730f5dcd2c79b086bc88f796bcece",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*Repository).LoadRaw",
+      "variant": "github.com/restic/restic/internal/repository|(*github.com/restic/restic/internal/repository.Repository).LoadRaw|func(ctx context[context].Context, t github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].FileType, id github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].ID) (buf []byte, err error)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    }
+  ],
+  "edges": [
+    {
+      "id": "link:69657350653b58eaebec22a0a48329d7478be1390b81252db85822da8aa086d1",
+      "caller": "node:f71de81e7379d26658c4d300b3da8bebf1a730f5dcd2c79b086bc88f796bcece",
+      "callee": "node:c50983dfc0586156d0722145e7c72d8a40806272071ea1f94c4e9c6ab3d933b8",
+      "source": {
+        "id": "edge:52f153239f558804ed4c0db35008328d29b455f36d6a8970fb3439e7f97450a3",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*Repository).LoadRaw"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "loadRaw"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/raw.go",
+          "line": 30,
+          "column": 21
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:b703f13a952b12fc7b17a0013064d07dedf78c23c6249ab476b3030ea264233b",
+      "caller": "node:f71de81e7379d26658c4d300b3da8bebf1a730f5dcd2c79b086bc88f796bcece",
+      "callee": "node:c50983dfc0586156d0722145e7c72d8a40806272071ea1f94c4e9c6ab3d933b8",
+      "source": {
+        "id": "edge:d88a1c8c824810a60cee9cd2051bb1e7cc3916e08abf56583e5c0e2aa389a963",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*Repository).LoadRaw"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "loadRaw"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/raw.go",
+          "line": 19,
+          "column": 20
+        }
+      },
+      "synthetic": false
+    }
+  ],
+  "coverage": {
+    "packages_selected": 6,
+    "source_functions": 446,
+    "emitted": 1,
+    "omitted": 445,
+    "direct": 15,
+    "inherited": 40,
+    "uncertain": 348,
+    "effectful": 50,
+    "unresolved_only": 300,
+    "no_effects_no_uncertainty": 96,
+    "packages": [
+      "github.com/restic/restic/internal/backend/local",
+      "github.com/restic/restic/internal/repository",
+      "github.com/restic/restic/internal/repository/crypto",
+      "github.com/restic/restic/internal/repository/hashing",
+      "github.com/restic/restic/internal/repository/index",
+      "github.com/restic/restic/internal/repository/pack"
+    ],
+    "operation_sites_identified": 51,
+    "selected_operation_sites": 38,
+    "dependency_operation_sites": 13,
+    "unresolved_sites_identified": 1021,
+    "sites_matching_filters": 1,
+    "sites_emitted": 1
+  },
+  "truncated": {
+    "sites": false,
+    "edges": false,
+    "depth": false
+  }
+}

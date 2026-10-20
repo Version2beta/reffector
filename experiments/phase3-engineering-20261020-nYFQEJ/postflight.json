@@ -1,0 +1,262 @@
+{
+  "finished_utc": "2026-10-20T17:34:06.204262+00:00",
+  "cases": [
+    {
+      "case": "A",
+      "elapsed_seconds": 243.861,
+      "exit_status": 0,
+      "timed_out": false,
+      "report_present": true,
+      "assistant_stop_reasons": [
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "stop"
+      ],
+      "settled_events": [
+        {
+          "type": "agent_settled",
+          "aborted": false
+        }
+      ],
+      "malformed_jsonl_records": 0,
+      "actual_message_models": [
+        [
+          "openai-codex",
+          "gpt-6.1-sol"
+        ]
+      ],
+      "tool_calls": 38,
+      "provider_reported_total_tokens": 947039,
+      "catalog_cost_total_not_billing_evidence": 0.3329132
+    },
+    {
+      "case": "B",
+      "elapsed_seconds": 257.299,
+      "exit_status": 0,
+      "timed_out": false,
+      "report_present": true,
+      "assistant_stop_reasons": [
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "stop"
+      ],
+      "settled_events": [
+        {
+          "type": "agent_settled",
+          "aborted": false
+        }
+      ],
+      "malformed_jsonl_records": 0,
+      "actual_message_models": [
+        [
+          "openai-codex",
+          "gpt-6.1-sol"
+        ]
+      ],
+      "tool_calls": 41,
+      "provider_reported_total_tokens": 1047366,
+      "catalog_cost_total_not_billing_evidence": 0.3441144
+    },
+    {
+      "case": "C",
+      "elapsed_seconds": 256.621,
+      "exit_status": 0,
+      "timed_out": false,
+      "report_present": true,
+      "assistant_stop_reasons": [
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "stop"
+      ],
+      "settled_events": [
+        {
+          "type": "agent_settled",
+          "aborted": false
+        }
+      ],
+      "malformed_jsonl_records": 0,
+      "actual_message_models": [
+        [
+          "openai-codex",
+          "gpt-6.1-sol"
+        ]
+      ],
+      "tool_calls": 48,
+      "provider_reported_total_tokens": 1235733,
+      "catalog_cost_total_not_billing_evidence": 0.386706
+    },
+    {
+      "case": "D",
+      "elapsed_seconds": 233.498,
+      "exit_status": 0,
+      "timed_out": false,
+      "report_present": true,
+      "assistant_stop_reasons": [
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "stop"
+      ],
+      "settled_events": [
+        {
+          "type": "agent_settled",
+          "aborted": false
+        }
+      ],
+      "malformed_jsonl_records": 0,
+      "actual_message_models": [
+        [
+          "openai-codex",
+          "gpt-6.1-sol"
+        ]
+      ],
+      "tool_calls": 35,
+      "provider_reported_total_tokens": 639062,
+      "catalog_cost_total_not_billing_evidence": 0.2655672
+    },
+    {
+      "case": "E",
+      "elapsed_seconds": 222.012,
+      "exit_status": 0,
+      "timed_out": false,
+      "report_present": true,
+      "assistant_stop_reasons": [
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "toolUse",
+        "stop"
+      ],
+      "settled_events": [
+        {
+          "type": "agent_settled",
+          "aborted": false
+        }
+      ],
+      "malformed_jsonl_records": 0,
+      "actual_message_models": [
+        [
+          "openai-codex",
+          "gpt-6.1-sol"
+        ]
+      ],
+      "tool_calls": 35,
+      "provider_reported_total_tokens": 616526,
+      "catalog_cost_total_not_billing_evidence": 0.2630712
+    }
+  ],
+  "repositories": {
+    "caddy": {
+      "head": "0e392c89baa50f558bc24440482c5d57fff4499f",
+      "status": ""
+    },
+    "restic": {
+      "head": "dd09b6bd01af220b1d5d95c0d4d7d472e05e05c4",
+      "status": ""
+    }
+  },
+  "binary_sha256": "ad9f0ac67b2d512880197e24e4b6be7077553497750380a4af7bc6c8c138ff97",
+  "installed_binary_sha256": "ad9f0ac67b2d512880197e24e4b6be7077553497750380a4af7bc6c8c138ff97",
+  "skill_sha256": "ea99f629183bfafaf5764bc9eee86902f5e574a39a2a55ebdf41284146173297",
+  "source_diff_sha256": "3b2651ed670c08f3f2e9e7586fb9d07553a8275a9b0e213ec9ba56d81fdbaf16",
+  "source_fingerprints_unchanged": true
+}

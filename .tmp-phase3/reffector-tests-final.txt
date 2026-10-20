@@ -1,0 +1,6 @@
+ok  	github.com/Version2beta/reffector/cmd/reffector	26.391s
+ok  	github.com/Version2beta/reffector/internal/analyzer	(cached)
+?   	github.com/Version2beta/reffector/internal/effects	[no test files]
+ok  	github.com/Version2beta/reffector/internal/output	(cached)
+ok  	github.com/Version2beta/reffector/internal/skillinstall	(cached)
+?   	github.com/Version2beta/reffector/skills/reffector	[no test files]

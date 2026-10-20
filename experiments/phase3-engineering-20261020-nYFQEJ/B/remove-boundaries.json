@@ -1,0 +1,1449 @@
+{
+  "schema_version": 1,
+  "groups": [],
+  "sites": [
+    {
+      "id": "site:f8779e547ac031520e9dfd9307392bfd9e60c3e8d57846f29e6bf340bad554b9",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*Repository).removeUnpacked",
+      "kind": "call",
+      "api": "github.com/restic/restic/internal/backend.(Backend).Remove",
+      "apis": [
+        "github.com/restic/restic/internal/backend.(Backend).Remove"
+      ],
+      "operations": [
+        {
+          "api": "github.com/restic/restic/internal/backend.(Backend).Remove",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/repository.go",
+        "line": 568,
+        "column": 20
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:de3b727996922844502c55aae910eb8dae626e24b26d80e992564d814a9d3be7",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*lockHandle).adoptReplacementLock",
+      "kind": "call",
+      "api": "github.com/restic/restic/internal/restic.(RemoverUnpacked[FileType]).RemoveUnpacked",
+      "apis": [
+        "github.com/restic/restic/internal/restic.(RemoverUnpacked[FileType]).RemoveUnpacked"
+      ],
+      "operations": [
+        {
+          "api": "github.com/restic/restic/internal/restic.(RemoverUnpacked[FileType]).RemoveUnpacked",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock_file.go",
+        "line": 321,
+        "column": 30
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:242d5d0920ddb3e7bc482d1c73970394e35e809c1fee26baa0f009edb70b50f7",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*lockHandle).refreshStaleLock",
+      "kind": "call",
+      "api": "github.com/restic/restic/internal/restic.(RemoverUnpacked[FileType]).RemoveUnpacked",
+      "apis": [
+        "github.com/restic/restic/internal/restic.(RemoverUnpacked[FileType]).RemoveUnpacked"
+      ],
+      "operations": [
+        {
+          "api": "github.com/restic/restic/internal/restic.(RemoverUnpacked[FileType]).RemoveUnpacked",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock_file.go",
+        "line": 351,
+        "column": 28
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:d3e9b7913ff99eadd143caa47ed4f6683eb0692cbf8c3ffb30a4c6f6c574da67",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*lockHandle).refreshStaleLock",
+      "kind": "call",
+      "api": "github.com/restic/restic/internal/restic.(RemoverUnpacked[FileType]).RemoveUnpacked",
+      "apis": [
+        "github.com/restic/restic/internal/restic.(RemoverUnpacked[FileType]).RemoveUnpacked"
+      ],
+      "operations": [
+        {
+          "api": "github.com/restic/restic/internal/restic.(RemoverUnpacked[FileType]).RemoveUnpacked",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock_file.go",
+        "line": 357,
+        "column": 28
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:faa70d02948eda538d02b107227f1e73c622c59894f340c875a9bdc710cb1d30",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*lockHandle).unlock",
+      "kind": "call",
+      "api": "github.com/restic/restic/internal/restic.(RemoverUnpacked[FileType]).RemoveUnpacked",
+      "apis": [
+        "github.com/restic/restic/internal/restic.(RemoverUnpacked[FileType]).RemoveUnpacked"
+      ],
+      "operations": [
+        {
+          "api": "github.com/restic/restic/internal/restic.(RemoverUnpacked[FileType]).RemoveUnpacked",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock_file.go",
+        "line": 241,
+        "column": 30
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:a6270db2b14febe871eb5dfcbbc79ca96a3380d5ca1c5de199e03c99dd423b4c",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "RemoveKey",
+      "kind": "call",
+      "api": "github.com/restic/restic/internal/backend.(Backend).Remove",
+      "apis": [
+        "github.com/restic/restic/internal/backend.(Backend).Remove"
+      ],
+      "operations": [
+        {
+          "api": "github.com/restic/restic/internal/backend.(Backend).Remove",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/key.go",
+        "line": 306,
+        "column": 23
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:35ced9a077653760160b1ceba6e9721592622f6f9e8e285f981d8fa4d08238ee",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "UpgradeRepo",
+      "kind": "call",
+      "api": "github.com/restic/restic/internal/backend.(Backend).Remove",
+      "apis": [
+        "github.com/restic/restic/internal/backend.(Backend).Remove"
+      ],
+      "operations": [
+        {
+          "api": "github.com/restic/restic/internal/backend.(Backend).Remove",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/upgrade_repo.go",
+        "line": 91,
+        "column": 21
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:5adeb39fb9b336accb3cf57667cbfd39ebc59261f0cb615e012ee039cc7f32fc",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "upgradeRepository",
+      "kind": "call",
+      "api": "github.com/restic/restic/internal/backend.(Backend).Remove",
+      "apis": [
+        "github.com/restic/restic/internal/backend.(Backend).Remove"
+      ],
+      "operations": [
+        {
+          "api": "github.com/restic/restic/internal/backend.(Backend).Remove",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/upgrade_repo.go",
+        "line": 38,
+        "column": 24
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:d91405f30bb4580a9befa0e05e919d2daec3031331ea5a0abf3f3b4f113dc6b4",
+      "package": "github.com/restic/restic/internal/restic",
+      "function": "ParallelRemove",
+      "kind": "call",
+      "api": "github.com/restic/restic/internal/restic.(RemoverUnpacked[FileType]).Connections",
+      "apis": [
+        "github.com/restic/restic/internal/restic.(RemoverUnpacked[FileType]).Connections"
+      ],
+      "operations": [
+        {
+          "api": "github.com/restic/restic/internal/restic.(RemoverUnpacked[FileType]).Connections",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/restic/parallel.go",
+        "line": 58,
+        "column": 34
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    }
+  ],
+  "unresolved_sites": [
+    "site:f8779e547ac031520e9dfd9307392bfd9e60c3e8d57846f29e6bf340bad554b9",
+    "site:de3b727996922844502c55aae910eb8dae626e24b26d80e992564d814a9d3be7",
+    "site:242d5d0920ddb3e7bc482d1c73970394e35e809c1fee26baa0f009edb70b50f7",
+    "site:d3e9b7913ff99eadd143caa47ed4f6683eb0692cbf8c3ffb30a4c6f6c574da67",
+    "site:faa70d02948eda538d02b107227f1e73c622c59894f340c875a9bdc710cb1d30",
+    "site:a6270db2b14febe871eb5dfcbbc79ca96a3380d5ca1c5de199e03c99dd423b4c",
+    "site:35ced9a077653760160b1ceba6e9721592622f6f9e8e285f981d8fa4d08238ee",
+    "site:5adeb39fb9b336accb3cf57667cbfd39ebc59261f0cb615e012ee039cc7f32fc",
+    "site:d91405f30bb4580a9befa0e05e919d2daec3031331ea5a0abf3f3b4f113dc6b4"
+  ],
+  "reverse": [
+    {
+      "site": "site:f8779e547ac031520e9dfd9307392bfd9e60c3e8d57846f29e6bf340bad554b9",
+      "origins": [
+        "node:c85a36239771ef54919647d5b59711a9dd724ea2dd6339c045f380fcc14c3a14"
+      ],
+      "nodes": [
+        {
+          "id": "node:c85a36239771ef54919647d5b59711a9dd724ea2dd6339c045f380fcc14c3a14",
+          "depth": 0
+        },
+        {
+          "id": "node:659114f910d9a429212eac060a9c055cac7435dee7f2c108fc8b8d5d0aeb232b",
+          "depth": 1
+        },
+        {
+          "id": "node:6ece340b2be25e98a384284d55c1ee5fa652b9404a1e10e31f5c91463f674bb0",
+          "depth": 1
+        },
+        {
+          "id": "node:0a048fd9120f16cd9381f0be9811530af8c3474099be813ae55e237730980837",
+          "depth": 2
+        },
+        {
+          "id": "node:3cfb40313de496e582e2958708340968998dd718e2077e872a6ed00d7e7fc79a",
+          "depth": 2
+        }
+      ],
+      "edges": [
+        "link:2cade41dd398796bbbdab6e2b9f6c7b00e0ea29c37561177369bfd9c917cbce3",
+        "link:682a9f1f62a3d1070f70b9a93f916b9a2da2fc2303b15c0483f775f528a6f7b0",
+        "link:b0729f26799782e2561b3ae2e9f689c3d7510e7c7e481cf36dd6337080c3a897",
+        "link:e19181f36eb398dffd72f9007dd0c547a00b2ce87b8477802509d436e9a5d675"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:de3b727996922844502c55aae910eb8dae626e24b26d80e992564d814a9d3be7",
+      "origins": [
+        "node:d3eccd4b20aa6b478608d0771ffd5b50eb4eadb90c011ab1fa3fabf48d50556e"
+      ],
+      "nodes": [
+        {
+          "id": "node:d3eccd4b20aa6b478608d0771ffd5b50eb4eadb90c011ab1fa3fabf48d50556e",
+          "depth": 0
+        },
+        {
+          "id": "node:b311325e6ac6e61f2ed6b3cb997afd7ce662bf7fdcf7632a0cbd8e8f3b0dc2ef",
+          "depth": 1
+        },
+        {
+          "id": "node:f13fda2ecd1e8a203856e39808272f8731d18b58cb5f6aa6e2970628fd52e257",
+          "depth": 1
+        },
+        {
+          "id": "node:254724e136aa69ab836120c9d5020d649c197fde510dbd9d73b3def732dc9a49",
+          "depth": 2
+        },
+        {
+          "id": "node:ce3d1a96d01580d518a5b7b8673036277e790eb18f77b73846f340d3dd72d467",
+          "depth": 2
+        }
+      ],
+      "edges": [
+        "link:3343de0696d0f623e2bdfdf49309e56cd00c05317033f1e46a31e6a1be987733",
+        "link:3bdf27fa6f8abf8ad427987226a12df6fa415e151d7d7605e7a60598bb1fdab7",
+        "link:4daab9ca94fe31727ad2401abc8b5daee3adfc85f76892201e9c5dbc02a1ffeb",
+        "link:896e398df84c20909509fe9347a53598bfed5cd8ee98125d759ea2ad43c87fb1",
+        "link:af0e5168d47d7ab509843c6dad2d3f4f6c781ec1dc8be3e75e041f0d348b151f"
+      ],
+      "revisit": true,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:242d5d0920ddb3e7bc482d1c73970394e35e809c1fee26baa0f009edb70b50f7",
+      "origins": [
+        "node:b311325e6ac6e61f2ed6b3cb997afd7ce662bf7fdcf7632a0cbd8e8f3b0dc2ef"
+      ],
+      "nodes": [
+        {
+          "id": "node:b311325e6ac6e61f2ed6b3cb997afd7ce662bf7fdcf7632a0cbd8e8f3b0dc2ef",
+          "depth": 0
+        },
+        {
+          "id": "node:ce3d1a96d01580d518a5b7b8673036277e790eb18f77b73846f340d3dd72d467",
+          "depth": 1
+        },
+        {
+          "id": "node:254724e136aa69ab836120c9d5020d649c197fde510dbd9d73b3def732dc9a49",
+          "depth": 2
+        }
+      ],
+      "edges": [
+        "link:3bdf27fa6f8abf8ad427987226a12df6fa415e151d7d7605e7a60598bb1fdab7",
+        "link:896e398df84c20909509fe9347a53598bfed5cd8ee98125d759ea2ad43c87fb1"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:d3e9b7913ff99eadd143caa47ed4f6683eb0692cbf8c3ffb30a4c6f6c574da67",
+      "origins": [
+        "node:b311325e6ac6e61f2ed6b3cb997afd7ce662bf7fdcf7632a0cbd8e8f3b0dc2ef"
+      ],
+      "nodes": [
+        {
+          "id": "node:b311325e6ac6e61f2ed6b3cb997afd7ce662bf7fdcf7632a0cbd8e8f3b0dc2ef",
+          "depth": 0
+        },
+        {
+          "id": "node:ce3d1a96d01580d518a5b7b8673036277e790eb18f77b73846f340d3dd72d467",
+          "depth": 1
+        },
+        {
+          "id": "node:254724e136aa69ab836120c9d5020d649c197fde510dbd9d73b3def732dc9a49",
+          "depth": 2
+        }
+      ],
+      "edges": [
+        "link:3bdf27fa6f8abf8ad427987226a12df6fa415e151d7d7605e7a60598bb1fdab7",
+        "link:896e398df84c20909509fe9347a53598bfed5cd8ee98125d759ea2ad43c87fb1"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:faa70d02948eda538d02b107227f1e73c622c59894f340c875a9bdc710cb1d30",
+      "origins": [
+        "node:899995cbcc5e66c160731ef19ab429b2efd27f9b78f08e178fece622e0ad7fa7"
+      ],
+      "nodes": [
+        {
+          "id": "node:899995cbcc5e66c160731ef19ab429b2efd27f9b78f08e178fece622e0ad7fa7",
+          "depth": 0
+        },
+        {
+          "id": "node:cabeb480e9eff35eed6405527ee1eaba24a16803d4dda06243cd7a58e36235d7",
+          "depth": 1
+        },
+        {
+          "id": "node:da7518f276d0cabefab78897928b0a1adad99a803dd3c940d803bf90f4137a70",
+          "depth": 1
+        },
+        {
+          "id": "node:254724e136aa69ab836120c9d5020d649c197fde510dbd9d73b3def732dc9a49",
+          "depth": 2
+        },
+        {
+          "id": "node:db7b88e5a66c502eac30fe01f9cdd532a98bf6775e61e1a32824725ce19095e4",
+          "depth": 2
+        }
+      ],
+      "edges": [
+        "link:512f85ba6b56be7a27bd37a11055f25bad841a2b8ef2a5984bd71ca3048824c7",
+        "link:594d8bd8a0ea493c304f58cb5263cad86cc173ee3f41926003018557fff4f2c9",
+        "link:5d39e9971bef864da7cdee2c59865516c903b5d09c643c2c13f311676dc85bca",
+        "link:9bd0a6d75498cfff635b6d9c5afacabf9803151f8a27eda8b2ae779575754a86",
+        "link:b8c8af0109e7841fab0904a53b50511510b11169606a024c85220776786310e1",
+        "link:deb04d2f01cf3ca9291fffa73f8ced7b28a2b329ac0e7c927b093798f9d2f189"
+      ],
+      "revisit": true,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:a6270db2b14febe871eb5dfcbbc79ca96a3380d5ca1c5de199e03c99dd423b4c",
+      "origins": [
+        "node:8a99e5ff5c4f7ea12473fdb3d351f7c9995078d260aa104c5e6930d612f2ce17"
+      ],
+      "nodes": [
+        {
+          "id": "node:8a99e5ff5c4f7ea12473fdb3d351f7c9995078d260aa104c5e6930d612f2ce17",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:35ced9a077653760160b1ceba6e9721592622f6f9e8e285f981d8fa4d08238ee",
+      "origins": [
+        "node:adacd4f927b058979fbb5067456173cb269df878a0709a5354f5cbd6dbf6ce13"
+      ],
+      "nodes": [
+        {
+          "id": "node:adacd4f927b058979fbb5067456173cb269df878a0709a5354f5cbd6dbf6ce13",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:5adeb39fb9b336accb3cf57667cbfd39ebc59261f0cb615e012ee039cc7f32fc",
+      "origins": [
+        "node:224717581ee5bb5823772a24b52801667c7e5ef4eb5ee10f7a145e1cff8dc0f9"
+      ],
+      "nodes": [
+        {
+          "id": "node:224717581ee5bb5823772a24b52801667c7e5ef4eb5ee10f7a145e1cff8dc0f9",
+          "depth": 0
+        },
+        {
+          "id": "node:adacd4f927b058979fbb5067456173cb269df878a0709a5354f5cbd6dbf6ce13",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:896542c1905194910ae397099db762f9f52c603bd4f25d692df5a849baf74246"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:d91405f30bb4580a9befa0e05e919d2daec3031331ea5a0abf3f3b4f113dc6b4",
+      "origins": [
+        "node:2606b35bd56969d631d12a94cc8249a0828b830cda9c9797ab3e4da4d6d3f69e"
+      ],
+      "nodes": [
+        {
+          "id": "node:2606b35bd56969d631d12a94cc8249a0828b830cda9c9797ab3e4da4d6d3f69e",
+          "depth": 0
+        },
+        {
+          "id": "node:16b4acb6e806d25790a665309de21193e03ed9758ec81ef309c7aebe326c4ddb",
+          "depth": 1
+        },
+        {
+          "id": "node:57658c83c430b4c50d05391ec986a165fef34933f8b85b4f5de40fe21487bd97",
+          "depth": 1
+        },
+        {
+          "id": "node:7b93e9c5010c2b99e6582faad94af26cc3616da349d83f96687f16e72898a7c4",
+          "depth": 1
+        },
+        {
+          "id": "node:020c56a88c1ff467938e4830ea6dce2af3351acf5ede20de4d38bc0419d12d09",
+          "depth": 2
+        },
+        {
+          "id": "node:ef648ef2939e5b02cb3da5bcf131639a186a53ed3e3d8c68ef2841bac601b998",
+          "depth": 2
+        }
+      ],
+      "edges": [
+        "link:3fd69a1c0ca720c2faa8adec6b2eee0be7385bf6f09baaa7c97b037c1ef80364",
+        "link:5f73fe8acc1d7fce51254d13398e0ec423cf2b52f60a75296ce5e705a72dccbf",
+        "link:62d4605033d60b1df14ef1e868c836f3e750bcbc185ac7422b4f2548b17f06b7",
+        "link:871b66b8f9a04066a08e5c1573fd6e8637168cd9122095baaf4432bf4b395442",
+        "link:a564b5d79a45fd8c5db2e1d46af0ab92a9d848a14e6ccc1962abc03a4a0cb01f",
+        "link:a7d5b59b9664fd0ce2eee6e25f30469803dfd69bdc8b2460f041fbc258cf6e9a",
+        "link:a843d4ad3cc11f26cdd6f860cb6adc23985e97232b752367a9f1081186499b26",
+        "link:b77c195c0123d24f6dc6dcdab194afeaefdb988e96110c0f96e8429eb4035569",
+        "link:cf9445707e93bb9713d210852161c94cacba962777131601d4bbc2ed37d73417"
+      ],
+      "revisit": true,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node:020c56a88c1ff467938e4830ea6dce2af3351acf5ede20de4d38bc0419d12d09",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "rewriteIndexFiles",
+      "variant": "github.com/restic/restic/internal/repository|github.com/restic/restic/internal/repository.rewriteIndexFiles|func(ctx context[context].Context, repo *github.com/restic/restic/internal/repository[github.com/restic/restic/internal/repository].Repository, removePacks github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].IDSet, oldIndexes github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].IDSet, extraObsolete github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].IDs, printer github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].Printer) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:0a048fd9120f16cd9381f0be9811530af8c3474099be813ae55e237730980837",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "RemoveAllLocks$1",
+      "variant": "github.com/restic/restic/internal/repository|parent=github.com/restic/restic/internal/repository|github.com/restic/restic/internal/repository.RemoveAllLocks|func(ctx context[context].Context, repo *github.com/restic/restic/internal/repository[github.com/restic/restic/internal/repository].Repository) (uint, error)||github.com/restic/restic/internal/repository.RemoveAllLocks$1|func(ctx context[context].Context, id github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].ID, _ int64) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:16b4acb6e806d25790a665309de21193e03ed9758ec81ef309c7aebe326c4ddb",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "deleteFiles",
+      "variant": "github.com/restic/restic/internal/repository|github.com/restic/restic/internal/repository.deleteFiles|func(ctx context[context].Context, ignoreError bool, repo github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].RemoverUnpacked[github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].FileType], fileList github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].IDSet, fileType github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].FileType, printer github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].Printer) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:224717581ee5bb5823772a24b52801667c7e5ef4eb5ee10f7a145e1cff8dc0f9",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "upgradeRepository",
+      "variant": "github.com/restic/restic/internal/repository|github.com/restic/restic/internal/repository.upgradeRepository|func(ctx context[context].Context, repo *github.com/restic/restic/internal/repository[github.com/restic/restic/internal/repository].Repository) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:254724e136aa69ab836120c9d5020d649c197fde510dbd9d73b3def732dc9a49",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*locker).refreshLocks",
+      "variant": "github.com/restic/restic/internal/repository|(*github.com/restic/restic/internal/repository.locker).refreshLocks|func(ctx context[context].Context, backend github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].Backend, unlocker *github.com/restic/restic/internal/repository[github.com/restic/restic/internal/repository].unlocker, refreshed chan\u003c- struct{}, forceRefresh \u003c-chan github.com/restic/restic/internal/repository[github.com/restic/restic/internal/repository].refreshLockRequest, logger func(format string, args ...any))|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:2606b35bd56969d631d12a94cc8249a0828b830cda9c9797ab3e4da4d6d3f69e",
+      "package": "github.com/restic/restic/internal/restic",
+      "function": "ParallelRemove",
+      "variant": "github.com/restic/restic/internal/restic|github.com/restic/restic/internal/restic.ParallelRemove[github.com/restic/restic/internal/restic.FileType]|func(ctx context[context].Context, repo github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].RemoverUnpacked[github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].FileType], fileList github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].IDSet, fileType github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].FileType, report func(id github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].ID, err error) error, bar github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].Counter) error|instance of ParallelRemove|github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].FileType",
+      "selected": false,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:3cfb40313de496e582e2958708340968998dd718e2077e872a6ed00d7e7fc79a",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "RemoveStaleLocks$1",
+      "variant": "github.com/restic/restic/internal/repository|parent=github.com/restic/restic/internal/repository|github.com/restic/restic/internal/repository.RemoveStaleLocks|func(ctx context[context].Context, repo *github.com/restic/restic/internal/repository[github.com/restic/restic/internal/repository].Repository) (uint, error)||github.com/restic/restic/internal/repository.RemoveStaleLocks$1|func(id github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].ID, lock *github.com/restic/restic/internal/repository[github.com/restic/restic/internal/repository].lockHandle, err error) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": false,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:57658c83c430b4c50d05391ec986a165fef34933f8b85b4f5de40fe21487bd97",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "RepairPacks",
+      "variant": "github.com/restic/restic/internal/repository|github.com/restic/restic/internal/repository.RepairPacks|func(ctx context[context].Context, repo *github.com/restic/restic/internal/repository[github.com/restic/restic/internal/repository].Repository, ids github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].IDSet, printer github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].Printer) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:659114f910d9a429212eac060a9c055cac7435dee7f2c108fc8b8d5d0aeb232b",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*internalRepository).RemoveUnpacked",
+      "variant": "github.com/restic/restic/internal/repository|(*github.com/restic/restic/internal/repository.internalRepository).RemoveUnpacked|func(ctx context[context].Context, t github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].FileType, id github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].ID) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": false,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:6ece340b2be25e98a384284d55c1ee5fa652b9404a1e10e31f5c91463f674bb0",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*Repository).RemoveUnpacked",
+      "variant": "github.com/restic/restic/internal/repository|(*github.com/restic/restic/internal/repository.Repository).RemoveUnpacked|func(ctx context[context].Context, t github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].WriteableFileType, id github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].ID) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": false,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:7b93e9c5010c2b99e6582faad94af26cc3616da349d83f96687f16e72898a7c4",
+      "package": "github.com/restic/restic/internal/repository/index",
+      "function": "(*MasterIndex).Rewrite",
+      "variant": "github.com/restic/restic/internal/repository/index|(*github.com/restic/restic/internal/repository/index.MasterIndex).Rewrite|func(ctx context[context].Context, repo github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].Unpacked[github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].FileType], excludePacks github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].IDSet, oldIndexes github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].IDSet, extraObsolete github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].IDs, opts github.com/restic/restic/internal/repository/index[github.com/restic/restic/internal/repository/index].MasterIndexRewriteOpts) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:899995cbcc5e66c160731ef19ab429b2efd27f9b78f08e178fece622e0ad7fa7",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*lockHandle).unlock",
+      "variant": "github.com/restic/restic/internal/repository|(*github.com/restic/restic/internal/repository.lockHandle).unlock|func(ctx context[context].Context) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:8a99e5ff5c4f7ea12473fdb3d351f7c9995078d260aa104c5e6930d612f2ce17",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "RemoveKey",
+      "variant": "github.com/restic/restic/internal/repository|github.com/restic/restic/internal/repository.RemoveKey|func(ctx context[context].Context, repo *github.com/restic/restic/internal/repository[github.com/restic/restic/internal/repository].Repository, id github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].ID) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:adacd4f927b058979fbb5067456173cb269df878a0709a5354f5cbd6dbf6ce13",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "UpgradeRepo",
+      "variant": "github.com/restic/restic/internal/repository|github.com/restic/restic/internal/repository.UpgradeRepo|func(ctx context[context].Context, repo *github.com/restic/restic/internal/repository[github.com/restic/restic/internal/repository].Repository) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:b311325e6ac6e61f2ed6b3cb997afd7ce662bf7fdcf7632a0cbd8e8f3b0dc2ef",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*lockHandle).refreshStaleLock",
+      "variant": "github.com/restic/restic/internal/repository|(*github.com/restic/restic/internal/repository.lockHandle).refreshStaleLock|func(ctx context[context].Context) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:c85a36239771ef54919647d5b59711a9dd724ea2dd6339c045f380fcc14c3a14",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*Repository).removeUnpacked",
+      "variant": "github.com/restic/restic/internal/repository|(*github.com/restic/restic/internal/repository.Repository).removeUnpacked|func(ctx context[context].Context, t github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].FileType, id github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].ID) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:cabeb480e9eff35eed6405527ee1eaba24a16803d4dda06243cd7a58e36235d7",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*locker).refreshLocks$1",
+      "variant": "github.com/restic/restic/internal/repository|parent=github.com/restic/restic/internal/repository|(*github.com/restic/restic/internal/repository.locker).refreshLocks|func(ctx context[context].Context, backend github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].Backend, unlocker *github.com/restic/restic/internal/repository[github.com/restic/restic/internal/repository].unlocker, refreshed chan\u003c- struct{}, forceRefresh \u003c-chan github.com/restic/restic/internal/repository[github.com/restic/restic/internal/repository].refreshLockRequest, logger func(format string, args ...any))||(*github.com/restic/restic/internal/repository.locker).refreshLocks$1|func()|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:ce3d1a96d01580d518a5b7b8673036277e790eb18f77b73846f340d3dd72d467",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "tryRefreshStaleLock",
+      "variant": "github.com/restic/restic/internal/repository|github.com/restic/restic/internal/repository.tryRefreshStaleLock|func(ctx context[context].Context, be github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].Backend, lock *github.com/restic/restic/internal/repository[github.com/restic/restic/internal/repository].lockHandle, cancel context[context].CancelFunc, logger func(format string, args ...any)) bool|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:d3eccd4b20aa6b478608d0771ffd5b50eb4eadb90c011ab1fa3fabf48d50556e",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*lockHandle).adoptReplacementLock",
+      "variant": "github.com/restic/restic/internal/repository|(*github.com/restic/restic/internal/repository.lockHandle).adoptReplacementLock|func(ctx context[context].Context, id github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].ID) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:da7518f276d0cabefab78897928b0a1adad99a803dd3c940d803bf90f4137a70",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "newLock",
+      "variant": "github.com/restic/restic/internal/repository|github.com/restic/restic/internal/repository.newLock|func(ctx context[context].Context, repo github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].Unpacked[github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].FileType], exclusive bool) (*github.com/restic/restic/internal/repository[github.com/restic/restic/internal/repository].lockHandle, error)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:db7b88e5a66c502eac30fe01f9cdd532a98bf6775e61e1a32824725ce19095e4",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*locker).Lock",
+      "variant": "github.com/restic/restic/internal/repository|(*github.com/restic/restic/internal/repository.locker).Lock|func(ctx context[context].Context, r *github.com/restic/restic/internal/repository[github.com/restic/restic/internal/repository].Repository, exclusive bool, retryLock time[time].Duration, printRetry func(msg string), logger func(format string, args ...any)) (func(), context[context].Context, error)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:ef648ef2939e5b02cb3da5bcf131639a186a53ed3e3d8c68ef2841bac601b998",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*PrunePlan).Execute",
+      "variant": "github.com/restic/restic/internal/repository|(*github.com/restic/restic/internal/repository.PrunePlan).Execute|func(ctx context[context].Context, printer github.com/restic/restic/internal/restic[github.com/restic/restic/internal/restic].Printer) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:f13fda2ecd1e8a203856e39808272f8731d18b58cb5f6aa6e2970628fd52e257",
+      "package": "github.com/restic/restic/internal/repository",
+      "function": "(*lockHandle).refresh",
+      "variant": "github.com/restic/restic/internal/repository|(*github.com/restic/restic/internal/repository.lockHandle).refresh|func(ctx context[context].Context) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    }
+  ],
+  "edges": [
+    {
+      "id": "link:2cade41dd398796bbbdab6e2b9f6c7b00e0ea29c37561177369bfd9c917cbce3",
+      "caller": "node:6ece340b2be25e98a384284d55c1ee5fa652b9404a1e10e31f5c91463f674bb0",
+      "callee": "node:c85a36239771ef54919647d5b59711a9dd724ea2dd6339c045f380fcc14c3a14",
+      "source": {
+        "id": "edge:89e925ceb69546df698eaf489bdc0055c9b7001811dd46d899bb695b1a1c681e",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*Repository).RemoveUnpacked"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*Repository).removeUnpacked"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/repository.go",
+          "line": 560,
+          "column": 25
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:3343de0696d0f623e2bdfdf49309e56cd00c05317033f1e46a31e6a1be987733",
+      "caller": "node:f13fda2ecd1e8a203856e39808272f8731d18b58cb5f6aa6e2970628fd52e257",
+      "callee": "node:d3eccd4b20aa6b478608d0771ffd5b50eb4eadb90c011ab1fa3fabf48d50556e",
+      "source": {
+        "id": "edge:016136410d3d9036b4fbf5f3bdac348d2ac6d256baa99a0df505c32663116e99",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*lockHandle).refresh"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*lockHandle).adoptReplacementLock"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock_file.go",
+          "line": 308,
+          "column": 31
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:3bdf27fa6f8abf8ad427987226a12df6fa415e151d7d7605e7a60598bb1fdab7",
+      "caller": "node:ce3d1a96d01580d518a5b7b8673036277e790eb18f77b73846f340d3dd72d467",
+      "callee": "node:b311325e6ac6e61f2ed6b3cb997afd7ce662bf7fdcf7632a0cbd8e8f3b0dc2ef",
+      "source": {
+        "id": "edge:25d1de48c37d078ff35754437fa7c2068a26c768d3005ddd75d587f47f72d4c1",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "tryRefreshStaleLock"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*lockHandle).refreshStaleLock"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock.go",
+          "line": 258,
+          "column": 30
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:3fd69a1c0ca720c2faa8adec6b2eee0be7385bf6f09baaa7c97b037c1ef80364",
+      "caller": "node:ef648ef2939e5b02cb3da5bcf131639a186a53ed3e3d8c68ef2841bac601b998",
+      "callee": "node:16b4acb6e806d25790a665309de21193e03ed9758ec81ef309c7aebe326c4ddb",
+      "source": {
+        "id": "edge:64bdc7a452d984f3df9aaa33c98b42ef3b656a6758ca1532173a0be6d1a473f7",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*PrunePlan).Execute"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "deleteFiles"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/prune.go",
+          "line": 614,
+          "column": 18
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:4daab9ca94fe31727ad2401abc8b5daee3adfc85f76892201e9c5dbc02a1ffeb",
+      "caller": "node:b311325e6ac6e61f2ed6b3cb997afd7ce662bf7fdcf7632a0cbd8e8f3b0dc2ef",
+      "callee": "node:d3eccd4b20aa6b478608d0771ffd5b50eb4eadb90c011ab1fa3fabf48d50556e",
+      "source": {
+        "id": "edge:0abdf3dd083afffe77229a9ba04792a6667c16fe2ee4c2c8b9cb8aa72cac0c6f",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*lockHandle).refreshStaleLock"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*lockHandle).adoptReplacementLock"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock_file.go",
+          "line": 361,
+          "column": 31
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:512f85ba6b56be7a27bd37a11055f25bad841a2b8ef2a5984bd71ca3048824c7",
+      "caller": "node:cabeb480e9eff35eed6405527ee1eaba24a16803d4dda06243cd7a58e36235d7",
+      "callee": "node:899995cbcc5e66c160731ef19ab429b2efd27f9b78f08e178fece622e0ad7fa7",
+      "source": {
+        "id": "edge:75345e2d388eb9f0cc4577f2f9ceb96fdd6da24c0418d952cfd87f1ee876201f",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*locker).refreshLocks$1"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*lockHandle).unlock"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock.go",
+          "line": 137,
+          "column": 24
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:594d8bd8a0ea493c304f58cb5263cad86cc173ee3f41926003018557fff4f2c9",
+      "caller": "node:db7b88e5a66c502eac30fe01f9cdd532a98bf6775e61e1a32824725ce19095e4",
+      "callee": "node:da7518f276d0cabefab78897928b0a1adad99a803dd3c940d803bf90f4137a70",
+      "source": {
+        "id": "edge:005f67e73276b0ed4205f669504e6f555f0c5288ad5b13da4668f47ccb106621",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*locker).Lock"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "newLock"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock.go",
+          "line": 63,
+          "column": 22
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:5d39e9971bef864da7cdee2c59865516c903b5d09c643c2c13f311676dc85bca",
+      "caller": "node:da7518f276d0cabefab78897928b0a1adad99a803dd3c940d803bf90f4137a70",
+      "callee": "node:899995cbcc5e66c160731ef19ab429b2efd27f9b78f08e178fece622e0ad7fa7",
+      "source": {
+        "id": "edge:c9922ed263d2fc758f415fe7fd57b5bb9bb54aabb024e20d5f6ea95acdb8750c",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "newLock"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*lockHandle).unlock"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock_file.go",
+          "line": 135,
+          "column": 18
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:5f73fe8acc1d7fce51254d13398e0ec423cf2b52f60a75296ce5e705a72dccbf",
+      "caller": "node:7b93e9c5010c2b99e6582faad94af26cc3616da349d83f96687f16e72898a7c4",
+      "callee": "node:2606b35bd56969d631d12a94cc8249a0828b830cda9c9797ab3e4da4d6d3f69e",
+      "source": {
+        "id": "edge:017ed6f66edcd173b0381aab855544a8a66fe8bca10fb1689ff4dee6c56154bc",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository/index",
+          "function": "(*MasterIndex).Rewrite"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/restic",
+          "function": "ParallelRemove"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/index/master_index.go",
+          "line": 559,
+          "column": 30
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:62d4605033d60b1df14ef1e868c836f3e750bcbc185ac7422b4f2548b17f06b7",
+      "caller": "node:020c56a88c1ff467938e4830ea6dce2af3351acf5ede20de4d38bc0419d12d09",
+      "callee": "node:7b93e9c5010c2b99e6582faad94af26cc3616da349d83f96687f16e72898a7c4",
+      "source": {
+        "id": "edge:308ab7921cfad50770273107af306dcaeb41105d769a0ffee1c70b9a248e78df",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "rewriteIndexFiles"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository/index",
+          "function": "(*MasterIndex).Rewrite"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/repair_index.go",
+          "line": 109,
+          "column": 25
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:682a9f1f62a3d1070f70b9a93f916b9a2da2fc2303b15c0483f775f528a6f7b0",
+      "caller": "node:3cfb40313de496e582e2958708340968998dd718e2077e872a6ed00d7e7fc79a",
+      "callee": "node:659114f910d9a429212eac060a9c055cac7435dee7f2c108fc8b8d5d0aeb232b",
+      "source": {
+        "id": "edge:6cb7f78e4f6b12b3c5e2ee24b6b038658c9a584da241c4518b8bc62d16694165",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "RemoveStaleLocks$1"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*internalRepository).RemoveUnpacked"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock.go",
+          "line": 280,
+          "column": 52
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:871b66b8f9a04066a08e5c1573fd6e8637168cd9122095baaf4432bf4b395442",
+      "caller": "node:16b4acb6e806d25790a665309de21193e03ed9758ec81ef309c7aebe326c4ddb",
+      "callee": "node:2606b35bd56969d631d12a94cc8249a0828b830cda9c9797ab3e4da4d6d3f69e",
+      "source": {
+        "id": "edge:796631bb2bd317a20863a8bae1a8f0cec4f981a5c92c73c91665bc588858915d",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "deleteFiles"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/restic",
+          "function": "ParallelRemove"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/prune.go",
+          "line": 698,
+          "column": 30
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:896542c1905194910ae397099db762f9f52c603bd4f25d692df5a849baf74246",
+      "caller": "node:adacd4f927b058979fbb5067456173cb269df878a0709a5354f5cbd6dbf6ce13",
+      "callee": "node:224717581ee5bb5823772a24b52801667c7e5ef4eb5ee10f7a145e1cff8dc0f9",
+      "source": {
+        "id": "edge:ff9fc91d6ccf9f4a5940a663f6bbe5f1664f68f3cf1a48fee80487187dd9aa0a",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "UpgradeRepo"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "upgradeRepository"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/upgrade_repo.go",
+          "line": 81,
+          "column": 25
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:896e398df84c20909509fe9347a53598bfed5cd8ee98125d759ea2ad43c87fb1",
+      "caller": "node:254724e136aa69ab836120c9d5020d649c197fde510dbd9d73b3def732dc9a49",
+      "callee": "node:ce3d1a96d01580d518a5b7b8673036277e790eb18f77b73846f340d3dd72d467",
+      "source": {
+        "id": "edge:752e00bbc58407c336d06a0b0b239ebc0620faa0021c1f12b6a70a3f0819e538",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*locker).refreshLocks"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "tryRefreshStaleLock"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock.go",
+          "line": 154,
+          "column": 34
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:9bd0a6d75498cfff635b6d9c5afacabf9803151f8a27eda8b2ae779575754a86",
+      "caller": "node:254724e136aa69ab836120c9d5020d649c197fde510dbd9d73b3def732dc9a49",
+      "callee": "node:cabeb480e9eff35eed6405527ee1eaba24a16803d4dda06243cd7a58e36235d7",
+      "source": {
+        "id": "edge:0cfe4b835ba76aa48165155fba550a2bd77973b0c950e8570af61f10d525b9e0",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*locker).refreshLocks"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*locker).refreshLocks$1"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock.go",
+          "line": 130,
+          "column": 2
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:a564b5d79a45fd8c5db2e1d46af0ab92a9d848a14e6ccc1962abc03a4a0cb01f",
+      "caller": "node:ef648ef2939e5b02cb3da5bcf131639a186a53ed3e3d8c68ef2841bac601b998",
+      "callee": "node:16b4acb6e806d25790a665309de21193e03ed9758ec81ef309c7aebe326c4ddb",
+      "source": {
+        "id": "edge:7259a42f9bbfc62b02167a543b1981f19c75de6180c8ea5f026fb296da7049fc",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*PrunePlan).Execute"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "deleteFiles"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/prune.go",
+          "line": 672,
+          "column": 18
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:a7d5b59b9664fd0ce2eee6e25f30469803dfd69bdc8b2460f041fbc258cf6e9a",
+      "caller": "node:57658c83c430b4c50d05391ec986a165fef34933f8b85b4f5de40fe21487bd97",
+      "callee": "node:020c56a88c1ff467938e4830ea6dce2af3351acf5ede20de4d38bc0419d12d09",
+      "source": {
+        "id": "edge:8f1554190849df606e859b410db4882343ddee95bacf966f75bb48b8daa192d7",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "RepairPacks"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "rewriteIndexFiles"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/repair_pack.go",
+          "line": 59,
+          "column": 25
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:a843d4ad3cc11f26cdd6f860cb6adc23985e97232b752367a9f1081186499b26",
+      "caller": "node:57658c83c430b4c50d05391ec986a165fef34933f8b85b4f5de40fe21487bd97",
+      "callee": "node:2606b35bd56969d631d12a94cc8249a0828b830cda9c9797ab3e4da4d6d3f69e",
+      "source": {
+        "id": "edge:6b16be4bcbcbbcaa0832b202d59210c710639d7c4c4ad0f8805ef5bf3efaf5dd",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "RepairPacks"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/restic",
+          "function": "ParallelRemove"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/repair_pack.go",
+          "line": 68,
+          "column": 27
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:af0e5168d47d7ab509843c6dad2d3f4f6c781ec1dc8be3e75e041f0d348b151f",
+      "caller": "node:254724e136aa69ab836120c9d5020d649c197fde510dbd9d73b3def732dc9a49",
+      "callee": "node:f13fda2ecd1e8a203856e39808272f8731d18b58cb5f6aa6e2970628fd52e257",
+      "source": {
+        "id": "edge:941fc176a75d4cf0b6c5777804ee5615d694c207a6bfa0f1823310d7ff811889",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*locker).refreshLocks"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*lockHandle).refresh"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock.go",
+          "line": 173,
+          "column": 23
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:b0729f26799782e2561b3ae2e9f689c3d7510e7c7e481cf36dd6337080c3a897",
+      "caller": "node:0a048fd9120f16cd9381f0be9811530af8c3474099be813ae55e237730980837",
+      "callee": "node:659114f910d9a429212eac060a9c055cac7435dee7f2c108fc8b8d5d0aeb232b",
+      "source": {
+        "id": "edge:31a5eec4131a6995be77cb08f6d5165842e7d7536ab61d98c0c0a54ed1012d0d",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "RemoveAllLocks$1"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*internalRepository).RemoveUnpacked"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock.go",
+          "line": 296,
+          "column": 52
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:b77c195c0123d24f6dc6dcdab194afeaefdb988e96110c0f96e8429eb4035569",
+      "caller": "node:ef648ef2939e5b02cb3da5bcf131639a186a53ed3e3d8c68ef2841bac601b998",
+      "callee": "node:020c56a88c1ff467938e4830ea6dce2af3351acf5ede20de4d38bc0419d12d09",
+      "source": {
+        "id": "edge:617d31d365bb37bf5adba80babbe32a6b45dbf277784a4c9d6a7884ef4d05c11",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*PrunePlan).Execute"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "rewriteIndexFiles"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/prune.go",
+          "line": 663,
+          "column": 27
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:b8c8af0109e7841fab0904a53b50511510b11169606a024c85220776786310e1",
+      "caller": "node:db7b88e5a66c502eac30fe01f9cdd532a98bf6775e61e1a32824725ce19095e4",
+      "callee": "node:da7518f276d0cabefab78897928b0a1adad99a803dd3c940d803bf90f4137a70",
+      "source": {
+        "id": "edge:5777a0e8936b01083fc33d2fd0ddd5e197c5d1232b9e529985bac592a5c64332",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*locker).Lock"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "newLock"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock.go",
+          "line": 80,
+          "column": 24
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:cf9445707e93bb9713d210852161c94cacba962777131601d4bbc2ed37d73417",
+      "caller": "node:ef648ef2939e5b02cb3da5bcf131639a186a53ed3e3d8c68ef2841bac601b998",
+      "callee": "node:16b4acb6e806d25790a665309de21193e03ed9758ec81ef309c7aebe326c4ddb",
+      "source": {
+        "id": "edge:54b49250df98f39c5d999513e46c241f41e6eee0fb3cd8c64723570135691b1a",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*PrunePlan).Execute"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "deleteFiles"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/prune.go",
+          "line": 658,
+          "column": 21
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:deb04d2f01cf3ca9291fffa73f8ced7b28a2b329ac0e7c927b093798f9d2f189",
+      "caller": "node:db7b88e5a66c502eac30fe01f9cdd532a98bf6775e61e1a32824725ce19095e4",
+      "callee": "node:254724e136aa69ab836120c9d5020d649c197fde510dbd9d73b3def732dc9a49",
+      "source": {
+        "id": "edge:01356274e8ed402f33f07fc1cc5d09e70a244a858b0aeb2abc9d0c63ba79e6ff",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*locker).Lock"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*locker).refreshLocks"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/lock.go",
+          "line": 107,
+          "column": 2
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:e19181f36eb398dffd72f9007dd0c547a00b2ce87b8477802509d436e9a5d675",
+      "caller": "node:659114f910d9a429212eac060a9c055cac7435dee7f2c108fc8b8d5d0aeb232b",
+      "callee": "node:c85a36239771ef54919647d5b59711a9dd724ea2dd6339c045f380fcc14c3a14",
+      "source": {
+        "id": "edge:cfa0f0874d99c311dc39bac6690b7b79e560a44b4f62245287e6ab94fd45f46f",
+        "caller": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*internalRepository).RemoveUnpacked"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/repository",
+          "function": "(*Repository).removeUnpacked"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/repository/repository.go",
+          "line": 564,
+          "column": 36
+        }
+      },
+      "synthetic": false
+    }
+  ],
+  "coverage": {
+    "packages_selected": 6,
+    "source_functions": 446,
+    "emitted": 350,
+    "omitted": 96,
+    "direct": 15,
+    "inherited": 40,
+    "uncertain": 348,
+    "effectful": 50,
+    "unresolved_only": 300,
+    "no_effects_no_uncertainty": 96,
+    "packages": [
+      "github.com/restic/restic/internal/backend/local",
+      "github.com/restic/restic/internal/repository",
+      "github.com/restic/restic/internal/repository/crypto",
+      "github.com/restic/restic/internal/repository/hashing",
+      "github.com/restic/restic/internal/repository/index",
+      "github.com/restic/restic/internal/repository/pack"
+    ],
+    "operation_sites_identified": 51,
+    "selected_operation_sites": 38,
+    "dependency_operation_sites": 13,
+    "unresolved_sites_identified": 1021,
+    "sites_matching_filters": 9,
+    "sites_emitted": 9
+  },
+  "truncated": {
+    "sites": false,
+    "edges": false,
+    "depth": true
+  }
+}

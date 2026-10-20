@@ -1,0 +1,583 @@
+{
+  "schema_version": 1,
+  "groups": [
+    {
+      "effect": "fs.create",
+      "sites": [
+        "site:f6d9b813f3584c37868cc6febf689281544341a7133c7c54aea89b8fa20ccf77",
+        "site:9a8cbcbfba99c06fc0ee41fa4c19d4b53c29a2e634c66fca321f022a51a01a3c"
+      ]
+    },
+    {
+      "effect": "fs.read",
+      "sites": [
+        "site:7bcedd09f445e5aa9000f40debfc43e38cc95476c1e634d4db853d7864398cff"
+      ]
+    },
+    {
+      "effect": "fs.remove",
+      "sites": [
+        "site:9a8cbcbfba99c06fc0ee41fa4c19d4b53c29a2e634c66fca321f022a51a01a3c",
+        "site:364f599c4b50e48542fbb2181ce43b4751c464d4159aef9219001da5b12ed301"
+      ]
+    },
+    {
+      "effect": "fs.rename",
+      "sites": [
+        "site:9a8cbcbfba99c06fc0ee41fa4c19d4b53c29a2e634c66fca321f022a51a01a3c"
+      ]
+    },
+    {
+      "effect": "fs.write",
+      "sites": [
+        "site:a29a7efc1de634a42ea73efe8372b58709101ea6bead1680668c8b1684ef9311",
+        "site:0321b124e784f64538e3a8d8cabf18bb01f4fe0a492f580e56ac6b3d4e5f1fcb",
+        "site:a2dfc6e123c75c8cd3415350aa8561fa33df105d668cef4cf6c8a264863adbd4"
+      ]
+    }
+  ],
+  "sites": [
+    {
+      "id": "site:f6d9b813f3584c37868cc6febf689281544341a7133c7c54aea89b8fa20ccf77",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "(*Local).Save",
+      "kind": "call",
+      "api": "os.MkdirAll",
+      "apis": [
+        "os.MkdirAll"
+      ],
+      "operations": [
+        {
+          "api": "os.MkdirAll",
+          "effects": [
+            "fs.create"
+          ],
+          "recognition": "summary",
+          "uncertainty_reasons": [],
+          "uncertain": false
+        }
+      ],
+      "uncertainty_reasons": [],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local.go",
+        "line": 128,
+        "column": 26
+      },
+      "effects": [
+        "fs.create"
+      ],
+      "recognition": "summary",
+      "uncertain": false
+    },
+    {
+      "id": "site:a29a7efc1de634a42ea73efe8372b58709101ea6bead1680668c8b1684ef9311",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "(*Local).Save",
+      "kind": "call",
+      "api": "os.(*File).Sync",
+      "apis": [
+        "os.(*File).Sync"
+      ],
+      "operations": [
+        {
+          "api": "os.(*File).Sync",
+          "effects": [
+            "fs.write"
+          ],
+          "recognition": "summary",
+          "uncertainty_reasons": [],
+          "uncertain": false
+        }
+      ],
+      "uncertainty_reasons": [],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local.go",
+        "line": 170,
+        "column": 14
+      },
+      "effects": [
+        "fs.write"
+      ],
+      "recognition": "summary",
+      "uncertain": false
+    },
+    {
+      "id": "site:9a8cbcbfba99c06fc0ee41fa4c19d4b53c29a2e634c66fca321f022a51a01a3c",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "(*Local).Save",
+      "kind": "call",
+      "api": "os.Rename",
+      "apis": [
+        "os.Rename"
+      ],
+      "operations": [
+        {
+          "api": "os.Rename",
+          "effects": [
+            "fs.create",
+            "fs.remove",
+            "fs.rename"
+          ],
+          "recognition": "summary",
+          "uncertainty_reasons": [],
+          "uncertain": false
+        }
+      ],
+      "uncertainty_reasons": [],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local.go",
+        "line": 180,
+        "column": 20
+      },
+      "effects": [
+        "fs.create",
+        "fs.remove",
+        "fs.rename"
+      ],
+      "recognition": "summary",
+      "uncertain": false
+    },
+    {
+      "id": "site:364f599c4b50e48542fbb2181ce43b4751c464d4159aef9219001da5b12ed301",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "(*Local).Save$2",
+      "kind": "call",
+      "api": "os.Remove",
+      "apis": [
+        "os.Remove"
+      ],
+      "operations": [
+        {
+          "api": "os.Remove",
+          "effects": [
+            "fs.remove"
+          ],
+          "recognition": "summary",
+          "uncertainty_reasons": [],
+          "uncertain": false
+        }
+      ],
+      "uncertainty_reasons": [],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local.go",
+        "line": 148,
+        "column": 17
+      },
+      "effects": [
+        "fs.remove"
+      ],
+      "recognition": "summary",
+      "uncertain": false
+    },
+    {
+      "id": "site:7bcedd09f445e5aa9000f40debfc43e38cc95476c1e634d4db853d7864398cff",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "fsyncDir",
+      "kind": "call",
+      "api": "os.Open",
+      "apis": [
+        "os.Open"
+      ],
+      "operations": [
+        {
+          "api": "os.Open",
+          "effects": [
+            "fs.read",
+            "resource.acquire"
+          ],
+          "recognition": "summary",
+          "uncertainty_reasons": [],
+          "uncertain": false
+        }
+      ],
+      "uncertainty_reasons": [],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local_unix.go",
+        "line": 14,
+        "column": 19
+      },
+      "effects": [
+        "fs.read",
+        "resource.acquire"
+      ],
+      "recognition": "summary",
+      "uncertain": false
+    },
+    {
+      "id": "site:0321b124e784f64538e3a8d8cabf18bb01f4fe0a492f580e56ac6b3d4e5f1fcb",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "fsyncDir",
+      "kind": "call",
+      "api": "os.(*File).Sync",
+      "apis": [
+        "os.(*File).Sync"
+      ],
+      "operations": [
+        {
+          "api": "os.(*File).Sync",
+          "effects": [
+            "fs.write"
+          ],
+          "recognition": "summary",
+          "uncertainty_reasons": [],
+          "uncertain": false
+        }
+      ],
+      "uncertainty_reasons": [],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local_unix.go",
+        "line": 19,
+        "column": 14
+      },
+      "effects": [
+        "fs.write"
+      ],
+      "recognition": "summary",
+      "uncertain": false
+    },
+    {
+      "id": "site:a2dfc6e123c75c8cd3415350aa8561fa33df105d668cef4cf6c8a264863adbd4",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "setFileReadonly",
+      "kind": "call",
+      "api": "os.Chmod",
+      "apis": [
+        "os.Chmod"
+      ],
+      "operations": [
+        {
+          "api": "os.Chmod",
+          "effects": [
+            "fs.write"
+          ],
+          "recognition": "summary",
+          "uncertainty_reasons": [],
+          "uncertain": false
+        }
+      ],
+      "uncertainty_reasons": [],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local_unix.go",
+        "line": 45,
+        "column": 17
+      },
+      "effects": [
+        "fs.write"
+      ],
+      "recognition": "summary",
+      "uncertain": false
+    }
+  ],
+  "unresolved_sites": [],
+  "reverse": [
+    {
+      "site": "site:f6d9b813f3584c37868cc6febf689281544341a7133c7c54aea89b8fa20ccf77",
+      "origins": [
+        "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa"
+      ],
+      "nodes": [
+        {
+          "id": "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:a29a7efc1de634a42ea73efe8372b58709101ea6bead1680668c8b1684ef9311",
+      "origins": [
+        "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa"
+      ],
+      "nodes": [
+        {
+          "id": "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:9a8cbcbfba99c06fc0ee41fa4c19d4b53c29a2e634c66fca321f022a51a01a3c",
+      "origins": [
+        "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa"
+      ],
+      "nodes": [
+        {
+          "id": "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:364f599c4b50e48542fbb2181ce43b4751c464d4159aef9219001da5b12ed301",
+      "origins": [
+        "node:4d6d57333a78a2dcc4579a2ddd050681dd6de3c2d68fadeeeb3ebf5af6d91b39"
+      ],
+      "nodes": [
+        {
+          "id": "node:4d6d57333a78a2dcc4579a2ddd050681dd6de3c2d68fadeeeb3ebf5af6d91b39",
+          "depth": 0
+        },
+        {
+          "id": "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:6ff8d3eb023744f734a2fff13c08e2fa4715b92d0cc1b760c2fef73aa4e98c71"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:7bcedd09f445e5aa9000f40debfc43e38cc95476c1e634d4db853d7864398cff",
+      "origins": [
+        "node:9e1e855aa26df940a6431a7745a9af9c8d1de2c9e1e415458aa53dd3c70a1b39"
+      ],
+      "nodes": [
+        {
+          "id": "node:9e1e855aa26df940a6431a7745a9af9c8d1de2c9e1e415458aa53dd3c70a1b39",
+          "depth": 0
+        },
+        {
+          "id": "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:23af043b78f9d068fca734d1b6675e623e42c3ce756ac0525f4b745d3058551c"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:0321b124e784f64538e3a8d8cabf18bb01f4fe0a492f580e56ac6b3d4e5f1fcb",
+      "origins": [
+        "node:9e1e855aa26df940a6431a7745a9af9c8d1de2c9e1e415458aa53dd3c70a1b39"
+      ],
+      "nodes": [
+        {
+          "id": "node:9e1e855aa26df940a6431a7745a9af9c8d1de2c9e1e415458aa53dd3c70a1b39",
+          "depth": 0
+        },
+        {
+          "id": "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:23af043b78f9d068fca734d1b6675e623e42c3ce756ac0525f4b745d3058551c"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:a2dfc6e123c75c8cd3415350aa8561fa33df105d668cef4cf6c8a264863adbd4",
+      "origins": [
+        "node:d1462b5a74b6bd1219946db9219091f897116c40f22d3bc9882f83c0859d45d4"
+      ],
+      "nodes": [
+        {
+          "id": "node:d1462b5a74b6bd1219946db9219091f897116c40f22d3bc9882f83c0859d45d4",
+          "depth": 0
+        },
+        {
+          "id": "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:b7254882d450c3f9168fbc1f4872d145b4ddfb6ade79b73d9597dc200e37b18a"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node:4d6d57333a78a2dcc4579a2ddd050681dd6de3c2d68fadeeeb3ebf5af6d91b39",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "(*Local).Save$2",
+      "variant": "github.com/restic/restic/internal/backend/local|parent=github.com/restic/restic/internal/backend/local|(*github.com/restic/restic/internal/backend/local.Local).Save|func(_ context[context].Context, h github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].Handle, rd github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].RewindReader) (err error)||(*github.com/restic/restic/internal/backend/local.Local).Save$2|func(f *os[os].File)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": false
+    },
+    {
+      "id": "node:9e1e855aa26df940a6431a7745a9af9c8d1de2c9e1e415458aa53dd3c70a1b39",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "fsyncDir",
+      "variant": "github.com/restic/restic/internal/backend/local|github.com/restic/restic/internal/backend/local.fsyncDir|func(dir string) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:d1462b5a74b6bd1219946db9219091f897116c40f22d3bc9882f83c0859d45d4",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "setFileReadonly",
+      "variant": "github.com/restic/restic/internal/backend/local|github.com/restic/restic/internal/backend/local.setFileReadonly|func(f string, mode os[os].FileMode) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": false
+    },
+    {
+      "id": "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "(*Local).Save",
+      "variant": "github.com/restic/restic/internal/backend/local|(*github.com/restic/restic/internal/backend/local.Local).Save|func(_ context[context].Context, h github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].Handle, rd github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].RewindReader) (err error)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    }
+  ],
+  "edges": [
+    {
+      "id": "link:23af043b78f9d068fca734d1b6675e623e42c3ce756ac0525f4b745d3058551c",
+      "caller": "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa",
+      "callee": "node:9e1e855aa26df940a6431a7745a9af9c8d1de2c9e1e415458aa53dd3c70a1b39",
+      "source": {
+        "id": "edge:630ff1642444fe596fb60761f3ae2c3ebcb323451948e74bc055538d06ad60b3",
+        "caller": {
+          "package": "github.com/restic/restic/internal/backend/local",
+          "function": "(*Local).Save"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/backend/local",
+          "function": "fsyncDir"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local.go",
+          "line": 186,
+          "column": 17
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:6ff8d3eb023744f734a2fff13c08e2fa4715b92d0cc1b760c2fef73aa4e98c71",
+      "caller": "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa",
+      "callee": "node:4d6d57333a78a2dcc4579a2ddd050681dd6de3c2d68fadeeeb3ebf5af6d91b39",
+      "source": {
+        "id": "edge:7a6884978dcb609d883bb5a298c680d85d1d0b173ea899e2a4808d7111db4189",
+        "caller": {
+          "package": "github.com/restic/restic/internal/backend/local",
+          "function": "(*Local).Save"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/backend/local",
+          "function": "(*Local).Save$2"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local.go",
+          "line": 141,
+          "column": 2
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:b7254882d450c3f9168fbc1f4872d145b4ddfb6ade79b73d9597dc200e37b18a",
+      "caller": "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa",
+      "callee": "node:d1462b5a74b6bd1219946db9219091f897116c40f22d3bc9882f83c0859d45d4",
+      "source": {
+        "id": "edge:5e19b74d8d69d98ef3e2523213f77b4e126341ee892943c3cdd85f0cf7ab4af8",
+        "caller": {
+          "package": "github.com/restic/restic/internal/backend/local",
+          "function": "(*Local).Save"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/backend/local",
+          "function": "setFileReadonly"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local.go",
+          "line": 195,
+          "column": 23
+        }
+      },
+      "synthetic": false
+    }
+  ],
+  "coverage": {
+    "packages_selected": 6,
+    "source_functions": 446,
+    "emitted": 2,
+    "omitted": 444,
+    "direct": 15,
+    "inherited": 40,
+    "uncertain": 348,
+    "effectful": 50,
+    "unresolved_only": 300,
+    "no_effects_no_uncertainty": 96,
+    "packages": [
+      "github.com/restic/restic/internal/backend/local",
+      "github.com/restic/restic/internal/repository",
+      "github.com/restic/restic/internal/repository/crypto",
+      "github.com/restic/restic/internal/repository/hashing",
+      "github.com/restic/restic/internal/repository/index",
+      "github.com/restic/restic/internal/repository/pack"
+    ],
+    "operation_sites_identified": 51,
+    "selected_operation_sites": 38,
+    "dependency_operation_sites": 13,
+    "unresolved_sites_identified": 1021,
+    "sites_matching_filters": 7,
+    "sites_emitted": 7
+  },
+  "truncated": {
+    "sites": false,
+    "edges": false,
+    "depth": false
+  }
+}

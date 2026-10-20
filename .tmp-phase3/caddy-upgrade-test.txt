@@ -1,0 +1,4 @@
+=== RUN   TestResponseRecorderSwitchingProtocolsIsHijackAware
+--- PASS: TestResponseRecorderSwitchingProtocolsIsHijackAware (0.00s)
+PASS
+ok  	github.com/caddyserver/caddy/v2/modules/caddyhttp	0.476s

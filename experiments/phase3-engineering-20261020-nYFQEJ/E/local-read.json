@@ -1,0 +1,457 @@
+{
+  "schema_version": 1,
+  "groups": [
+    {
+      "effect": "fs.read",
+      "sites": [
+        "site:9692f6a976c08c489e6d6e4d2296bcf7324fb2b7718fa2e796569144ec9ddcb7",
+        "site:7bcedd09f445e5aa9000f40debfc43e38cc95476c1e634d4db853d7864398cff",
+        "site:7648837d56acb832a57beb84386d7e09a42409603ab1ce79d8db65f870a50d92",
+        "site:01a358f512f082aa0fd8ee534f3f915de795c7aa54b77f4f57375d0cd8e83b14"
+      ]
+    },
+    {
+      "effect": "resource.acquire",
+      "sites": [
+        "site:9692f6a976c08c489e6d6e4d2296bcf7324fb2b7718fa2e796569144ec9ddcb7",
+        "site:7bcedd09f445e5aa9000f40debfc43e38cc95476c1e634d4db853d7864398cff",
+        "site:7648837d56acb832a57beb84386d7e09a42409603ab1ce79d8db65f870a50d92",
+        "site:01a358f512f082aa0fd8ee534f3f915de795c7aa54b77f4f57375d0cd8e83b14"
+      ]
+    }
+  ],
+  "sites": [
+    {
+      "id": "site:9692f6a976c08c489e6d6e4d2296bcf7324fb2b7718fa2e796569144ec9ddcb7",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "(*Local).openReader",
+      "kind": "call",
+      "api": "os.Open",
+      "apis": [
+        "os.Open"
+      ],
+      "operations": [
+        {
+          "api": "os.Open",
+          "effects": [
+            "fs.read",
+            "resource.acquire"
+          ],
+          "recognition": "summary",
+          "uncertainty_reasons": [],
+          "uncertain": false
+        }
+      ],
+      "uncertainty_reasons": [],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local.go",
+        "line": 212,
+        "column": 19
+      },
+      "effects": [
+        "fs.read",
+        "resource.acquire"
+      ],
+      "recognition": "summary",
+      "uncertain": false
+    },
+    {
+      "id": "site:7bcedd09f445e5aa9000f40debfc43e38cc95476c1e634d4db853d7864398cff",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "fsyncDir",
+      "kind": "call",
+      "api": "os.Open",
+      "apis": [
+        "os.Open"
+      ],
+      "operations": [
+        {
+          "api": "os.Open",
+          "effects": [
+            "fs.read",
+            "resource.acquire"
+          ],
+          "recognition": "summary",
+          "uncertainty_reasons": [],
+          "uncertain": false
+        }
+      ],
+      "uncertainty_reasons": [],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local_unix.go",
+        "line": 14,
+        "column": 19
+      },
+      "effects": [
+        "fs.read",
+        "resource.acquire"
+      ],
+      "recognition": "summary",
+      "uncertain": false
+    },
+    {
+      "id": "site:7648837d56acb832a57beb84386d7e09a42409603ab1ce79d8db65f870a50d92",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "visitDirs",
+      "kind": "call",
+      "api": "os.Open",
+      "apis": [
+        "os.Open"
+      ],
+      "operations": [
+        {
+          "api": "os.Open",
+          "effects": [
+            "fs.read",
+            "resource.acquire"
+          ],
+          "recognition": "summary",
+          "uncertainty_reasons": [],
+          "uncertain": false
+        }
+      ],
+      "uncertainty_reasons": [],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local.go",
+        "line": 284,
+        "column": 19
+      },
+      "effects": [
+        "fs.read",
+        "resource.acquire"
+      ],
+      "recognition": "summary",
+      "uncertain": false
+    },
+    {
+      "id": "site:01a358f512f082aa0fd8ee534f3f915de795c7aa54b77f4f57375d0cd8e83b14",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "visitFiles",
+      "kind": "call",
+      "api": "os.Open",
+      "apis": [
+        "os.Open"
+      ],
+      "operations": [
+        {
+          "api": "os.Open",
+          "effects": [
+            "fs.read",
+            "resource.acquire"
+          ],
+          "recognition": "summary",
+          "uncertainty_reasons": [],
+          "uncertain": false
+        }
+      ],
+      "uncertainty_reasons": [],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local.go",
+        "line": 311,
+        "column": 19
+      },
+      "effects": [
+        "fs.read",
+        "resource.acquire"
+      ],
+      "recognition": "summary",
+      "uncertain": false
+    }
+  ],
+  "unresolved_sites": [],
+  "reverse": [
+    {
+      "site": "site:9692f6a976c08c489e6d6e4d2296bcf7324fb2b7718fa2e796569144ec9ddcb7",
+      "origins": [
+        "node:49deb1b717c0430ee1079031798e167134932f83808b03051182e115ac9775aa"
+      ],
+      "nodes": [
+        {
+          "id": "node:49deb1b717c0430ee1079031798e167134932f83808b03051182e115ac9775aa",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:7bcedd09f445e5aa9000f40debfc43e38cc95476c1e634d4db853d7864398cff",
+      "origins": [
+        "node:9e1e855aa26df940a6431a7745a9af9c8d1de2c9e1e415458aa53dd3c70a1b39"
+      ],
+      "nodes": [
+        {
+          "id": "node:9e1e855aa26df940a6431a7745a9af9c8d1de2c9e1e415458aa53dd3c70a1b39",
+          "depth": 0
+        },
+        {
+          "id": "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:23af043b78f9d068fca734d1b6675e623e42c3ce756ac0525f4b745d3058551c"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:7648837d56acb832a57beb84386d7e09a42409603ab1ce79d8db65f870a50d92",
+      "origins": [
+        "node:8ff9722173ac683d32b81fb30ce8fcca52a225baf5fea7ae568b5922bd92efbf"
+      ],
+      "nodes": [
+        {
+          "id": "node:8ff9722173ac683d32b81fb30ce8fcca52a225baf5fea7ae568b5922bd92efbf",
+          "depth": 0
+        },
+        {
+          "id": "node:97ccf829dd73aba4cfab29d3ca3badd1efb278b52c33a37adda21c833550ed04",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:ad1d4cc3bbb1a5b96709e6a669d9203497b9db1c00b5f13540519d1cae9a3ec1"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:01a358f512f082aa0fd8ee534f3f915de795c7aa54b77f4f57375d0cd8e83b14",
+      "origins": [
+        "node:0af8ad9720b6ecd913e0949ed4363aa0818274d57bdf613186ea373ad239ab28"
+      ],
+      "nodes": [
+        {
+          "id": "node:0af8ad9720b6ecd913e0949ed4363aa0818274d57bdf613186ea373ad239ab28",
+          "depth": 0
+        },
+        {
+          "id": "node:8ff9722173ac683d32b81fb30ce8fcca52a225baf5fea7ae568b5922bd92efbf",
+          "depth": 1
+        },
+        {
+          "id": "node:97ccf829dd73aba4cfab29d3ca3badd1efb278b52c33a37adda21c833550ed04",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:42d76f49c117b92bc3a8e0f85bdaf7757a0cb749ed8f42e141965827e09f08b9",
+        "link:957f1757f370eef399a2887dfb370387dbb2c7a4203c3d373b6378a7f5d813f5",
+        "link:ad1d4cc3bbb1a5b96709e6a669d9203497b9db1c00b5f13540519d1cae9a3ec1"
+      ],
+      "revisit": true,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node:0af8ad9720b6ecd913e0949ed4363aa0818274d57bdf613186ea373ad239ab28",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "visitFiles",
+      "variant": "github.com/restic/restic/internal/backend/local|github.com/restic/restic/internal/backend/local.visitFiles|func(ctx context[context].Context, dir string, fn func(github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].FileInfo) error, ignoreNotADirectory bool) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": false
+    },
+    {
+      "id": "node:49deb1b717c0430ee1079031798e167134932f83808b03051182e115ac9775aa",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "(*Local).openReader",
+      "variant": "github.com/restic/restic/internal/backend/local|(*github.com/restic/restic/internal/backend/local.Local).openReader|func(_ context[context].Context, h github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].Handle, length int, offset int64) (io[io].ReadCloser, error)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": false
+    },
+    {
+      "id": "node:8ff9722173ac683d32b81fb30ce8fcca52a225baf5fea7ae568b5922bd92efbf",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "visitDirs",
+      "variant": "github.com/restic/restic/internal/backend/local|github.com/restic/restic/internal/backend/local.visitDirs|func(ctx context[context].Context, dir string, fn func(github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].FileInfo) error) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:97ccf829dd73aba4cfab29d3ca3badd1efb278b52c33a37adda21c833550ed04",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "(*Local).List",
+      "variant": "github.com/restic/restic/internal/backend/local|(*github.com/restic/restic/internal/backend/local.Local).List|func(ctx context[context].Context, t github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].FileType, fn func(github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].FileInfo) error) (err error)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:9e1e855aa26df940a6431a7745a9af9c8d1de2c9e1e415458aa53dd3c70a1b39",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "fsyncDir",
+      "variant": "github.com/restic/restic/internal/backend/local|github.com/restic/restic/internal/backend/local.fsyncDir|func(dir string) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa",
+      "package": "github.com/restic/restic/internal/backend/local",
+      "function": "(*Local).Save",
+      "variant": "github.com/restic/restic/internal/backend/local|(*github.com/restic/restic/internal/backend/local.Local).Save|func(_ context[context].Context, h github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].Handle, rd github.com/restic/restic/internal/backend[github.com/restic/restic/internal/backend].RewindReader) (err error)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    }
+  ],
+  "edges": [
+    {
+      "id": "link:23af043b78f9d068fca734d1b6675e623e42c3ce756ac0525f4b745d3058551c",
+      "caller": "node:fdfbc56dbdbc0b0e880455c35a16e8e00846da34f92dc2033e5b873d4ab779aa",
+      "callee": "node:9e1e855aa26df940a6431a7745a9af9c8d1de2c9e1e415458aa53dd3c70a1b39",
+      "source": {
+        "id": "edge:630ff1642444fe596fb60761f3ae2c3ebcb323451948e74bc055538d06ad60b3",
+        "caller": {
+          "package": "github.com/restic/restic/internal/backend/local",
+          "function": "(*Local).Save"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/backend/local",
+          "function": "fsyncDir"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local.go",
+          "line": 186,
+          "column": 17
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:42d76f49c117b92bc3a8e0f85bdaf7757a0cb749ed8f42e141965827e09f08b9",
+      "caller": "node:97ccf829dd73aba4cfab29d3ca3badd1efb278b52c33a37adda21c833550ed04",
+      "callee": "node:0af8ad9720b6ecd913e0949ed4363aa0818274d57bdf613186ea373ad239ab28",
+      "source": {
+        "id": "edge:fbba564132c3ebd5d39010b1c388b0c86823265ea3b01d21d920e661c44ab2fe",
+        "caller": {
+          "package": "github.com/restic/restic/internal/backend/local",
+          "function": "(*Local).List"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/backend/local",
+          "function": "visitFiles"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local.go",
+          "line": 268,
+          "column": 19
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:957f1757f370eef399a2887dfb370387dbb2c7a4203c3d373b6378a7f5d813f5",
+      "caller": "node:8ff9722173ac683d32b81fb30ce8fcca52a225baf5fea7ae568b5922bd92efbf",
+      "callee": "node:0af8ad9720b6ecd913e0949ed4363aa0818274d57bdf613186ea373ad239ab28",
+      "source": {
+        "id": "edge:754190f76e538457f962c281f5177dc102adefdd60e761227f96f76d462ceae1",
+        "caller": {
+          "package": "github.com/restic/restic/internal/backend/local",
+          "function": "visitDirs"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/backend/local",
+          "function": "visitFiles"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local.go",
+          "line": 302,
+          "column": 19
+        }
+      },
+      "synthetic": false
+    },
+    {
+      "id": "link:ad1d4cc3bbb1a5b96709e6a669d9203497b9db1c00b5f13540519d1cae9a3ec1",
+      "caller": "node:97ccf829dd73aba4cfab29d3ca3badd1efb278b52c33a37adda21c833550ed04",
+      "callee": "node:8ff9722173ac683d32b81fb30ce8fcca52a225baf5fea7ae568b5922bd92efbf",
+      "source": {
+        "id": "edge:c070f2e13a0a8994d58bf2315ded17231fada50719977eeb9f293753b6bc8288",
+        "caller": {
+          "package": "github.com/restic/restic/internal/backend/local",
+          "function": "(*Local).List"
+        },
+        "callee": {
+          "package": "github.com/restic/restic/internal/backend/local",
+          "function": "visitDirs"
+        },
+        "location": {
+          "file": "/Users/rob/Development/reffector/experiments/restic/internal/backend/local/local.go",
+          "line": 266,
+          "column": 18
+        }
+      },
+      "synthetic": false
+    }
+  ],
+  "coverage": {
+    "packages_selected": 6,
+    "source_functions": 446,
+    "emitted": 22,
+    "omitted": 424,
+    "direct": 15,
+    "inherited": 40,
+    "uncertain": 348,
+    "effectful": 50,
+    "unresolved_only": 300,
+    "no_effects_no_uncertainty": 96,
+    "packages": [
+      "github.com/restic/restic/internal/backend/local",
+      "github.com/restic/restic/internal/repository",
+      "github.com/restic/restic/internal/repository/crypto",
+      "github.com/restic/restic/internal/repository/hashing",
+      "github.com/restic/restic/internal/repository/index",
+      "github.com/restic/restic/internal/repository/pack"
+    ],
+    "operation_sites_identified": 51,
+    "selected_operation_sites": 38,
+    "dependency_operation_sites": 13,
+    "unresolved_sites_identified": 1021,
+    "sites_matching_filters": 4,
+    "sites_emitted": 4
+  },
+  "truncated": {
+    "sites": false,
+    "edges": false,
+    "depth": false
+  }
+}

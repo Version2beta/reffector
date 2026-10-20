@@ -1,4 +1,4 @@
-// Package reffectorskill exposes the canonical embedded Codex skill.
+// Package reffectorskill exposes the canonical embedded agent skill.
 package reffectorskill
 
 import _ "embed"

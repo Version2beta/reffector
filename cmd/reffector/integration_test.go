@@ -70,7 +70,8 @@ func invoke(t *testing.T, dir string, env []string, args ...string) (string, str
 
 func success(t *testing.T, dir string, args ...string) string {
 	t.Helper()
-	out, diagnostic, status := invoke(t, dir, nil, args...)
+	// Existing regression cases exercise the explicit compatible function view.
+	out, diagnostic, status := invoke(t, dir, nil, append([]string{"-view", "functions"}, args...)...)
 	if status != 0 || diagnostic != "" {
 		t.Fatalf("%v: exit %d, stderr %s", args, status, diagnostic)
 	}
@@ -138,7 +139,7 @@ func TestAnalysisCLI(t *testing.T) {
 			t.Errorf("analyzed repository changed: before %v, after %v", before, after)
 		}
 	})
-	base := success(t, dir, "-json", ".")
+	base := success(t, dir, "-exact", "-json", ".")
 	all := records(t, base)
 	actual := make(map[string]string)
 	for i, r := range all {
@@ -169,9 +170,9 @@ func TestAnalysisCLI(t *testing.T) {
 		"KnownValue": "fs.read", "PhiValue": "fs.create fs.read fs.write", "BoundMethod": "fs.create fs.write", "BoundSink": "fs.read",
 		"Closure": "fs.read", "Closure$1": "fs.read", "Spawn": "fs.create fs.read fs.write",
 		"Generic": "env.read", "(Box[T]).Load": "fs.read", "GenericUse": "env.read fs.read",
-		"HTTP": "net.connect", "Connect": "net.connect", "Listen": "net.listen",
+		"HTTP": "net.connect", "Connect": "net.connect resource.acquire", "Listen": "net.listen resource.acquire",
 		"Exec": "env.read fs.read process.exec", "Environment": "env.read env.write", "Database": "db.exec db.query",
-		"FileMethods": "fs.read fs.write", "OpenFile": "fs.read", "OpenFileUnknown": "fs.create fs.read fs.write", "OpenFileWrite": "fs.create fs.write", "Root": "fs.create fs.read fs.write", "Exit": "process.exit", "(fileWriter).Write": "fs.write", "WriteFile": "fs.write", "(stringer).String": "fs.read", "Fatal": "process.exit", "LoggerFatal": "process.exit",
+		"FileMethods": "fs.read fs.write", "OpenFile": "fs.read resource.acquire", "OpenFileUnknown": "fs.create fs.read fs.write resource.acquire", "OpenFileWrite": "fs.create fs.write resource.acquire", "Root": "fs.create fs.read fs.write", "Exit": "process.exit", "(fileWriter).Write": "fs.write", "WriteFile": "fs.write", "(stringer).String": "fs.read", "Fatal": "process.exit", "LoggerFatal": "process.exit",
 	}
 	if !reflect.DeepEqual(actual, want) {
 		t.Errorf("effects mismatch\ngot:  %v\nwant: %v", actual, want)
@@ -196,7 +197,7 @@ func TestAnalysisCLI(t *testing.T) {
 	}
 
 	t.Run("direct", func(t *testing.T) {
-		direct := records(t, success(t, dir, "-direct", "-json", "."))
+		direct := records(t, success(t, dir, "-exact", "-direct", "-json", "."))
 		want := make([]record, 0)
 		for _, r := range all {
 			if r.Direct {
@@ -217,11 +218,11 @@ func TestAnalysisCLI(t *testing.T) {
 		for _, r := range all {
 			fmt.Fprintf(&want, "%s.%s %s\n", r.Package, r.Function, r.Effect)
 		}
-		if got := success(t, dir); got != want.String() {
+		if got := success(t, dir, "-exact"); got != want.String() {
 			t.Fatalf("default text mismatch: %s", got)
 		}
 		for i := 0; i < 2; i++ {
-			if got := success(t, dir, "-json", "."); got != base {
+			if got := success(t, dir, "-exact", "-json", "."); got != base {
 				t.Fatal("nondeterministic JSON")
 			}
 		}
@@ -306,7 +307,7 @@ func TestCanonicalModulePath(t *testing.T) {
 func TestCLIUsageAndErrors(t *testing.T) {
 	for _, flag := range []string{"-h", "-help"} {
 		out, diagnostic, status := invoke(t, fixtureSource, nil, flag)
-		if out != "" || status != 0 || !strings.Contains(diagnostic, "Usage: reffector") {
+		if out != "" || status != 0 || !strings.Contains(diagnostic, "Usage: reffector") || !strings.Contains(diagnostic, "reffector skill install") {
 			t.Fatalf("%s: stdout %q stderr %q exit %d", flag, out, diagnostic, status)
 		}
 	}
@@ -351,7 +352,7 @@ func TestWorkspaceAndReadonlyModules(t *testing.T) {
 	work := filepath.Join(root, "go.work")
 	mustWrite(t, work, "go 1.26.0\nuse ./fixture\n")
 	before := snapshot(t, root)
-	out, diagnostic, status := invoke(t, dir, []string{"GOWORK=" + work}, "-direct", "./...")
+	out, diagnostic, status := invoke(t, dir, []string{"GOWORK=" + work}, "-view", "functions", "-direct", "./...")
 	if status != 0 || diagnostic != "" || !strings.Contains(out, "example.com/effects.Read fs.read") {
 		t.Fatalf("workspace: %q %q %d", out, diagnostic, status)
 	}

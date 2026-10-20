@@ -1,0 +1,2517 @@
+{
+  "schema_version": 1,
+  "groups": [
+    {
+      "effect": "http.response",
+      "sites": [
+        "site:76b9b7f5c0f2942a6084ea888a3177f83a659623d8916efeb80a49f9e26d4c6b",
+        "site:5ac367205c3144399d887d69a4d5b0734a30860852136313886dc43a73300703",
+        "site:6421ff2efa29eb1e359d225ef680e568e52bdd6ec3d097542669619e947787a3",
+        "site:91e32c4b0408404835375db8029e3e64fcf5312e53cda55157fb5e353827fa82",
+        "site:e6e4bedfe59655d4778638c41ddb17de5142e0dd55d634650a6df7e3ede6c98f",
+        "site:28eeedcecf92e8c472e1ea3679bf990eef518eb3ecd96d84772860d73577048f",
+        "site:8faef086b2a94cb40928c4223b45dfbda2fd060b3d1e2064506ae0ae62227a5c",
+        "site:3dd096eeea06dd1e4e7f94c4db487e1fef038930e4b7d5a0d0d3352ee25b5ea6",
+        "site:b0cd3a3531386146d6194a8444fda3cc776375ab00a837324b19e89fd68bcfba",
+        "site:43ea7c19c4cae09221c02f620927541d1b9fcc85f383f26921faf650a8791ca5",
+        "site:f5fec8cd31c9353fbc22e91fb8f755ef264021df28b3da7521c7ca43ae8c3f93",
+        "site:49c7f5bd32d8abd2799e0e80d9e9a5624a91610897c1e03c5bc326bfeb5bcc7f",
+        "site:16e2dfc68b5ac3dbeca2412873d1269006b72c5c5b993a6647e30ba297d0732a",
+        "site:e9a7ba39b383bd18ba4e4a68b9811e0337f1addaa81fb3a1915be9e3e9cdaf09",
+        "site:fb91c208468c161adc209524cd78f395f2a58d5625aeead81bb27e3968d13e23",
+        "site:d322d7f9ac03814393b30de1dc2e9f136ac0d0bfc044f9a55ca7cb999f71aa6f",
+        "site:f1e17b3a5ef349510478acda148d54a9e825be3934d137cbb645531f0e70c029",
+        "site:b9c5807b2175a38e133cc92c15345e93983ae81b0caab9a4d2d72374d5de0d36",
+        "site:84fed674807f3118c7d2c5fe8b39a4fe5bd56588be477f91bc5a7be1591fd1b4",
+        "site:4b37536e29591f9ede40a6188ece5e7225023ba693d08107bda696d1ae645131",
+        "site:9cd63aaaac5f9395c49c7607d03ed9deb1d2894f543e6f4ca3417904cbcfcfc2",
+        "site:516a2c3a37bee79247b326473482e73f2b30fd34955c6c4af1f65e170c899ad0",
+        "site:41f4c41954879992df22a58c7011835790cafc0a8c935d1906a519d915fc9a6c",
+        "site:aaa5b0b65326556f0fc886b1e152e23a674d8ceba9fcb34578022c4b0442af8b",
+        "site:44b01b279d63d98a527b5c9e3fa726b434a8e6e97d74c98aa0d2c7adcbef12d8",
+        "site:8453f1362ef05d9720a9752c4f89a4643dd6fbdc128616b351570751b80a71b7",
+        "site:afda971af6b315c6470be2e69021b7d506d9cab2b784476fc4ca42e3f131a50a",
+        "site:3c867c8fb3c996837d209296ad570c2337bfa4bc3818a30cfd2f7cb1895b30bd",
+        "site:dcf640c7bd2d3d15026a165f7f9a2597766f7a5fb1e34ff89666563fc04d7eb3",
+        "site:3b613437fc37adebd378c4832cc31b02c7cd65f55f00d7f9e2477b20b1b4f9f3",
+        "site:63070b79b14c01fb5390068602aec185d5262b0e8155a598eca63b237e972aae",
+        "site:794b2c4f9325a3387e4c80819b332ca2e5f1500b3208e8942bc773722a094019",
+        "site:672c9aad46c7d20d849114c45fe95f7534a876442596c07fd623984b77fddc4d",
+        "site:824c6864f44fa1fdccd7ced526798d1c5f767548d50316e8665c6e9716928ba9",
+        "site:e203f4bbc42ec517d9f1806397f0d55fbe36176703bfaf0d26416f6389abae44",
+        "site:49985891edc9ed72781af5bcbbe3b8abdd1a9505f13472cb825ef2cb637a651a",
+        "site:61a9513c1eb7fddba729ec771bd384cb090933587dfd6c9cb03525a4e288e4aa",
+        "site:d78e9c7941411d64be89f01d63efe276f19ced962d8bfc5aa1b6e78e455080e9"
+      ]
+    }
+  ],
+  "sites": [
+    {
+      "id": "site:76b9b7f5c0f2942a6084ea888a3177f83a659623d8916efeb80a49f9e26d4c6b",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "(*IdleTimeoutWriter).Write",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).Write",
+      "apis": [
+        "net/http.(ResponseWriter).Write"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).Write",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/idletimeout.go",
+        "line": 484,
+        "column": 42
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:5ac367205c3144399d887d69a4d5b0734a30860852136313886dc43a73300703",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "(*Server).ServeHTTP",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/server.go",
+        "line": 823,
+        "column": 18
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:6421ff2efa29eb1e359d225ef680e568e52bdd6ec3d097542669619e947787a3",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "(*Server).ServeHTTP",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/server.go",
+        "line": 825,
+        "column": 18
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:91e32c4b0408404835375db8029e3e64fcf5312e53cda55157fb5e353827fa82",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "(*Server).ServeHTTP",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/server.go",
+        "line": 842,
+        "column": 16
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:e6e4bedfe59655d4778638c41ddb17de5142e0dd55d634650a6df7e3ede6c98f",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "(*responseRecorder).Write",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).Write",
+      "apis": [
+        "net/http.(ResponseWriter).Write"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).Write",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/responsewriter.go",
+        "line": 253,
+        "column": 42
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:28eeedcecf92e8c472e1ea3679bf990eef518eb3ecd96d84772860d73577048f",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "(*responseRecorder).WriteHeader",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/responsewriter.go",
+        "line": 244,
+        "column": 39
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:8faef086b2a94cb40928c4223b45dfbda2fd060b3d1e2064506ae0ae62227a5c",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "(*responseRecorder).WriteResponse",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/responsewriter.go",
+        "line": 318,
+        "column": 38
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:3dd096eeea06dd1e4e7f94c4db487e1fef038930e4b7d5a0d0d3352ee25b5ea6",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "(StaticResponse).ServeHTTP",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/staticresp.go",
+        "line": 245,
+        "column": 15
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:b0cd3a3531386146d6194a8444fda3cc776375ab00a837324b19e89fd68bcfba",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "init$2",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/caddyhttp.go",
+        "line": 107,
+        "column": 16
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:43ea7c19c4cae09221c02f620927541d1b9fcc85f383f26921faf650a8791ca5",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "init$2",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/caddyhttp.go",
+        "line": 109,
+        "column": 16
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:f5fec8cd31c9353fbc22e91fb8f755ef264021df28b3da7521c7ca43ae8c3f93",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/caddyauth",
+      "function": "(Authentication).ServeHTTP",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/caddyauth/caddyauth.go",
+        "line": 152,
+        "column": 19
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:49c7f5bd32d8abd2799e0e80d9e9a5624a91610897c1e03c5bc326bfeb5bcc7f",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/caddyauth",
+      "function": "(Authentication).ServeHTTP",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).Write",
+      "apis": [
+        "net/http.(ResponseWriter).Write"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).Write",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/caddyauth/caddyauth.go",
+        "line": 153,
+        "column": 20
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:16e2dfc68b5ac3dbeca2412873d1269006b72c5c5b993a6647e30ba297d0732a",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode",
+      "function": "(*responseWriter).Close",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/encode/encode.go",
+        "line": 497,
+        "column": 33
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:e9a7ba39b383bd18ba4e4a68b9811e0337f1addaa81fb3a1915be9e3e9cdaf09",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode",
+      "function": "(*responseWriter).Write",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/encode/encode.go",
+        "line": 411,
+        "column": 33
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:fb91c208468c161adc209524cd78f395f2a58d5625aeead81bb27e3968d13e23",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode",
+      "function": "(*responseWriter).Write",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).Write",
+      "apis": [
+        "net/http.(ResponseWriter).Write"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).Write",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/encode/encode.go",
+        "line": 421,
+        "column": 35
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:d322d7f9ac03814393b30de1dc2e9f136ac0d0bfc044f9a55ca7cb999f71aa6f",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode",
+      "function": "(*responseWriter).WriteHeader",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/encode/encode.go",
+        "line": 287,
+        "column": 32
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:f1e17b3a5ef349510478acda148d54a9e825be3934d137cbb645531f0e70c029",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode",
+      "function": "(*responseWriter).WriteHeader",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/encode/encode.go",
+        "line": 294,
+        "column": 32
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:b9c5807b2175a38e133cc92c15345e93983ae81b0caab9a4d2d72374d5de0d36",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode",
+      "function": "(*responseWriter).WriteHeader",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/encode/encode.go",
+        "line": 304,
+        "column": 32
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:84fed674807f3118c7d2c5fe8b39a4fe5bd56588be477f91bc5a7be1591fd1b4",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/fileserver",
+      "function": "(*FileServer).serveBrowse",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/fileserver/browse.go",
+        "line": 136,
+        "column": 17
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:4b37536e29591f9ede40a6188ece5e7225023ba693d08107bda696d1ae645131",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/fileserver",
+      "function": "(statusOverrideResponseWriter).WriteHeader",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/fileserver/staticfiles.go",
+        "line": 882,
+        "column": 31
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:9cd63aaaac5f9395c49c7607d03ed9deb1d2894f543e6f4ca3417904cbcfcfc2",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/headers",
+      "function": "(*responseWriterWrapper).Write",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).Write",
+      "apis": [
+        "net/http.(ResponseWriter).Write"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).Write",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/headers/headers.go",
+        "line": 430,
+        "column": 40
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:516a2c3a37bee79247b326473482e73f2b30fd34955c6c4af1f65e170c899ad0",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/headers",
+      "function": "(*responseWriterWrapper).WriteHeader",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/headers/headers.go",
+        "line": 423,
+        "column": 39
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:41f4c41954879992df22a58c7011835790cafc0a8c935d1906a519d915fc9a6c",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/intercept",
+      "function": "(Intercept).ServeHTTP",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/intercept/intercept.go",
+        "line": 171,
+        "column": 17
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:aaa5b0b65326556f0fc886b1e152e23a674d8ceba9fcb34578022c4b0442af8b",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/intercept",
+      "function": "(Intercept).ServeHTTP",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/intercept/intercept.go",
+        "line": 173,
+        "column": 17
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:44b01b279d63d98a527b5c9e3fa726b434a8e6e97d74c98aa0d2c7adcbef12d8",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/intercept",
+      "function": "(Intercept).ServeHTTP",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/intercept/intercept.go",
+        "line": 196,
+        "column": 16
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:8453f1362ef05d9720a9752c4f89a4643dd6fbdc128616b351570751b80a71b7",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/push",
+      "function": "(linkPusher).WriteHeader",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/push/handler.go",
+        "line": 223,
+        "column": 31
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:afda971af6b315c6470be2e69021b7d506d9cab2b784476fc4ca42e3f131a50a",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy",
+      "function": "(*Handler).finalizeResponse",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/reverseproxy/reverseproxy.go",
+        "line": 1452,
+        "column": 16
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:3c867c8fb3c996837d209296ad570c2337bfa4bc3818a30cfd2f7cb1895b30bd",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy",
+      "function": "(*Handler).handleUpgradeResponse",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/reverseproxy/streaming.go",
+        "line": 119,
+        "column": 17
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:dcf640c7bd2d3d15026a165f7f9a2597766f7a5fb1e34ff89666563fc04d7eb3",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy",
+      "function": "(*Handler).handleUpgradeResponse",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/reverseproxy/streaming.go",
+        "line": 149,
+        "column": 17
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:3b613437fc37adebd378c4832cc31b02c7cd65f55f00d7f9e2477b20b1b4f9f3",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy",
+      "function": "(*Handler).proxyLoopIteration",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/reverseproxy/reverseproxy.go",
+        "line": 852,
+        "column": 16
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:63070b79b14c01fb5390068602aec185d5262b0e8155a598eca63b237e972aae",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy",
+      "function": "(*Handler).reverseProxy$2",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/reverseproxy/reverseproxy.go",
+        "line": 1215,
+        "column": 18
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:794b2c4f9325a3387e4c80819b332ca2e5f1500b3208e8942bc773722a094019",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy",
+      "function": "(extendedConnectReadWriteCloser).Write",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).Write",
+      "apis": [
+        "net/http.(ResponseWriter).Write"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).Write",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/Development/reffector/experiments/caddy/modules/caddyhttp/reverseproxy/streaming.go",
+        "line": 49,
+        "column": 35
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:672c9aad46c7d20d849114c45fe95f7534a876442596c07fd623984b77fddc4d",
+      "package": "github.com/caddyserver/certmagic",
+      "function": "(*ACMEIssuer).solveHTTPChallengeBlindly",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).Write",
+      "apis": [
+        "net/http.(ResponseWriter).Write"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).Write",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/caddyserver/certmagic@v0.25.6/httphandlers.go",
+        "line": 156,
+        "column": 17
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:824c6864f44fa1fdccd7ced526798d1c5f767548d50316e8665c6e9716928ba9",
+      "package": "github.com/caddyserver/certmagic",
+      "function": "answerHTTPValidation",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/caddyserver/certmagic@v0.25.6/httphandlers.go",
+        "line": 281,
+        "column": 17
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:e203f4bbc42ec517d9f1806397f0d55fbe36176703bfaf0d26416f6389abae44",
+      "package": "github.com/caddyserver/certmagic",
+      "function": "answerHTTPValidation",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/caddyserver/certmagic@v0.25.6/httphandlers.go",
+        "line": 285,
+        "column": 17
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:49985891edc9ed72781af5bcbbe3b8abdd1a9505f13472cb825ef2cb637a651a",
+      "package": "github.com/caddyserver/certmagic",
+      "function": "answerHTTPValidation",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).Write",
+      "apis": [
+        "net/http.(ResponseWriter).Write"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).Write",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/caddyserver/certmagic@v0.25.6/httphandlers.go",
+        "line": 292,
+        "column": 10
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:61a9513c1eb7fddba729ec771bd384cb090933587dfd6c9cb03525a4e288e4aa",
+      "package": "github.com/caddyserver/certmagic",
+      "function": "solveHTTPChallenge",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).Write",
+      "apis": [
+        "net/http.(ResponseWriter).Write"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).Write",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/caddyserver/certmagic@v0.25.6/httphandlers.go",
+        "line": 193,
+        "column": 10
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    },
+    {
+      "id": "site:d78e9c7941411d64be89f01d63efe276f19ced962d8bfc5aa1b6e78e455080e9",
+      "package": "github.com/quic-go/webtransport-go",
+      "function": "(*Server).Upgrade",
+      "kind": "call",
+      "api": "net/http.(ResponseWriter).WriteHeader",
+      "apis": [
+        "net/http.(ResponseWriter).WriteHeader"
+      ],
+      "operations": [
+        {
+          "api": "net/http.(ResponseWriter).WriteHeader",
+          "effects": [
+            "http.response"
+          ],
+          "recognition": "interface_summary",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/quic-go/webtransport-go@v0.13.0/server.go",
+        "line": 467,
+        "column": 15
+      },
+      "effects": [
+        "http.response"
+      ],
+      "recognition": "interface_summary",
+      "uncertain": true
+    }
+  ],
+  "unresolved_sites": [],
+  "reverse": [
+    {
+      "site": "site:76b9b7f5c0f2942a6084ea888a3177f83a659623d8916efeb80a49f9e26d4c6b",
+      "origins": [
+        "node:c2a657be8485c6715ffc2e773a3e4898d17213fd960855b5c9e45fa50ff51d0e"
+      ],
+      "nodes": [
+        {
+          "id": "node:c2a657be8485c6715ffc2e773a3e4898d17213fd960855b5c9e45fa50ff51d0e",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:5ac367205c3144399d887d69a4d5b0734a30860852136313886dc43a73300703",
+      "origins": [
+        "node:4f7b662330d9844ffc14af35f9ab8a580770ffb8165f1fb316e9bfd26ea3f1e2"
+      ],
+      "nodes": [
+        {
+          "id": "node:4f7b662330d9844ffc14af35f9ab8a580770ffb8165f1fb316e9bfd26ea3f1e2",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:6421ff2efa29eb1e359d225ef680e568e52bdd6ec3d097542669619e947787a3",
+      "origins": [
+        "node:4f7b662330d9844ffc14af35f9ab8a580770ffb8165f1fb316e9bfd26ea3f1e2"
+      ],
+      "nodes": [
+        {
+          "id": "node:4f7b662330d9844ffc14af35f9ab8a580770ffb8165f1fb316e9bfd26ea3f1e2",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:91e32c4b0408404835375db8029e3e64fcf5312e53cda55157fb5e353827fa82",
+      "origins": [
+        "node:4f7b662330d9844ffc14af35f9ab8a580770ffb8165f1fb316e9bfd26ea3f1e2"
+      ],
+      "nodes": [
+        {
+          "id": "node:4f7b662330d9844ffc14af35f9ab8a580770ffb8165f1fb316e9bfd26ea3f1e2",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:e6e4bedfe59655d4778638c41ddb17de5142e0dd55d634650a6df7e3ede6c98f",
+      "origins": [
+        "node:a75d88480b5febdfaa884728b21ed7ee69488e4478b6946a4a09f0eef5dca90c"
+      ],
+      "nodes": [
+        {
+          "id": "node:a75d88480b5febdfaa884728b21ed7ee69488e4478b6946a4a09f0eef5dca90c",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:28eeedcecf92e8c472e1ea3679bf990eef518eb3ecd96d84772860d73577048f",
+      "origins": [
+        "node:6559fc5ca01609f51e8c7ce183dd68cf57df4f1342869abd9993b9bc21f0cb03"
+      ],
+      "nodes": [
+        {
+          "id": "node:6559fc5ca01609f51e8c7ce183dd68cf57df4f1342869abd9993b9bc21f0cb03",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:8faef086b2a94cb40928c4223b45dfbda2fd060b3d1e2064506ae0ae62227a5c",
+      "origins": [
+        "node:13220463c3851da5e2f11de960bc50d600d4eea23d7c7ac3d8e97f5559c83fdc"
+      ],
+      "nodes": [
+        {
+          "id": "node:13220463c3851da5e2f11de960bc50d600d4eea23d7c7ac3d8e97f5559c83fdc",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:3dd096eeea06dd1e4e7f94c4db487e1fef038930e4b7d5a0d0d3352ee25b5ea6",
+      "origins": [
+        "node:a926cebd3e48c6c0730e968a2656ed8d5bcd141f99d5fef73c95268908ef79bc"
+      ],
+      "nodes": [
+        {
+          "id": "node:a926cebd3e48c6c0730e968a2656ed8d5bcd141f99d5fef73c95268908ef79bc",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:b0cd3a3531386146d6194a8444fda3cc776375ab00a837324b19e89fd68bcfba",
+      "origins": [
+        "node:f3e1e174b41f0ece9154551333760c626bd394f9e4417d53cd0eda990a5a182d"
+      ],
+      "nodes": [
+        {
+          "id": "node:f3e1e174b41f0ece9154551333760c626bd394f9e4417d53cd0eda990a5a182d",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:43ea7c19c4cae09221c02f620927541d1b9fcc85f383f26921faf650a8791ca5",
+      "origins": [
+        "node:f3e1e174b41f0ece9154551333760c626bd394f9e4417d53cd0eda990a5a182d"
+      ],
+      "nodes": [
+        {
+          "id": "node:f3e1e174b41f0ece9154551333760c626bd394f9e4417d53cd0eda990a5a182d",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:f5fec8cd31c9353fbc22e91fb8f755ef264021df28b3da7521c7ca43ae8c3f93",
+      "origins": [
+        "node:f07b43c3411d7a9cf0c5a7596f0c2cb0a0acae5a27e197baa3952712bc052d26"
+      ],
+      "nodes": [
+        {
+          "id": "node:f07b43c3411d7a9cf0c5a7596f0c2cb0a0acae5a27e197baa3952712bc052d26",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:49c7f5bd32d8abd2799e0e80d9e9a5624a91610897c1e03c5bc326bfeb5bcc7f",
+      "origins": [
+        "node:f07b43c3411d7a9cf0c5a7596f0c2cb0a0acae5a27e197baa3952712bc052d26"
+      ],
+      "nodes": [
+        {
+          "id": "node:f07b43c3411d7a9cf0c5a7596f0c2cb0a0acae5a27e197baa3952712bc052d26",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:16e2dfc68b5ac3dbeca2412873d1269006b72c5c5b993a6647e30ba297d0732a",
+      "origins": [
+        "node:1ae04ff7a01d469670762ac1d0ea5a766da5a4f6fa966d09ebe5fc7a9eda7c0b"
+      ],
+      "nodes": [
+        {
+          "id": "node:1ae04ff7a01d469670762ac1d0ea5a766da5a4f6fa966d09ebe5fc7a9eda7c0b",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:e9a7ba39b383bd18ba4e4a68b9811e0337f1addaa81fb3a1915be9e3e9cdaf09",
+      "origins": [
+        "node:fc831bb4f973322b683d7bc52b05c557f8ed37ce3b5f38a07253f334f90903b7"
+      ],
+      "nodes": [
+        {
+          "id": "node:fc831bb4f973322b683d7bc52b05c557f8ed37ce3b5f38a07253f334f90903b7",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:fb91c208468c161adc209524cd78f395f2a58d5625aeead81bb27e3968d13e23",
+      "origins": [
+        "node:fc831bb4f973322b683d7bc52b05c557f8ed37ce3b5f38a07253f334f90903b7"
+      ],
+      "nodes": [
+        {
+          "id": "node:fc831bb4f973322b683d7bc52b05c557f8ed37ce3b5f38a07253f334f90903b7",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:d322d7f9ac03814393b30de1dc2e9f136ac0d0bfc044f9a55ca7cb999f71aa6f",
+      "origins": [
+        "node:d17d371006dde1cef2a7c55fb3bb0994b46f4c4161cfdf0ba80487824c292710"
+      ],
+      "nodes": [
+        {
+          "id": "node:d17d371006dde1cef2a7c55fb3bb0994b46f4c4161cfdf0ba80487824c292710",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:f1e17b3a5ef349510478acda148d54a9e825be3934d137cbb645531f0e70c029",
+      "origins": [
+        "node:d17d371006dde1cef2a7c55fb3bb0994b46f4c4161cfdf0ba80487824c292710"
+      ],
+      "nodes": [
+        {
+          "id": "node:d17d371006dde1cef2a7c55fb3bb0994b46f4c4161cfdf0ba80487824c292710",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:b9c5807b2175a38e133cc92c15345e93983ae81b0caab9a4d2d72374d5de0d36",
+      "origins": [
+        "node:d17d371006dde1cef2a7c55fb3bb0994b46f4c4161cfdf0ba80487824c292710"
+      ],
+      "nodes": [
+        {
+          "id": "node:d17d371006dde1cef2a7c55fb3bb0994b46f4c4161cfdf0ba80487824c292710",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:84fed674807f3118c7d2c5fe8b39a4fe5bd56588be477f91bc5a7be1591fd1b4",
+      "origins": [
+        "node:30f6c0cf7d405a7b9e0997589aa0f03feb85a3af68d310ec7a43f55ef9dc73dd"
+      ],
+      "nodes": [
+        {
+          "id": "node:30f6c0cf7d405a7b9e0997589aa0f03feb85a3af68d310ec7a43f55ef9dc73dd",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:4b37536e29591f9ede40a6188ece5e7225023ba693d08107bda696d1ae645131",
+      "origins": [
+        "node:c28e49e4889d7c5cb5da9edf4a23594593271331e30e827b021b9a8569dba63e"
+      ],
+      "nodes": [
+        {
+          "id": "node:c28e49e4889d7c5cb5da9edf4a23594593271331e30e827b021b9a8569dba63e",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:9cd63aaaac5f9395c49c7607d03ed9deb1d2894f543e6f4ca3417904cbcfcfc2",
+      "origins": [
+        "node:03b2a50de82963224e4e42e0ab258955ac157f0f6ec9a0e5788c8f54992077b0"
+      ],
+      "nodes": [
+        {
+          "id": "node:03b2a50de82963224e4e42e0ab258955ac157f0f6ec9a0e5788c8f54992077b0",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:516a2c3a37bee79247b326473482e73f2b30fd34955c6c4af1f65e170c899ad0",
+      "origins": [
+        "node:bfad48fd30399cf27c7b676a71583ce13cc0648bf6d0df6423a48a8a60aa2707"
+      ],
+      "nodes": [
+        {
+          "id": "node:bfad48fd30399cf27c7b676a71583ce13cc0648bf6d0df6423a48a8a60aa2707",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:41f4c41954879992df22a58c7011835790cafc0a8c935d1906a519d915fc9a6c",
+      "origins": [
+        "node:9bc89e107e1290a8f5d7aa328f7064e56a8c55a3079e3a7e89194b1a3a47a36f"
+      ],
+      "nodes": [
+        {
+          "id": "node:9bc89e107e1290a8f5d7aa328f7064e56a8c55a3079e3a7e89194b1a3a47a36f",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:aaa5b0b65326556f0fc886b1e152e23a674d8ceba9fcb34578022c4b0442af8b",
+      "origins": [
+        "node:9bc89e107e1290a8f5d7aa328f7064e56a8c55a3079e3a7e89194b1a3a47a36f"
+      ],
+      "nodes": [
+        {
+          "id": "node:9bc89e107e1290a8f5d7aa328f7064e56a8c55a3079e3a7e89194b1a3a47a36f",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:44b01b279d63d98a527b5c9e3fa726b434a8e6e97d74c98aa0d2c7adcbef12d8",
+      "origins": [
+        "node:9bc89e107e1290a8f5d7aa328f7064e56a8c55a3079e3a7e89194b1a3a47a36f"
+      ],
+      "nodes": [
+        {
+          "id": "node:9bc89e107e1290a8f5d7aa328f7064e56a8c55a3079e3a7e89194b1a3a47a36f",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:8453f1362ef05d9720a9752c4f89a4643dd6fbdc128616b351570751b80a71b7",
+      "origins": [
+        "node:9929c43e95ea99398b241e0a81533464d458102c957d4447a9790da3978f7e56"
+      ],
+      "nodes": [
+        {
+          "id": "node:9929c43e95ea99398b241e0a81533464d458102c957d4447a9790da3978f7e56",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:afda971af6b315c6470be2e69021b7d506d9cab2b784476fc4ca42e3f131a50a",
+      "origins": [
+        "node:738f4ebaaae56cf3285dee317edad216c1da011816d09dc5ef3556af6d26e383"
+      ],
+      "nodes": [
+        {
+          "id": "node:738f4ebaaae56cf3285dee317edad216c1da011816d09dc5ef3556af6d26e383",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:3c867c8fb3c996837d209296ad570c2337bfa4bc3818a30cfd2f7cb1895b30bd",
+      "origins": [
+        "node:601fa370f44620eb09de426a83b6d24d44ae3eaa30435f490ae41f258f66ec7f"
+      ],
+      "nodes": [
+        {
+          "id": "node:601fa370f44620eb09de426a83b6d24d44ae3eaa30435f490ae41f258f66ec7f",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:dcf640c7bd2d3d15026a165f7f9a2597766f7a5fb1e34ff89666563fc04d7eb3",
+      "origins": [
+        "node:601fa370f44620eb09de426a83b6d24d44ae3eaa30435f490ae41f258f66ec7f"
+      ],
+      "nodes": [
+        {
+          "id": "node:601fa370f44620eb09de426a83b6d24d44ae3eaa30435f490ae41f258f66ec7f",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:3b613437fc37adebd378c4832cc31b02c7cd65f55f00d7f9e2477b20b1b4f9f3",
+      "origins": [
+        "node:3b5826500ce3e9345a6059fd3782211d336e4610d2f8eb3e8009090bc14ad7f8"
+      ],
+      "nodes": [
+        {
+          "id": "node:3b5826500ce3e9345a6059fd3782211d336e4610d2f8eb3e8009090bc14ad7f8",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:63070b79b14c01fb5390068602aec185d5262b0e8155a598eca63b237e972aae",
+      "origins": [
+        "node:e69b01a4ab8f58cbb6b2c0fb95fc3bcd05534841c5ca5fd2fa8c073f0404f347"
+      ],
+      "nodes": [
+        {
+          "id": "node:e69b01a4ab8f58cbb6b2c0fb95fc3bcd05534841c5ca5fd2fa8c073f0404f347",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:794b2c4f9325a3387e4c80819b332ca2e5f1500b3208e8942bc773722a094019",
+      "origins": [
+        "node:2cba81bc1faa3882767e0c911b8179847b8f9189d2bb74ceb34455a1b2b0e479"
+      ],
+      "nodes": [
+        {
+          "id": "node:2cba81bc1faa3882767e0c911b8179847b8f9189d2bb74ceb34455a1b2b0e479",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": false
+      }
+    },
+    {
+      "site": "site:672c9aad46c7d20d849114c45fe95f7534a876442596c07fd623984b77fddc4d",
+      "origins": [
+        "node:a74f6eb9e1026e4ccbd81b9b60d5038d9837e20131e57e1f9df4e015ac344223"
+      ],
+      "nodes": [
+        {
+          "id": "node:a74f6eb9e1026e4ccbd81b9b60d5038d9837e20131e57e1f9df4e015ac344223",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:824c6864f44fa1fdccd7ced526798d1c5f767548d50316e8665c6e9716928ba9",
+      "origins": [
+        "node:25f5d6b5d3be4d480a27f723be609ea4e8638f5cec8ce02c0ffaee53497fd73a"
+      ],
+      "nodes": [
+        {
+          "id": "node:25f5d6b5d3be4d480a27f723be609ea4e8638f5cec8ce02c0ffaee53497fd73a",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:e203f4bbc42ec517d9f1806397f0d55fbe36176703bfaf0d26416f6389abae44",
+      "origins": [
+        "node:25f5d6b5d3be4d480a27f723be609ea4e8638f5cec8ce02c0ffaee53497fd73a"
+      ],
+      "nodes": [
+        {
+          "id": "node:25f5d6b5d3be4d480a27f723be609ea4e8638f5cec8ce02c0ffaee53497fd73a",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:49985891edc9ed72781af5bcbbe3b8abdd1a9505f13472cb825ef2cb637a651a",
+      "origins": [
+        "node:25f5d6b5d3be4d480a27f723be609ea4e8638f5cec8ce02c0ffaee53497fd73a"
+      ],
+      "nodes": [
+        {
+          "id": "node:25f5d6b5d3be4d480a27f723be609ea4e8638f5cec8ce02c0ffaee53497fd73a",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:61a9513c1eb7fddba729ec771bd384cb090933587dfd6c9cb03525a4e288e4aa",
+      "origins": [
+        "node:41495c1cf054132699e4123bf113beb3b9e46ef15391dde7a19328df5ebfa7e3"
+      ],
+      "nodes": [
+        {
+          "id": "node:41495c1cf054132699e4123bf113beb3b9e46ef15391dde7a19328df5ebfa7e3",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:d78e9c7941411d64be89f01d63efe276f19ced962d8bfc5aa1b6e78e455080e9",
+      "origins": [
+        "node:49bffa236aa0486410c9349e97448e814bd9555ce62e9d19440aba0653e1c1cc"
+      ],
+      "nodes": [
+        {
+          "id": "node:49bffa236aa0486410c9349e97448e814bd9555ce62e9d19440aba0653e1c1cc",
+          "depth": 0
+        }
+      ],
+      "edges": [],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node:03b2a50de82963224e4e42e0ab258955ac157f0f6ec9a0e5788c8f54992077b0",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/headers",
+      "function": "(*responseWriterWrapper).Write",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp/headers|(*github.com/caddyserver/caddy/v2/modules/caddyhttp/headers.responseWriterWrapper).Write|func(d []byte) (int, error)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:13220463c3851da5e2f11de960bc50d600d4eea23d7c7ac3d8e97f5559c83fdc",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "(*responseRecorder).WriteResponse",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp|(*github.com/caddyserver/caddy/v2/modules/caddyhttp.responseRecorder).WriteResponse|func() error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:1ae04ff7a01d469670762ac1d0ea5a766da5a4f6fa966d09ebe5fc7a9eda7c0b",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode",
+      "function": "(*responseWriter).Close",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode|(*github.com/caddyserver/caddy/v2/modules/caddyhttp/encode.responseWriter).Close|func() error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:25f5d6b5d3be4d480a27f723be609ea4e8638f5cec8ce02c0ffaee53497fd73a",
+      "package": "github.com/caddyserver/certmagic",
+      "function": "answerHTTPValidation",
+      "variant": "github.com/caddyserver/certmagic|github.com/caddyserver/certmagic.answerHTTPValidation|func(logger *go.uber.org/zap[go.uber.org/zap].Logger, rw net/http[net/http].ResponseWriter, req *net/http[net/http].Request, valInfo github.com/mholt/acmez/v3/acme[github.com/mholt/acmez/v3/acme].Challenge, distributed bool) bool|",
+      "selected": false,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:2cba81bc1faa3882767e0c911b8179847b8f9189d2bb74ceb34455a1b2b0e479",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy",
+      "function": "(extendedConnectReadWriteCloser).Write",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy|(github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy.extendedConnectReadWriteCloser).Write|func(p []byte) (n int, err error)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": false
+    },
+    {
+      "id": "node:30f6c0cf7d405a7b9e0997589aa0f03feb85a3af68d310ec7a43f55ef9dc73dd",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/fileserver",
+      "function": "(*FileServer).serveBrowse",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp/fileserver|(*github.com/caddyserver/caddy/v2/modules/caddyhttp/fileserver.FileServer).serveBrowse|func(fileSystem io/fs[io/fs].FS, root string, dirPath string, w net/http[net/http].ResponseWriter, r *net/http[net/http].Request, next github.com/caddyserver/caddy/v2/modules/caddyhttp[github.com/caddyserver/caddy/v2/modules/caddyhttp].Handler) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:3b5826500ce3e9345a6059fd3782211d336e4610d2f8eb3e8009090bc14ad7f8",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy",
+      "function": "(*Handler).proxyLoopIteration",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy|(*github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy.Handler).proxyLoopIteration|func(r *net/http[net/http].Request, origReq *net/http[net/http].Request, w net/http[net/http].ResponseWriter, proxyErr error, start time[time].Time, retries int, repl *github.com/caddyserver/caddy/v2[github.com/caddyserver/caddy/v2].Replacer, reqHeader net/http[net/http].Header, reqHost string, requestWasIncremental bool, next github.com/caddyserver/caddy/v2/modules/caddyhttp[github.com/caddyserver/caddy/v2/modules/caddyhttp].Handler) (bool, error)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:41495c1cf054132699e4123bf113beb3b9e46ef15391dde7a19328df5ebfa7e3",
+      "package": "github.com/caddyserver/certmagic",
+      "function": "solveHTTPChallenge",
+      "variant": "github.com/caddyserver/certmagic|github.com/caddyserver/certmagic.solveHTTPChallenge|func(logger *go.uber.org/zap[go.uber.org/zap].Logger, w net/http[net/http].ResponseWriter, r *net/http[net/http].Request, challenge github.com/mholt/acmez/v3/acme[github.com/mholt/acmez/v3/acme].Challenge, distributed bool) bool|",
+      "selected": false,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:49bffa236aa0486410c9349e97448e814bd9555ce62e9d19440aba0653e1c1cc",
+      "package": "github.com/quic-go/webtransport-go",
+      "function": "(*Server).Upgrade",
+      "variant": "github.com/quic-go/webtransport-go|(*github.com/quic-go/webtransport-go.Server).Upgrade|func(w net/http[net/http].ResponseWriter, r *net/http[net/http].Request) (*github.com/quic-go/webtransport-go[github.com/quic-go/webtransport-go].Session, error)|",
+      "selected": false,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:4f7b662330d9844ffc14af35f9ab8a580770ffb8165f1fb316e9bfd26ea3f1e2",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "(*Server).ServeHTTP",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp|(*github.com/caddyserver/caddy/v2/modules/caddyhttp.Server).ServeHTTP|func(w net/http[net/http].ResponseWriter, r *net/http[net/http].Request)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:601fa370f44620eb09de426a83b6d24d44ae3eaa30435f490ae41f258f66ec7f",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy",
+      "function": "(*Handler).handleUpgradeResponse",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy|(*github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy.Handler).handleUpgradeResponse|func(logger *go.uber.org/zap[go.uber.org/zap].Logger, rw net/http[net/http].ResponseWriter, req *net/http[net/http].Request, res *net/http[net/http].Response, upstreamAddr string)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:6559fc5ca01609f51e8c7ce183dd68cf57df4f1342869abd9993b9bc21f0cb03",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "(*responseRecorder).WriteHeader",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp|(*github.com/caddyserver/caddy/v2/modules/caddyhttp.responseRecorder).WriteHeader|func(statusCode int)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": false
+    },
+    {
+      "id": "node:738f4ebaaae56cf3285dee317edad216c1da011816d09dc5ef3556af6d26e383",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy",
+      "function": "(*Handler).finalizeResponse",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy|(*github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy.Handler).finalizeResponse|func(rw net/http[net/http].ResponseWriter, req *net/http[net/http].Request, res *net/http[net/http].Response, repl *github.com/caddyserver/caddy/v2[github.com/caddyserver/caddy/v2].Replacer, start time[time].Time, logger *go.uber.org/zap[go.uber.org/zap].Logger, upstreamAddr string) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:9929c43e95ea99398b241e0a81533464d458102c957d4447a9790da3978f7e56",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/push",
+      "function": "(linkPusher).WriteHeader",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp/push|(github.com/caddyserver/caddy/v2/modules/caddyhttp/push.linkPusher).WriteHeader|func(statusCode int)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:9bc89e107e1290a8f5d7aa328f7064e56a8c55a3079e3a7e89194b1a3a47a36f",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/intercept",
+      "function": "(Intercept).ServeHTTP",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp/intercept|(github.com/caddyserver/caddy/v2/modules/caddyhttp/intercept.Intercept).ServeHTTP|func(w net/http[net/http].ResponseWriter, r *net/http[net/http].Request, next github.com/caddyserver/caddy/v2/modules/caddyhttp[github.com/caddyserver/caddy/v2/modules/caddyhttp].Handler) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:a74f6eb9e1026e4ccbd81b9b60d5038d9837e20131e57e1f9df4e015ac344223",
+      "package": "github.com/caddyserver/certmagic",
+      "function": "(*ACMEIssuer).solveHTTPChallengeBlindly",
+      "variant": "github.com/caddyserver/certmagic|(*github.com/caddyserver/certmagic.ACMEIssuer).solveHTTPChallengeBlindly|func(w net/http[net/http].ResponseWriter, r *net/http[net/http].Request) error|",
+      "selected": false,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:a75d88480b5febdfaa884728b21ed7ee69488e4478b6946a4a09f0eef5dca90c",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "(*responseRecorder).Write",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp|(*github.com/caddyserver/caddy/v2/modules/caddyhttp.responseRecorder).Write|func(data []byte) (int, error)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:a926cebd3e48c6c0730e968a2656ed8d5bcd141f99d5fef73c95268908ef79bc",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "(StaticResponse).ServeHTTP",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp|(github.com/caddyserver/caddy/v2/modules/caddyhttp.StaticResponse).ServeHTTP|func(w net/http[net/http].ResponseWriter, r *net/http[net/http].Request, next github.com/caddyserver/caddy/v2/modules/caddyhttp[github.com/caddyserver/caddy/v2/modules/caddyhttp].Handler) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:bfad48fd30399cf27c7b676a71583ce13cc0648bf6d0df6423a48a8a60aa2707",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/headers",
+      "function": "(*responseWriterWrapper).WriteHeader",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp/headers|(*github.com/caddyserver/caddy/v2/modules/caddyhttp/headers.responseWriterWrapper).WriteHeader|func(status int)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:c28e49e4889d7c5cb5da9edf4a23594593271331e30e827b021b9a8569dba63e",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/fileserver",
+      "function": "(statusOverrideResponseWriter).WriteHeader",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp/fileserver|(github.com/caddyserver/caddy/v2/modules/caddyhttp/fileserver.statusOverrideResponseWriter).WriteHeader|func(int)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": false
+    },
+    {
+      "id": "node:c2a657be8485c6715ffc2e773a3e4898d17213fd960855b5c9e45fa50ff51d0e",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "(*IdleTimeoutWriter).Write",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp|(*github.com/caddyserver/caddy/v2/modules/caddyhttp.IdleTimeoutWriter).Write|func(p []byte) (int, error)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:d17d371006dde1cef2a7c55fb3bb0994b46f4c4161cfdf0ba80487824c292710",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode",
+      "function": "(*responseWriter).WriteHeader",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode|(*github.com/caddyserver/caddy/v2/modules/caddyhttp/encode.responseWriter).WriteHeader|func(status int)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:e69b01a4ab8f58cbb6b2c0fb95fc3bcd05534841c5ca5fd2fa8c073f0404f347",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy",
+      "function": "(*Handler).reverseProxy$2",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy|parent=github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy|(*github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy.Handler).reverseProxy|func(rw net/http[net/http].ResponseWriter, req *net/http[net/http].Request, origReq *net/http[net/http].Request, repl *github.com/caddyserver/caddy/v2[github.com/caddyserver/caddy/v2].Replacer, di github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy[github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy].DialInfo, next github.com/caddyserver/caddy/v2/modules/caddyhttp[github.com/caddyserver/caddy/v2/modules/caddyhttp].Handler) error||(*github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy.Handler).reverseProxy$2|func(code int, header net/textproto[net/textproto].MIMEHeader) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:f07b43c3411d7a9cf0c5a7596f0c2cb0a0acae5a27e197baa3952712bc052d26",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/caddyauth",
+      "function": "(Authentication).ServeHTTP",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp/caddyauth|(github.com/caddyserver/caddy/v2/modules/caddyhttp/caddyauth.Authentication).ServeHTTP|func(w net/http[net/http].ResponseWriter, r *net/http[net/http].Request, next github.com/caddyserver/caddy/v2/modules/caddyhttp[github.com/caddyserver/caddy/v2/modules/caddyhttp].Handler) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:f3e1e174b41f0ece9154551333760c626bd394f9e4417d53cd0eda990a5a182d",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "function": "init$2",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp|parent=github.com/caddyserver/caddy/v2/modules/caddyhttp|github.com/caddyserver/caddy/v2/modules/caddyhttp.init|func()|package initializer|github.com/caddyserver/caddy/v2/modules/caddyhttp.init$2|func(w net/http[net/http].ResponseWriter, r *net/http[net/http].Request) error|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": false
+    },
+    {
+      "id": "node:fc831bb4f973322b683d7bc52b05c557f8ed37ce3b5f38a07253f334f90903b7",
+      "package": "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode",
+      "function": "(*responseWriter).Write",
+      "variant": "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode|(*github.com/caddyserver/caddy/v2/modules/caddyhttp/encode.responseWriter).Write|func(p []byte) (int, error)|",
+      "selected": true,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    }
+  ],
+  "edges": [],
+  "coverage": {
+    "packages_selected": 22,
+    "source_functions": 1213,
+    "emitted": 30,
+    "omitted": 1183,
+    "direct": 64,
+    "inherited": 86,
+    "uncertain": 888,
+    "effectful": 129,
+    "unresolved_only": 760,
+    "no_effects_no_uncertainty": 324,
+    "packages": [
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/caddyauth",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode/brotli",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode/gzip",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/encode/zstd",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/fileserver",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/headers",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/intercept",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/logging",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/map",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/proxyprotocol",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/push",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/requestbody",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy/fastcgi",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy/forwardauth",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/rewrite",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/standard",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/templates",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/timeouts",
+      "github.com/caddyserver/caddy/v2/modules/caddyhttp/tracing"
+    ],
+    "operation_sites_identified": 136,
+    "selected_operation_sites": 84,
+    "dependency_operation_sites": 52,
+    "unresolved_sites_identified": 7166,
+    "sites_matching_filters": 38,
+    "sites_emitted": 38
+  },
+  "truncated": {
+    "sites": false,
+    "edges": false,
+    "depth": true
+  }
+}

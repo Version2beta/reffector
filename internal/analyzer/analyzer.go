@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"go/ast"
 	"go/types"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
+	"golang.org/x/tools/go/callgraph/vta"
 	"golang.org/x/tools/go/packages"
 	"golang.org/x/tools/go/ssa"
 	"golang.org/x/tools/go/ssa/ssautil"
@@ -16,10 +19,43 @@ import (
 )
 
 type Options struct {
-	Dir    string // Empty means the current directory.
-	Tests  bool
-	Direct bool
+	Dir                                    string // Empty means the current directory.
+	Tests                                  bool
+	Direct                                 bool
+	Exact                                  bool // Do not expand local directories to recursive patterns.
+	All                                    bool // Include source functions without effects or uncertainty.
+	Details                                bool
+	EffectView                             bool
+	Unresolved                             bool   // Only unresolved leads without recognized effects.
+	API, Site                              string // Exact identities.
+	Reason                                 string // Uncertainty-reason substring in effect view.
+	Package, Function, Effect, Operation   string // Substring filters; Function accepts =name for exact matching.
+	MaxDepth, MaxPaths, MaxSites, MaxEdges int
 }
+
+// Stats counts functions, not effect pairs. Direct and inherited can overlap.
+// Counts describe the selected inventory before output filtering.
+type Stats struct {
+	Packages        int `json:"packages_selected"`
+	SourceFunctions int `json:"source_functions"`
+	Emitted         int `json:"emitted"`
+	Omitted         int `json:"omitted"`
+	Direct          int `json:"direct"`
+	Inherited       int `json:"inherited"`
+	Uncertain       int `json:"uncertain"`
+	Effectful       int `json:"effectful"`
+	UnresolvedOnly  int `json:"unresolved_only"`
+	Uncharacterized int `json:"no_effects_no_uncertainty"`
+}
+
+type Report struct {
+	Records []Record      `json:"records"`
+	Stats   Stats         `json:"stats"`
+	Details *Details      `json:"details,omitempty"`
+	Effects *EffectReport `json:"-"`
+}
+
+type identity struct{ pkg, name string }
 
 // Record is one function's analysis result. Effects are omitted from text
 // output when empty, but Uncertain remains available in JSON.
@@ -38,17 +74,46 @@ type Effect struct {
 // Analyze uses the current build environment (GOOS, GOARCH, build constraints).
 // Loading may invoke the Go toolchain, but never application code or tests.
 func Analyze(patterns []string, opts Options) ([]Record, error) {
+	r, err := AnalyzeReport(patterns, opts)
+	return r.Records, err
+}
+
+// SelectionPatterns preserves explicit Go patterns/import paths, while local
+// directory arguments select their subtree unless Exact was requested.
+func SelectionPatterns(patterns []string, opts Options) []string {
 	if len(patterns) == 0 {
 		patterns = []string{"."}
 	}
+	result := make([]string, 0, len(patterns))
+	for _, pattern := range patterns {
+		path := pattern
+		if !filepath.IsAbs(path) {
+			path = filepath.Join(opts.Dir, path)
+		}
+		if info, err := os.Stat(path); !strings.Contains(pattern, "...") && err == nil && info.IsDir() {
+			pattern = filepath.ToSlash(filepath.Clean(pattern))
+			if !filepath.IsAbs(pattern) && pattern != "." && pattern != ".." && !strings.HasPrefix(pattern, "../") {
+				pattern = "./" + pattern
+			}
+			if !opts.Exact {
+				pattern += "/..."
+			}
+		}
+		result = append(result, pattern)
+	}
+	return result
+}
+
+func AnalyzeReport(patterns []string, opts Options) (Report, error) {
+	patterns = SelectionPatterns(patterns, opts)
 	cfg, cleanup, err := loadConfig(opts)
 	if err != nil {
-		return nil, err
+		return Report{}, err
 	}
 	defer cleanup()
 	pkgs, err := packages.Load(cfg, patterns...)
 	if err != nil {
-		return nil, err
+		return Report{}, err
 	}
 	var diagnostics []string
 	packages.Visit(pkgs, nil, func(p *packages.Package) {
@@ -58,40 +123,52 @@ func Analyze(patterns []string, opts Options) ([]Record, error) {
 	})
 	if len(diagnostics) != 0 {
 		sort.Strings(diagnostics)
-		return nil, fmt.Errorf("package loading failed:\n%s", strings.Join(diagnostics, "\n"))
+		return Report{}, fmt.Errorf("package loading failed:\n%s", strings.Join(diagnostics, "\n"))
 	}
 	if len(pkgs) == 0 {
-		return nil, fmt.Errorf("no packages matched")
+		return Report{}, fmt.Errorf("no packages matched")
 	}
 	prog, _ := ssautil.AllPackages(pkgs, ssa.InstantiateGenerics)
 	prog.Build()
-	g := &graph{prog: prog, nodes: make(map[*ssa.Function]*node), standard: make(map[*types.Package]bool)}
+	g := &graph{prog: prog, nodes: make(map[*ssa.Function]*node), standard: make(map[*types.Package]bool),
+		detailed: opts.Details || opts.EffectView, packageIDs: make(map[*types.Package]string), sites: make(map[string]*Site), edges: make(map[string]CallEdge), fileKeys: make(map[string]string), siteNodes: make(map[string]map[*node]bool), candidates: make(map[ssa.CallInstruction][]*ssa.Function)}
+
 	// Module metadata, rather than import-path spelling, identifies standard
 	// packages. A loaded package with a module (including module "reffector")
 	// is application or third-party code even when its path contains no dot.
 	packages.Visit(pkgs, nil, func(p *packages.Package) {
+		if p.Types != nil {
+			g.packageIDs[p.Types] = p.ID
+		}
 		if p.Types != nil && p.Module == nil {
 			g.standard[p.Types] = true
 		}
+		for _, file := range p.CompiledGoFiles {
+			g.fileKeys[filepath.ToSlash(file)] = p.PkgPath + "/" + filepath.Base(file)
+		}
 	})
 
-	type identity struct{ pkg, name string }
 	selected := make(map[*ssa.Function]identity)
+	g.selected = selected
 	var selectFunction func(*ssa.Function, identity)
 	selectFunction = func(fn *ssa.Function, id identity) {
 		if fn == nil {
 			return
 		}
-		selected[fn] = id
+		if sourceFunction(fn) {
+			selected[fn] = id
+		}
 		for _, child := range fn.AnonFuncs {
 			selectFunction(child, identity{id.pkg, id.name + strings.TrimPrefix(child.Name(), fn.Name())})
 		}
 	}
+	selectedPackages := make(map[string]bool)
 	for _, p := range pkgs {
 		// go/packages also returns a generated test executable. Never display it.
 		if opts.Tests && p.Name == "main" && strings.HasSuffix(p.PkgPath, ".test") && p.Imports["testing/internal/testdeps"] != nil {
 			continue
 		}
+		selectedPackages[p.PkgPath] = true
 		for _, file := range p.Syntax {
 			for _, decl := range file.Decls {
 				if decl, ok := decl.(*ast.FuncDecl); ok {
@@ -108,31 +185,54 @@ func Analyze(patterns []string, opts Options) ([]Record, error) {
 			}
 		}
 		if sp := prog.Package(p.Types); sp != nil {
-			selectFunction(sp.Func("init"), identity{p.PkgPath, "init"})
+			// Keep source literals in package variable initializers, but not the
+			// synthetic package init (which also calls dependency initializers).
+			if init := sp.Func("init"); init != nil {
+				for _, child := range init.AnonFuncs {
+					selectFunction(child, identity{p.PkgPath, child.Name()})
+				}
+			}
 		}
 	}
+	g.selectedPackages = selectedPackages
 	for fn := range selected {
 		g.ensure(fn)
 	}
+	g.resolveCandidates(selected)
 	g.build()
 	g.propagate()
 
 	// Test variants and generic instantiations may share a source identity.
 	// Merge before emitting so each function/effect pair appears exactly once.
 	type sets struct {
-		direct, reachable effects.Set
-		uncertain         bool
+		direct, reachable, inherited                   effects.Set
+		uncertain, directUncertain, inheritedUncertain bool
 	}
 	merged := make(map[identity]sets)
-	for fn, id := range selected {
-		n := g.nodes[fn]
+	for _, id := range selected {
+		merged[id] = sets{}
+	}
+	for fn, n := range g.nodes {
+		source := fn
+		if origin := fn.Origin(); origin != nil {
+			source = origin
+		}
+		id, ok := selected[source]
+		if !ok {
+			continue
+		}
 		s := merged[id]
 		s.direct |= n.direct
 		s.reachable |= n.reachable
+		s.inherited |= n.inherited
 		s.uncertain = s.uncertain || n.uncertain
+		s.directUncertain = s.directUncertain || n.directUncertain
+		s.inheritedUncertain = s.inheritedUncertain || n.inheritedUncertain
 		merged[id] = s
 	}
+	stats := Stats{Packages: len(selectedPackages), SourceFunctions: len(merged)}
 	records := make([]Record, 0, len(merged))
+	inventory := make([]Record, 0, len(merged))
 	for id, s := range merged {
 		set := s.reachable
 		if opts.Direct {
@@ -144,9 +244,32 @@ func Analyze(patterns []string, opts Options) ([]Record, error) {
 		}
 		r := Record{Package: id.pkg, Function: id.name, Effects: []Effect{}, Uncertain: s.uncertain}
 		for _, name := range set.Names() {
-			r.Effects = append(r.Effects, Effect{Identifier: name, Direct: direct[name]})
+			if matches(name, opts.Effect) {
+				r.Effects = append(r.Effects, Effect{Identifier: name, Direct: direct[name]})
+			}
 		}
-		if len(r.Effects) != 0 || r.Uncertain {
+		full := Record{Package: id.pkg, Function: id.name, Effects: []Effect{}, Uncertain: s.uncertain}
+		for _, name := range s.reachable.Names() {
+			full.Effects = append(full.Effects, Effect{Identifier: name, Direct: direct[name]})
+		}
+		inventory = append(inventory, full)
+		if s.reachable != 0 {
+			stats.Effectful++
+		} else if s.uncertain {
+			stats.UnresolvedOnly++
+		} else {
+			stats.Uncharacterized++
+		}
+		if s.direct != 0 {
+			stats.Direct++
+		}
+		if s.inherited != 0 {
+			stats.Inherited++
+		}
+		if s.uncertain {
+			stats.Uncertain++
+		}
+		if recordMatches(r, opts) && (opts.Effect == "" || len(r.Effects) != 0) && (opts.All || len(r.Effects) != 0 || r.Uncertain) {
 			records = append(records, r)
 		}
 	}
@@ -156,11 +279,58 @@ func Analyze(patterns []string, opts Options) ([]Record, error) {
 		}
 		return records[i].Function < records[j].Function
 	})
-	return records, nil
+	stats.Emitted = len(records)
+	stats.Omitted = stats.SourceFunctions - stats.Emitted
+	report := Report{Records: records, Stats: stats}
+	if opts.EffectView {
+		sort.Slice(inventory, func(i, j int) bool {
+			return symbolKey(Symbol{inventory[i].Package, inventory[i].Function}) < symbolKey(Symbol{inventory[j].Package, inventory[j].Function})
+		})
+		report.Effects = g.effectReport(opts, stats, inventory)
+	}
+	if opts.Details {
+		if opts.MaxPaths <= 0 {
+			opts.MaxPaths = 1000
+		}
+		if opts.MaxSites <= 0 {
+			opts.MaxSites = 1000
+		}
+		roots := make(map[Symbol]bool)
+		for _, r := range records {
+			roots[Symbol{r.Package, r.Function}] = true
+		}
+		report.Details = g.explain(opts, roots)
+		for id, s := range merged {
+			symbol := Symbol{id.pkg, id.name}
+			if roots[symbol] {
+				report.Details.Uncertainty = append(report.Details.Uncertainty, FunctionUncertainty{Symbol: symbol, Direct: s.directUncertain, Inherited: s.inheritedUncertain})
+			}
+		}
+		sort.Slice(report.Details.Uncertainty, func(i, j int) bool {
+			return symbolKey(report.Details.Uncertainty[i].Symbol) < symbolKey(report.Details.Uncertainty[j].Symbol)
+		})
+	}
+	return report, nil
 }
 
 func (g *graph) isStandardLibrary(fn *ssa.Function) bool {
+	if obj, ok := fn.Object().(*types.Func); ok && obj.Pkg() != nil {
+		return g.standard[obj.Pkg()]
+	}
 	return fn.Pkg != nil && fn.Pkg.Pkg != nil && g.standard[fn.Pkg.Pkg]
+}
+
+func sourceFunction(fn *ssa.Function) bool {
+	if origin := fn.Origin(); origin != nil {
+		fn = origin
+	}
+	switch fn.Syntax().(type) {
+	case *ast.FuncDecl, *ast.FuncLit:
+		return true
+	}
+	// Body-less declarations are source functions too; synthetic wrappers and
+	// lowered range-over-function yield helpers are not source declarations.
+	return fn.Synthetic == "" && fn.Object() != nil && fn.Pos().IsValid()
 }
 
 func localName(obj *types.Func) string {
@@ -169,24 +339,42 @@ func localName(obj *types.Func) string {
 }
 
 type node struct {
-	fn                *ssa.Function
-	direct, reachable effects.Set
-	uncertain         bool
-	callers           map[*node]bool
+	fn                                  *ssa.Function
+	direct, reachable                   effects.Set
+	inherited                           effects.Set
+	uncertain                           bool
+	directUncertain, inheritedUncertain bool
+	callers, candidateCallers           map[*node]bool
+	incoming                            []callLink // Detailed reverse traversal on the same SSA nodes.
+}
+
+type callLink struct {
+	caller    *node
+	edge      string // Empty only for non-source SSA forwarding instructions.
+	candidate bool   // VTA possibility, not an established call.
 }
 
 type graph struct {
-	prog     *ssa.Program
-	nodes    map[*ssa.Function]*node
-	pending  []*node
-	standard map[*types.Package]bool
+	prog             *ssa.Program
+	nodes            map[*ssa.Function]*node
+	pending          []*node
+	standard         map[*types.Package]bool
+	packageIDs       map[*types.Package]string
+	selected         map[*ssa.Function]identity
+	selectedPackages map[string]bool
+	detailed         bool
+	sites            map[string]*Site
+	edges            map[string]CallEdge
+	fileKeys         map[string]string
+	siteNodes        map[string]map[*node]bool
+	candidates       map[ssa.CallInstruction][]*ssa.Function
 }
 
 func (g *graph) ensure(fn *ssa.Function) *node {
 	if n := g.nodes[fn]; n != nil {
 		return n
 	}
-	n := &node{fn: fn, callers: make(map[*node]bool)}
+	n := &node{fn: fn, callers: make(map[*node]bool), candidateCallers: make(map[*node]bool)}
 	g.nodes[fn] = n
 	g.pending = append(g.pending, n)
 	return n
@@ -199,12 +387,17 @@ func summary(fn *ssa.Function) (effects.Set, bool) {
 
 func summaryCall(fn *ssa.Function, call *ssa.CallCommon) (effects.Set, bool) {
 	obj, _ := fn.Object().(*types.Func)
+	if s, ok := effects.LookupInterface(obj); ok {
+		// A bound interface method still has open implementation dispatch.
+		return s | effects.Unknown, true
+	}
 	return effects.LookupCall(obj, call.Args)
 }
 
 func applySummary(n *node, set effects.Set) {
 	if set&effects.Unknown != 0 {
 		n.uncertain = true
+		n.directUncertain = true
 		set &^= effects.Unknown
 	}
 	n.direct |= set
@@ -216,10 +409,15 @@ func (g *graph) build() {
 		g.pending = g.pending[:len(g.pending)-1]
 		if s, ok := summary(n.fn); ok {
 			applySummary(n, s)
+			// A selected summarized API is a boundary, not a fabricated call
+			// to itself. Its opacity can still originate at its declaration.
+			if s&effects.Unknown != 0 {
+				g.unknown(n, n.fn.Pos(), apiKey(n.fn), summaryReason(apiKey(n.fn), s))
+			}
 			continue
 		}
 		if len(n.fn.Blocks) == 0 {
-			n.uncertain = true // assembly, cgo, or missing implementation
+			g.unknown(n, n.fn.Pos(), apiKey(n.fn), "missing_body")
 		}
 		for _, b := range n.fn.Blocks {
 			for _, instr := range b.Instrs {
@@ -230,7 +428,7 @@ func (g *graph) build() {
 				call := site.Common()
 				if builtin, ok := call.Value.(*ssa.Builtin); ok {
 					if builtin.Name() == "print" || builtin.Name() == "println" {
-						n.uncertain = true // Output is outside the effect vocabulary.
+						g.unknown(n, site.Pos(), "builtin."+builtin.Name(), "unsupported_resolution")
 					}
 					continue
 				}
@@ -243,21 +441,96 @@ func (g *graph) build() {
 				} else {
 					targets, unknown = functionTargets(call.Value, make(map[ssa.Value]bool))
 				}
+				if call.IsInvoke() {
+					if s, ok := effects.LookupInterface(call.Method); ok {
+						applySummary(n, s)
+						g.addSite(n, site.Pos(), effects.Key(call.Method), s, "interface_summary", "")
+					}
+				}
 				if unknown {
-					n.uncertain = true
+					api, reason := "", "function_value"
+					if call.IsInvoke() {
+						api, reason = effects.Key(call.Method), "interface_dispatch"
+					}
+					g.unknown(n, site.Pos(), api, reason)
 				}
 				for _, target := range targets {
 					if s, ok := summaryCall(target, call); ok {
 						applySummary(n, s)
+						g.addSite(n, site.Pos(), apiKey(target), s, summaryRecognition(target), summaryReason(apiKey(target), s))
 					} else if len(target.Blocks) == 0 || g.isStandardLibrary(target) {
-						n.uncertain = true
+						reason := "unrecognized_stdlib"
+						if len(target.Blocks) == 0 {
+							reason = "missing_body"
+						}
+						if strings.HasPrefix(apiKey(target), "reflect.") {
+							reason = "reflection_opaque"
+						}
+						g.unknown(n, site.Pos(), apiKey(target), reason)
 					} else {
-						g.ensure(target).callers[n] = true
+						callee := g.ensure(target)
+						callee.callers[n] = true
+						if g.detailed {
+							callee.incoming = append(callee.incoming, callLink{caller: n, edge: g.addEdge(n, target, site.Pos(), false)})
+						}
+					}
+				}
+				// VTA candidates are deliberately additional, lower-confidence
+				// relationships. Keep the unresolved boundary above: libraries and
+				// external callers may still supply implementations VTA cannot see.
+				for _, target := range g.candidates[site] {
+					if containsFunction(targets, target) || target == nil || len(target.Blocks) == 0 || g.isStandardLibrary(target) {
+						continue
+					}
+					callee := g.ensure(target)
+					callee.candidateCallers[n] = true
+					if g.detailed {
+						callee.incoming = append(callee.incoming, callLink{caller: n, edge: g.addEdge(n, target, site.Pos(), true), candidate: true})
 					}
 				}
 			}
 		}
 	}
+}
+
+// resolveCandidates runs VTA over selected source functions and their closures.
+// This bounds the cost for library investigations while still modeling value
+// flow through the code under analysis. Edges are candidate evidence only.
+func (g *graph) resolveCandidates(selected map[*ssa.Function]identity) {
+	funcs := make(map[*ssa.Function]bool, len(selected))
+	for fn := range selected {
+		funcs[fn] = true
+	}
+	for _, n := range vta.CallGraph(funcs, nil).Nodes {
+		for _, edge := range n.Out {
+			if edge.Site != nil && edge.Callee != nil && edge.Callee.Func != nil && edge.Site.Common().StaticCallee() == nil {
+				g.candidates[edge.Site] = append(g.candidates[edge.Site], edge.Callee.Func)
+			}
+		}
+	}
+	for site, targets := range g.candidates {
+		sort.Slice(targets, func(i, j int) bool { return targets[i].String() < targets[j].String() })
+		g.candidates[site] = uniqueFunctions(targets)
+	}
+}
+
+func uniqueFunctions(in []*ssa.Function) []*ssa.Function {
+	out := in[:0]
+	for _, fn := range in {
+		if len(out) == 0 || out[len(out)-1] != fn {
+			out = append(out, fn)
+		}
+	}
+	return out
+}
+
+func containsFunction(in []*ssa.Function, want *ssa.Function) bool {
+	for _, fn := range in {
+		if fn == want {
+			return true
+		}
+	}
+	return false
 }
 
 // functionTargets handles SSA-known local values, including closures and phi
@@ -332,15 +605,19 @@ func (g *graph) invoke(call *ssa.CallCommon) ([]*ssa.Function, bool) {
 			uncertain = true
 			continue
 		}
-		if fn := g.prog.MethodValue(sel); fn != nil && !seen[fn] {
-			seen[fn] = true
-			targets = append(targets, fn)
+		if fn := g.prog.MethodValue(sel); fn != nil {
+			if !seen[fn] {
+				seen[fn] = true
+				targets = append(targets, fn)
+			}
+		} else {
+			uncertain = true
 		}
 	}
 	return targets, uncertain || len(targets) == 0
 }
 
-// Monotone reverse worklist: each node can gain at most twelve effect bits.
+// Monotone reverse worklist: nodes gain a bounded number of effect bits.
 // Cycles therefore terminate without recursion or traversal-order dependence.
 func (g *graph) propagate() {
 	queue := make([]*node, 0, len(g.nodes))
@@ -355,6 +632,8 @@ func (g *graph) propagate() {
 		queue = queue[1:]
 		queued[n] = false
 		for caller := range n.callers {
+			caller.inherited |= n.reachable
+			caller.inheritedUncertain = caller.inheritedUncertain || n.uncertain
 			changed := false
 			if next := caller.reachable | n.reachable; next != caller.reachable {
 				caller.reachable = next
@@ -369,5 +648,8 @@ func (g *graph) propagate() {
 				queue = append(queue, caller)
 			}
 		}
+		// Candidate edges intentionally propagate possible effects for discovery,
+		// but are not added to inherited/direct function summaries. Their only
+		// representation is the explicitly marked effect-view graph.
 	}
 }

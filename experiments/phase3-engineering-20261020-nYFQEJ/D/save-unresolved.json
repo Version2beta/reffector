@@ -1,0 +1,679 @@
+{
+  "schema_version": 1,
+  "groups": [],
+  "sites": [
+    {
+      "id": "site:2206ee3bde3d2bba52d1da730940c66aa83f0a25e177cf238031da3e1c549656",
+      "package": "github.com/klauspost/compress/zstd",
+      "function": "(*Encoder).encodeAll",
+      "kind": "call",
+      "api": "github.com/klauspost/compress/zstd.(encoder).WindowSize",
+      "apis": [
+        "github.com/klauspost/compress/zstd.(encoder).WindowSize"
+      ],
+      "operations": [
+        {
+          "api": "github.com/klauspost/compress/zstd.(encoder).WindowSize",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/klauspost/compress@v1.20.0/zstd/encoder.go",
+        "line": 762,
+        "column": 39
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:80b517d02ce920168a9a3b534f5bd87b3e2dbaca980208d47074685a873afbb8",
+      "package": "github.com/klauspost/compress/zstd",
+      "function": "(*Encoder).encodeAll",
+      "kind": "call",
+      "api": "github.com/klauspost/compress/zstd.(encoder).Reset",
+      "apis": [
+        "github.com/klauspost/compress/zstd.(encoder).Reset"
+      ],
+      "operations": [
+        {
+          "api": "github.com/klauspost/compress/zstd.(encoder).Reset",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/klauspost/compress@v1.20.0/zstd/encoder.go",
+        "line": 776,
+        "column": 12
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:0c4a9920c4c0ee7b80d1959e4176870cd8538c9c338eee4a883df5577ceabde2",
+      "package": "github.com/klauspost/compress/zstd",
+      "function": "(*Encoder).encodeAll",
+      "kind": "call",
+      "api": "github.com/klauspost/compress/zstd.(encoder).CRC",
+      "apis": [
+        "github.com/klauspost/compress/zstd.(encoder).CRC"
+      ],
+      "operations": [
+        {
+          "api": "github.com/klauspost/compress/zstd.(encoder).CRC",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/klauspost/compress@v1.20.0/zstd/encoder.go",
+        "line": 779,
+        "column": 18
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:91fcab6542ddeec0f813b9c5a04d7c698ea56c484457c53bc0370ceff9c1b68f",
+      "package": "github.com/klauspost/compress/zstd",
+      "function": "(*Encoder).encodeAll",
+      "kind": "call",
+      "api": "github.com/klauspost/compress/zstd.(encoder).Block",
+      "apis": [
+        "github.com/klauspost/compress/zstd.(encoder).Block"
+      ],
+      "operations": [
+        {
+          "api": "github.com/klauspost/compress/zstd.(encoder).Block",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/klauspost/compress@v1.20.0/zstd/encoder.go",
+        "line": 781,
+        "column": 19
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:2a4d66fe70741064f58c82eaa8f65d696ec285ecfb731a925b9404ba2496fe6c",
+      "package": "github.com/klauspost/compress/zstd",
+      "function": "(*Encoder).encodeAll",
+      "kind": "call",
+      "api": "github.com/klauspost/compress/zstd.(encoder).EncodeNoHist",
+      "apis": [
+        "github.com/klauspost/compress/zstd.(encoder).EncodeNoHist"
+      ],
+      "operations": [
+        {
+          "api": "github.com/klauspost/compress/zstd.(encoder).EncodeNoHist",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/klauspost/compress@v1.20.0/zstd/encoder.go",
+        "line": 784,
+        "column": 20
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:67a4bf369953b2b060f52d87800850fef191fe5007b73f60b3604d698bcb0bf7",
+      "package": "github.com/klauspost/compress/zstd",
+      "function": "(*Encoder).encodeAll",
+      "kind": "call",
+      "api": "github.com/klauspost/compress/zstd.(encoder).Encode",
+      "apis": [
+        "github.com/klauspost/compress/zstd.(encoder).Encode"
+      ],
+      "operations": [
+        {
+          "api": "github.com/klauspost/compress/zstd.(encoder).Encode",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/klauspost/compress@v1.20.0/zstd/encoder.go",
+        "line": 786,
+        "column": 14
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:49d92b1d3330211262938ab7eb7cd2cf23124ea23ba8bea1b964ffb0e2ce60f2",
+      "package": "github.com/klauspost/compress/zstd",
+      "function": "(*Encoder).encodeAll",
+      "kind": "call",
+      "api": "github.com/klauspost/compress/zstd.(encoder).Reset",
+      "apis": [
+        "github.com/klauspost/compress/zstd.(encoder).Reset"
+      ],
+      "operations": [
+        {
+          "api": "github.com/klauspost/compress/zstd.(encoder).Reset",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/klauspost/compress@v1.20.0/zstd/encoder.go",
+        "line": 802,
+        "column": 12
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:cd9712ddcf366d67c54cc6ed0ada503b375e854cb95be910c605cdc103fd5f60",
+      "package": "github.com/klauspost/compress/zstd",
+      "function": "(*Encoder).encodeAll",
+      "kind": "call",
+      "api": "github.com/klauspost/compress/zstd.(encoder).Block",
+      "apis": [
+        "github.com/klauspost/compress/zstd.(encoder).Block"
+      ],
+      "operations": [
+        {
+          "api": "github.com/klauspost/compress/zstd.(encoder).Block",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/klauspost/compress@v1.20.0/zstd/encoder.go",
+        "line": 803,
+        "column": 19
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:1026d4869fc7c1a4cb04ec7aea93872bf8dfd99ee81237a25e717490e108ccfb",
+      "package": "github.com/klauspost/compress/zstd",
+      "function": "(*Encoder).encodeAll",
+      "kind": "call",
+      "api": "github.com/klauspost/compress/zstd.(encoder).CRC",
+      "apis": [
+        "github.com/klauspost/compress/zstd.(encoder).CRC"
+      ],
+      "operations": [
+        {
+          "api": "github.com/klauspost/compress/zstd.(encoder).CRC",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/klauspost/compress@v1.20.0/zstd/encoder.go",
+        "line": 811,
+        "column": 19
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    },
+    {
+      "id": "site:943f4aba5dd1265b6f78abc9279244cf89ce74f20a4570cfd2a25f35bf717684",
+      "package": "github.com/klauspost/compress/zstd",
+      "function": "(*Encoder).encodeAll",
+      "kind": "call",
+      "api": "github.com/klauspost/compress/zstd.(encoder).Encode",
+      "apis": [
+        "github.com/klauspost/compress/zstd.(encoder).Encode"
+      ],
+      "operations": [
+        {
+          "api": "github.com/klauspost/compress/zstd.(encoder).Encode",
+          "effects": [],
+          "recognition": "unresolved",
+          "uncertainty_reasons": [
+            "interface_dispatch"
+          ],
+          "uncertain": true
+        }
+      ],
+      "uncertainty_reasons": [
+        "interface_dispatch"
+      ],
+      "location": {
+        "file": "/Users/rob/go/pkg/mod/github.com/klauspost/compress@v1.20.0/zstd/encoder.go",
+        "line": 814,
+        "column": 14
+      },
+      "effects": [],
+      "recognition": "unresolved",
+      "uncertain": true
+    }
+  ],
+  "unresolved_sites": [
+    "site:2206ee3bde3d2bba52d1da730940c66aa83f0a25e177cf238031da3e1c549656",
+    "site:80b517d02ce920168a9a3b534f5bd87b3e2dbaca980208d47074685a873afbb8",
+    "site:0c4a9920c4c0ee7b80d1959e4176870cd8538c9c338eee4a883df5577ceabde2",
+    "site:91fcab6542ddeec0f813b9c5a04d7c698ea56c484457c53bc0370ceff9c1b68f",
+    "site:2a4d66fe70741064f58c82eaa8f65d696ec285ecfb731a925b9404ba2496fe6c",
+    "site:67a4bf369953b2b060f52d87800850fef191fe5007b73f60b3604d698bcb0bf7",
+    "site:49d92b1d3330211262938ab7eb7cd2cf23124ea23ba8bea1b964ffb0e2ce60f2",
+    "site:cd9712ddcf366d67c54cc6ed0ada503b375e854cb95be910c605cdc103fd5f60",
+    "site:1026d4869fc7c1a4cb04ec7aea93872bf8dfd99ee81237a25e717490e108ccfb",
+    "site:943f4aba5dd1265b6f78abc9279244cf89ce74f20a4570cfd2a25f35bf717684"
+  ],
+  "reverse": [
+    {
+      "site": "site:2206ee3bde3d2bba52d1da730940c66aa83f0a25e177cf238031da3e1c549656",
+      "origins": [
+        "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132"
+      ],
+      "nodes": [
+        {
+          "id": "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132",
+          "depth": 0
+        },
+        {
+          "id": "node:3953c46ebe945432db7493e39127ef85555dc076836a72750d7b120f86987405",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:0962a5f658fdaf291ebf9ec92df308753a1e2b4c7844b64ed65f0917deb8d3d8"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:80b517d02ce920168a9a3b534f5bd87b3e2dbaca980208d47074685a873afbb8",
+      "origins": [
+        "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132"
+      ],
+      "nodes": [
+        {
+          "id": "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132",
+          "depth": 0
+        },
+        {
+          "id": "node:3953c46ebe945432db7493e39127ef85555dc076836a72750d7b120f86987405",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:0962a5f658fdaf291ebf9ec92df308753a1e2b4c7844b64ed65f0917deb8d3d8"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:0c4a9920c4c0ee7b80d1959e4176870cd8538c9c338eee4a883df5577ceabde2",
+      "origins": [
+        "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132"
+      ],
+      "nodes": [
+        {
+          "id": "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132",
+          "depth": 0
+        },
+        {
+          "id": "node:3953c46ebe945432db7493e39127ef85555dc076836a72750d7b120f86987405",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:0962a5f658fdaf291ebf9ec92df308753a1e2b4c7844b64ed65f0917deb8d3d8"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:91fcab6542ddeec0f813b9c5a04d7c698ea56c484457c53bc0370ceff9c1b68f",
+      "origins": [
+        "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132"
+      ],
+      "nodes": [
+        {
+          "id": "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132",
+          "depth": 0
+        },
+        {
+          "id": "node:3953c46ebe945432db7493e39127ef85555dc076836a72750d7b120f86987405",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:0962a5f658fdaf291ebf9ec92df308753a1e2b4c7844b64ed65f0917deb8d3d8"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:2a4d66fe70741064f58c82eaa8f65d696ec285ecfb731a925b9404ba2496fe6c",
+      "origins": [
+        "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132"
+      ],
+      "nodes": [
+        {
+          "id": "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132",
+          "depth": 0
+        },
+        {
+          "id": "node:3953c46ebe945432db7493e39127ef85555dc076836a72750d7b120f86987405",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:0962a5f658fdaf291ebf9ec92df308753a1e2b4c7844b64ed65f0917deb8d3d8"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:67a4bf369953b2b060f52d87800850fef191fe5007b73f60b3604d698bcb0bf7",
+      "origins": [
+        "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132"
+      ],
+      "nodes": [
+        {
+          "id": "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132",
+          "depth": 0
+        },
+        {
+          "id": "node:3953c46ebe945432db7493e39127ef85555dc076836a72750d7b120f86987405",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:0962a5f658fdaf291ebf9ec92df308753a1e2b4c7844b64ed65f0917deb8d3d8"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:49d92b1d3330211262938ab7eb7cd2cf23124ea23ba8bea1b964ffb0e2ce60f2",
+      "origins": [
+        "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132"
+      ],
+      "nodes": [
+        {
+          "id": "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132",
+          "depth": 0
+        },
+        {
+          "id": "node:3953c46ebe945432db7493e39127ef85555dc076836a72750d7b120f86987405",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:0962a5f658fdaf291ebf9ec92df308753a1e2b4c7844b64ed65f0917deb8d3d8"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:cd9712ddcf366d67c54cc6ed0ada503b375e854cb95be910c605cdc103fd5f60",
+      "origins": [
+        "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132"
+      ],
+      "nodes": [
+        {
+          "id": "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132",
+          "depth": 0
+        },
+        {
+          "id": "node:3953c46ebe945432db7493e39127ef85555dc076836a72750d7b120f86987405",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:0962a5f658fdaf291ebf9ec92df308753a1e2b4c7844b64ed65f0917deb8d3d8"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:1026d4869fc7c1a4cb04ec7aea93872bf8dfd99ee81237a25e717490e108ccfb",
+      "origins": [
+        "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132"
+      ],
+      "nodes": [
+        {
+          "id": "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132",
+          "depth": 0
+        },
+        {
+          "id": "node:3953c46ebe945432db7493e39127ef85555dc076836a72750d7b120f86987405",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:0962a5f658fdaf291ebf9ec92df308753a1e2b4c7844b64ed65f0917deb8d3d8"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    },
+    {
+      "site": "site:943f4aba5dd1265b6f78abc9279244cf89ce74f20a4570cfd2a25f35bf717684",
+      "origins": [
+        "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132"
+      ],
+      "nodes": [
+        {
+          "id": "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132",
+          "depth": 0
+        },
+        {
+          "id": "node:3953c46ebe945432db7493e39127ef85555dc076836a72750d7b120f86987405",
+          "depth": 1
+        }
+      ],
+      "edges": [
+        "link:0962a5f658fdaf291ebf9ec92df308753a1e2b4c7844b64ed65f0917deb8d3d8"
+      ],
+      "revisit": false,
+      "cycle": false,
+      "truncated": {
+        "sites": false,
+        "edges": false,
+        "depth": true
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132",
+      "package": "github.com/klauspost/compress/zstd",
+      "function": "(*Encoder).encodeAll",
+      "variant": "github.com/klauspost/compress/zstd|(*github.com/klauspost/compress/zstd.Encoder).encodeAll|func(enc github.com/klauspost/compress/zstd[github.com/klauspost/compress/zstd].encoder, src []byte, dst []byte) []byte|",
+      "selected": false,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    },
+    {
+      "id": "node:3953c46ebe945432db7493e39127ef85555dc076836a72750d7b120f86987405",
+      "package": "github.com/klauspost/compress/zstd",
+      "function": "(*Encoder).EncodeAll",
+      "variant": "github.com/klauspost/compress/zstd|(*github.com/klauspost/compress/zstd.Encoder).EncodeAll|func(src []byte, dst []byte) []byte|",
+      "selected": false,
+      "synthetic": false,
+      "uncertain": true,
+      "direct_uncertainty": true,
+      "inherited_uncertainty": true
+    }
+  ],
+  "edges": [
+    {
+      "id": "link:0962a5f658fdaf291ebf9ec92df308753a1e2b4c7844b64ed65f0917deb8d3d8",
+      "caller": "node:3953c46ebe945432db7493e39127ef85555dc076836a72750d7b120f86987405",
+      "callee": "node:2d71f8a1e594b71b6967c2ecbee1d9d082a98949562b8023388daa3a6c7fa132",
+      "source": {
+        "id": "edge:0704f9ecedc5df1289e7efd1d1e5fd24167c466aa65c324b5afc81c5eaa40731",
+        "caller": {
+          "package": "github.com/klauspost/compress/zstd",
+          "function": "(*Encoder).EncodeAll"
+        },
+        "callee": {
+          "package": "github.com/klauspost/compress/zstd",
+          "function": "(*Encoder).encodeAll"
+        },
+        "location": {
+          "file": "/Users/rob/go/pkg/mod/github.com/klauspost/compress@v1.20.0/zstd/encoder.go",
+          "line": 728,
+          "column": 20
+        }
+      },
+      "synthetic": false
+    }
+  ],
+  "coverage": {
+    "packages_selected": 6,
+    "source_functions": 446,
+    "emitted": 13,
+    "omitted": 433,
+    "direct": 15,
+    "inherited": 40,
+    "uncertain": 348,
+    "effectful": 50,
+    "unresolved_only": 300,
+    "no_effects_no_uncertainty": 96,
+    "packages": [
+      "github.com/restic/restic/internal/backend/local",
+      "github.com/restic/restic/internal/repository",
+      "github.com/restic/restic/internal/repository/crypto",
+      "github.com/restic/restic/internal/repository/hashing",
+      "github.com/restic/restic/internal/repository/index",
+      "github.com/restic/restic/internal/repository/pack"
+    ],
+    "operation_sites_identified": 51,
+    "selected_operation_sites": 38,
+    "dependency_operation_sites": 13,
+    "unresolved_sites_identified": 1021,
+    "sites_matching_filters": 50,
+    "sites_emitted": 10
+  },
+  "truncated": {
+    "sites": true,
+    "edges": false,
+    "depth": true
+  }
+}

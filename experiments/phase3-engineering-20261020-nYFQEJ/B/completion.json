@@ -1,0 +1,53 @@
+{
+  "case": "B",
+  "elapsed_seconds": 257.299,
+  "exit_status": 0,
+  "timed_out": false,
+  "report_present": true,
+  "assistant_stop_reasons": [
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "toolUse",
+    "stop"
+  ],
+  "settled_events": [
+    {
+      "type": "agent_settled",
+      "aborted": false
+    }
+  ],
+  "malformed_jsonl_records": 0,
+  "actual_message_models": [
+    [
+      "openai-codex",
+      "gpt-6.1-sol"
+    ]
+  ],
+  "tool_calls": 41,
+  "provider_reported_total_tokens": 1047366,
+  "catalog_cost_total_not_billing_evidence": 0.3441144
+}

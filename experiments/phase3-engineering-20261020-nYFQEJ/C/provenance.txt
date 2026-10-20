@@ -1,0 +1,75 @@
+/Users/rob/Development/reffector/experiments/caddy
+0e392c89baa50f558bc24440482c5d57fff4499f
+PI_PROVIDER=openai-codex
+PI_MODEL=gpt-6.1-sol
+PI_REASONING_LEVEL=high
+PI_SESSION_ID=01a15a5c-bb7c-7056-8eba-f8332de825b6
+PI_SESSION_FILE=/Users/rob/Development/reffector/experiments/phase3-engineering-20261020-nYFQEJ/C/sessions/2026-10-20T17-29-49-181Z_01a15a5c-bb7c-7056-8eba-f8332de825b6.jsonl
+ea99f629183bfafaf5764bc9eee86902f5e574a39a2a55ebdf41284146173297  /Users/rob/.agents/skills/reffector/SKILL.md
+ad9f0ac67b2d512880197e24e4b6be7077553497750380a4af7bc6c8c138ff97  /Users/rob/Development/reffector/experiments/phase3-engineering-20261020-nYFQEJ/bin/reffector
+go version go1.27.2 darwin/arm64
+/Users/rob/Development/reffector/experiments/phase3-engineering-20261020-nYFQEJ/bin/reffector: go1.27.2
+	path	github.com/Version2beta/reffector/cmd/reffector
+	mod	github.com/Version2beta/reffector	v0.0.0-20261016233039-5553a1d13011+dirty	
+	dep	golang.org/x/mod	v0.42.0	h1:ICeL3t2L30ljSPHHxDnR4fqVcBt/zR2zJAb9juavmQg=
+	dep	golang.org/x/sync	v0.24.0	h1:iqiDrGoDgyuvAKrhLQthUEzU/R378N78gXbBjxed7oA=
+	dep	golang.org/x/tools	v0.52.0	h1:ryxg4U63oaUYk7uOLTF37n43f4qgtGvqV4Ioit1BaEs=
+	build	-buildmode=exe
+	build	-compiler=gc
+	build	DefaultGODEBUG=tracebacklabels=0,x509sslcertoverrideplatform=0
+	build	CGO_ENABLED=1
+	build	CGO_CFLAGS=
+	build	CGO_CPPFLAGS=
+	build	CGO_CXXFLAGS=
+	build	CGO_LDFLAGS=
+	build	GOARCH=arm64
+	build	GOOS=darwin
+	build	GOARM64=v8.0
+	build	vcs=git
+	build	vcs.revision=5553a1d13011bf638148661f6a23bf561c3eef5a
+	build	vcs.time=2026-10-16T23:30:39Z
+	build	vcs.modified=true
+Usage: reffector [flags] [packages]
+       reffector skill install
+Report statically reachable side effects; local directories recurse (default .)
+Install the bundled Pi skill with: reffector skill install
+  -all
+    	include full source inventory, independently of effect-view filters
+  -api string
+    	select an exact Go API/method identity (effect view)
+  -details
+    	write compatibility function/witness JSON (implies -view functions -json)
+  -direct
+    	direct function effects; effect view restricts origins to selected roots
+  -effect string
+    	filter effect identifiers by substring (e.g. fs.rename, resource.release); see README for vocabulary
+  -exact
+    	select local directory packages without subpackages
+  -function string
+    	select source-root functions by substring; prefix = for one exact function
+  -json
+    	write structured JSON for the selected view
+  -max-depth int
+    	maximum reverse source-call depth (or compatibility witness depth); zero shows origins (default 6)
+  -max-edges int
+    	maximum unique reverse edges (effect view) (default 1000)
+  -max-paths int
+    	compatibility -details witness budget (default 1000)
+  -max-sites int
+    	maximum source sites (default 1000)
+  -operation string
+    	filter site API identities by substring (effect view or -details)
+  -package string
+    	select source-root packages by substring (summaries in function view)
+  -reason string
+    	filter uncertainty reasons by substring, e.g. interface_dispatch (effect view)
+  -site string
+    	select one canonical direct site ID (effect view)
+  -stats
+    	write coverage counts as JSON to stderr
+  -tests
+    	include functions defined in test files
+  -unresolved
+    	switch from recognized operations to unresolved-only leads (effect view)
+  -view string
+    	output view: effects (groups/sites/reverse callers) or functions (compatible summaries) (default "effects")

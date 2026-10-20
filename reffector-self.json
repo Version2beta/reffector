@@ -1,0 +1,287 @@
+[
+  {
+    "package": "reffector/cmd/reffector",
+    "function": "init",
+    "effects": [
+      {
+        "identifier": "env.read",
+        "direct": false
+      }
+    ],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/cmd/reffector",
+    "function": "main",
+    "effects": [
+      {
+        "identifier": "env.read",
+        "direct": false
+      },
+      {
+        "identifier": "fs.create",
+        "direct": false
+      },
+      {
+        "identifier": "fs.read",
+        "direct": false
+      },
+      {
+        "identifier": "fs.remove",
+        "direct": false
+      },
+      {
+        "identifier": "fs.write",
+        "direct": false
+      },
+      {
+        "identifier": "process.exec",
+        "direct": false
+      },
+      {
+        "identifier": "process.exit",
+        "direct": true
+      }
+    ],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/cmd/reffector",
+    "function": "run",
+    "effects": [
+      {
+        "identifier": "env.read",
+        "direct": false
+      },
+      {
+        "identifier": "fs.create",
+        "direct": false
+      },
+      {
+        "identifier": "fs.read",
+        "direct": false
+      },
+      {
+        "identifier": "fs.remove",
+        "direct": false
+      },
+      {
+        "identifier": "fs.write",
+        "direct": false
+      },
+      {
+        "identifier": "process.exec",
+        "direct": false
+      }
+    ],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/cmd/reffector",
+    "function": "run$1",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/analyzer",
+    "function": "(*graph).build",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/analyzer",
+    "function": "(*graph).invoke",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/analyzer",
+    "function": "Analyze",
+    "effects": [
+      {
+        "identifier": "env.read",
+        "direct": false
+      },
+      {
+        "identifier": "fs.create",
+        "direct": false
+      },
+      {
+        "identifier": "fs.read",
+        "direct": false
+      },
+      {
+        "identifier": "fs.remove",
+        "direct": false
+      },
+      {
+        "identifier": "fs.write",
+        "direct": false
+      },
+      {
+        "identifier": "process.exec",
+        "direct": false
+      }
+    ],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/analyzer",
+    "function": "Analyze$3",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/analyzer",
+    "function": "concreteValues",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/analyzer",
+    "function": "functionTargets",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/analyzer",
+    "function": "init",
+    "effects": [
+      {
+        "identifier": "env.read",
+        "direct": false
+      }
+    ],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/analyzer",
+    "function": "loadConfig",
+    "effects": [
+      {
+        "identifier": "env.read",
+        "direct": true
+      },
+      {
+        "identifier": "fs.create",
+        "direct": true
+      },
+      {
+        "identifier": "fs.read",
+        "direct": true
+      },
+      {
+        "identifier": "fs.remove",
+        "direct": false
+      },
+      {
+        "identifier": "fs.write",
+        "direct": true
+      },
+      {
+        "identifier": "process.exec",
+        "direct": true
+      }
+    ],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/analyzer",
+    "function": "loadConfig$2",
+    "effects": [
+      {
+        "identifier": "fs.read",
+        "direct": true
+      }
+    ],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/analyzer",
+    "function": "loadConfig$3",
+    "effects": [
+      {
+        "identifier": "fs.remove",
+        "direct": true
+      }
+    ],
+    "uncertain": false
+  },
+  {
+    "package": "reffector/internal/analyzer",
+    "function": "localName",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/analyzer",
+    "function": "summary",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/analyzer",
+    "function": "summaryCall",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/effects",
+    "function": "(Set).Names",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/effects",
+    "function": "Key",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/effects",
+    "function": "Lookup",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/effects",
+    "function": "LookupCall",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/effects",
+    "function": "formatSliceIsBasic",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/effects",
+    "function": "formatValueIsBasic",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/effects",
+    "function": "init",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/output",
+    "function": "Write",
+    "effects": [],
+    "uncertain": true
+  },
+  {
+    "package": "reffector/internal/output",
+    "function": "init",
+    "effects": [
+      {
+        "identifier": "env.read",
+        "direct": false
+      }
+    ],
+    "uncertain": true
+  }
+]

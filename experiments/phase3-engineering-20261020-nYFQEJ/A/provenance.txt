@@ -1,0 +1,32 @@
+cwd=/Users/rob/Development/reffector/experiments/caddy
+HEAD=0e392c89baa50f558bc24440482c5d57fff4499f
+status porcelain follows (empty means clean):
+PI_PROVIDER=openai-codex
+PI_MODEL=gpt-6.1-sol
+PI_REASONING_LEVEL=high
+PI_SESSION_ID=01a15a5c-bb81-7692-9ce3-17506538a1a1
+PI_SESSION_FILE=/Users/rob/Development/reffector/experiments/phase3-engineering-20261020-nYFQEJ/A/sessions/2026-10-20T17-29-49-186Z_01a15a5c-bb81-7692-9ce3-17506538a1a1.jsonl
+ea99f629183bfafaf5764bc9eee86902f5e574a39a2a55ebdf41284146173297  /Users/rob/.agents/skills/reffector/SKILL.md
+ad9f0ac67b2d512880197e24e4b6be7077553497750380a4af7bc6c8c138ff97  /Users/rob/Development/reffector/experiments/phase3-engineering-20261020-nYFQEJ/bin/reffector
+go version go1.27.2 darwin/arm64
+/Users/rob/Development/reffector/experiments/phase3-engineering-20261020-nYFQEJ/bin/reffector: go1.27.2
+	path	github.com/Version2beta/reffector/cmd/reffector
+	mod	github.com/Version2beta/reffector	v0.0.0-20261016233039-5553a1d13011+dirty	
+	dep	golang.org/x/mod	v0.42.0	h1:ICeL3t2L30ljSPHHxDnR4fqVcBt/zR2zJAb9juavmQg=
+	dep	golang.org/x/sync	v0.24.0	h1:iqiDrGoDgyuvAKrhLQthUEzU/R378N78gXbBjxed7oA=
+	dep	golang.org/x/tools	v0.52.0	h1:ryxg4U63oaUYk7uOLTF37n43f4qgtGvqV4Ioit1BaEs=
+	build	-buildmode=exe
+	build	-compiler=gc
+	build	DefaultGODEBUG=tracebacklabels=0,x509sslcertoverrideplatform=0
+	build	CGO_ENABLED=1
+	build	CGO_CFLAGS=
+	build	CGO_CPPFLAGS=
+	build	CGO_CXXFLAGS=
+	build	CGO_LDFLAGS=
+	build	GOARCH=arm64
+	build	GOOS=darwin
+	build	GOARM64=v8.0
+	build	vcs=git
+	build	vcs.revision=5553a1d13011bf638148661f6a23bf561c3eef5a
+	build	vcs.time=2026-10-16T23:30:39Z
+	build	vcs.modified=true

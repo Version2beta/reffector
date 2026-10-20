@@ -1,6 +1,6 @@
 .TH REFFECTOR 1 "2026-10-16" "reffector" "User Commands"
 .SH NAME
-reffector \- report statically reachable Go side effects
+reffector \- investigate Go effects by source site and reverse callers
 .SH SYNOPSIS
 .B reffector
 .RI [ flags ]
@@ -8,165 +8,271 @@ reffector \- report statically reachable Go side effects
 .br
 .B reffector skill install
 .SH DESCRIPTION
-.B reffector
-analyzes Go source without running its functions, initializers, or tests.
-It reports recognized externally observable operations reachable from selected
-functions, directly or through calls. It does not modify analyzed source and
-does not perform refactoring.
+Analyzes Go source without executing functions, initializers or tests, modifying
+analyzed source, or performing refactoring. The default view is effect category,
+then distinct direct source operation site, then reverse caller relationships.
+Results describe possible static reachability, not proof of execution.
 .PP
-Packages use Go package-pattern semantics through
-.BR golang.org/x/tools/go/packages .
-Examples include
-.BR . ,
-.BR ./billing ,
-.BR ./... ,
-.BR ./internal/... ,
-and import paths. No arguments select
-.BR . .
-Dependencies are inspected for propagation but normally are not displayed.
-The current Go build environment selects files.
+Local directory arguments recurse, including the default current directory.
+Use -exact to select just each named local package. Explicit Go patterns such
+as ./... and import paths are preserved. The current Go build environment
+selects files. Dependencies are inspected for propagation; operation origins
+can live in dependencies reached from selected source functions.
+.SH INVESTIGATION
+Start with effect groups at -max-depth 0. Select independent operation sites,
+then expand reverse callers. Inspect controlling source, policy, authorization,
+failure handling and cleanup. Compare independent paths, not merely shared
+category names. Propose simplification only when justified: identify the old
+independent responsibilities or bypasses that would disappear, where effects
+remain, and tests that verify behavior. Never consolidate automatically because
+two sites share a category. Completing analysis is not completing a review.
 .SH OPTIONS
 .TP
-.B -direct
-Report only effects directly attributed to each function.
-.TP
-.B -tests
-Include functions defined in internal and external test files. Generated test
-executables are not displayed or run.
+.B -view effects|functions
+Default effects: readable groups, canonical sites and bounded reverse graph.
+Functions: compatible function/effect text pairs or function-record JSON array.
 .TP
 .B -json
-Write function-summary JSON instead of text pairs.
+Write structured JSON for the selected view. Deliberate compatibility change:
+-json alone is now an effect-report object, not a function array. Use
+-view functions -json for the unchanged function-record schema.
 .TP
-.BR -h , " " -help
-Print usage and exit successfully.
-.SH SKILL INSTALLATION
-.B reffector skill install
-installs the bundled Codex skill at
-.BR ~/.agents/skills/reffector/SKILL.md .
-The canonical embedded Markdown is written on first installation and a copy
-previously installed by reffector is updated on repeated installation. An
-unmanaged or locally modified SKILL.md is refused rather than overwritten.
-The command creates needed directories and reports the destination.
-.PP
-The skill is optional. In Codex, use
-.B $reffector find
-with an optional Go package argument for an advisory analysis of opportunities
-to separate computation from external effects. It makes no code changes; only
-.B find
-is implemented.
-.SH OUTPUT
-Default output contains sorted, deduplicated function/effect pairs:
-.PP
-.nf
-example.com/app.Load fs.read
-example.com/app.(*Store).Save db.exec
-.fi
-.PP
-Methods include their receiver type. Closures use suffixes such as
-.BR $1 .
-Functions with no recognized effects are omitted from text output.
-.PP
-JSON is an array of function summaries. Each has full
-.B package
-import path,
-.B function
-identity,
-.B effects
-array, and boolean
-.BR uncertain .
-Each effects item has an
-.B identifier
-and boolean
-.BR direct .
-An empty effects array is valid. Uncertainty is separate from effects: it means
-an unresolved or opaque call is reachable. A function with no known effect but
-uncertainty is visible only in JSON. An empty effects array, or absence from
-text output, never proves purity.
-.SH SIDE EFFECTS
-The supported vocabulary is:
-.BR fs.read ,
-.BR fs.write ,
-.BR fs.create ,
-.BR fs.remove ,
-.BR net.connect ,
-.BR net.listen ,
-.BR process.exec ,
-.BR process.exit ,
-.BR env.read ,
-.BR env.write ,
-.BR db.query ,
-and
-.BR db.exec .
-They respectively describe filesystem reads, writes, creation and removal;
-network connection and listening; external-process start and os.Exit process
-termination; environment reads and writes; and database query and command
-operations.
-.PP
-Summaries are package- and receiver-qualified, never inferred from a method
-name. The table covers common APIs in os (including File and Root),
-path/filepath, io/ioutil, net, crypto/tls, net/http, os/exec, and database/sql.
-Basic-argument fmt.Sprintf, nil-qualifier go/types.TypeString, and bytes.Buffer
-methods are known effect-free boundaries. Formatting or qualifier callbacks
-that can execute application code are uncertain instead. os.File.Write is
-classified fs.write, though a descriptor can refer to a pipe, device, or
-standard output. File.Close has no filesystem-write classification.
-.PP
-When os.OpenFile has a constant flags argument, read-only access reports
-fs.read and write/create flags report only applicable effects. Unknown flags
-conservatively report reading, writing, and creation.
-.SH DIRECT AND TRANSITIVE EFFECTS
-A call to a summarized API is direct. Effects of ordinary application helpers
-are inherited. For example, if Load calls os.ReadFile and Process calls Load,
-both report fs.read normally, while
+.B -details
+Compatibility function/witness JSON object (records, stats, details). Implies
+function view and JSON; conflicts with explicit -view effects. Retains shortest
+witnesses rather than the full bounded reverse subgraph.
+.TP
+.B -exact
+Do not recursively expand local directory arguments.
+.TP
+.B -tests
+Include internal/external test-file functions, never execute tests. Generated
+test executables are excluded; source variants merge only in summaries
+and inventory.
+.TP
+.B -all
+Add full unfiltered selected source inventory in effect view, even under
+filters.
+In function view, include empty summaries (summary filters still apply).
+Synthetic init, wrappers, lowered iterator helpers and test executables are not
+source inventory; source closures and explicit init declarations are included.
+.TP
+.B -stats
+Also write coverage JSON to stderr. Effect reports always include coverage.
+.TP
 .B -direct
-reports it only for Load. Recursive cycles converge through a monotone
-worklist.
+Restrict origins to selected roots rather than reachable dependency helpers.
+In function view, report only direct effect categories; uncertainty still
+propagates.
+.TP
+.B -package substring, -function substring
+Select source roots by case-sensitive substring, retaining their reachable
+helper origins. Prefix a function name with = for an exact local function
+identity, e.g. -function '=(*App).Start'. Unlike substring matching, this does
+not select uncalled source closures as independent roots. Reverse callers
+stay within this reachable subgraph; remove root filters to see other callers.
+Function-view filters select summary/witness roots.
+.TP
+.B -effect substring
+Select effect categories by case-sensitive substring. Does not rewrite site
+metadata or the full effect-view inventory.
+.TP
+.B -api identity
+Select an exact package/receiver-qualified API, such as os.ReadFile or
+net/http.(ResponseWriter).WriteHeader. Effect view only.
+.TP
+.B -operation substring
+Explicitly substring-based API search. Effect view or compatibility -details;
+does not filter function-summary records.
+.TP
+.B -site ID
+Select one canonical direct site ID copied from output. Effect view only.
+.TP
+.B -unresolved
+Switch from the default recognized operation sites to unresolved leads without
+recognized effects, not confirmed operation sites. Effect view only. Semantic
+summaries with known effects and open dispatch
+remain in their effect categories, not this unresolved-only selection.
+.TP
+.B -reason substring
+Select uncertainty reasons by case-sensitive substring in the effect view.
+Works on recognized operations or, with -unresolved, effect-free leads.
+For example, -unresolved -reason interface_dispatch excludes opaque stdlib
+logging calls, but does not classify remaining calls as consequential.
+Combine with -api or -operation and inspect the cited interface contract.
+Site metadata and coverage remain unchanged. Keep -unresolved when revisiting
+an unresolved-only site with -site ID.
+.TP
+.B -max-depth N
+Maximum reverse source-call depth, default 6. Zero shows origins only; one adds
+immediate callers. At positive depths synthetic SSA forwarding costs zero source
+edges. All supported edges among discovered nodes are retained within limits,
+including cycle edges between boundary nodes. In -details, bounds witness
+length.
+.TP
+.B -max-sites N
+Maximum emitted source sites, default 1000, positive.
+.TP
+.B -max-edges N
+Maximum unique emitted reverse edges across sites, default 1000, positive.
+Shared edges consume the budget once. Effect view only.
+.TP
+.B -max-paths N
+Compatibility -details witness budget, default 1000, positive. Not a
+reverse-graph
+path enumeration option.
+.TP
+.B -h, -help
+Print usage and exit successfully.
+.SH EFFECT OUTPUT
+Human output defines sites once and references them from effect groups. Each
+site shows source symbol, exact APIs, file/line/column, recognition, effects and
+uncertainty reasons. Local n1-style labels refer to shared nodes;
+caller -> callee
+lines cite exact source calls. Shared/revisited nodes and cycles are explicit.
+Use canonical site IDs, not local node labels, for later queries.
 .PP
-Direct effects do not make unresolved behavior certain. JSON uncertainty is
-propagated to callers independently of the effect set.
+Effect JSON has schema_version 1:
+.TP
+.B groups
+Effect identifiers and canonical site ID references. A multi-category operation
+uses the same site ID in every group; independent calls use independent IDs.
+.TP
+.B sites, unresolved_sites
+Canonical source-site definitions and unresolved-only ID references. Site-wide
+APIs/effects/reasons are unions. The operations array preserves each API
+alternative's own effects, recognition and uncertainty. Kind is call, or
+declaration for missing-body/opaque-boundary origins. Locations identify SSA
+calls (usually the opening parenthesis), or declarations. IDs use package,
+source function and location, not checkout directory, filters or traversal
+order;
+they are not stable across source-location changes.
+.TP
+.B reverse
+Per-site origin node IDs, node ID/depth references, edge ID references, revisit,
+cycle and truncated flags. This is a bounded subgraph, not one shortest path.
+.TP
+.B nodes, edges
+Shared variant-specific SSA-node definitions and edges. Nodes carry source
+symbols, variants, selected/dependency status and direct/inherited uncertainty.
+Edges reference caller/callee node IDs and source call evidence. Synthetic
+forwarding has synthetic=true and no fabricated source location. Never join
+nodes by source-symbol names: that can invent paths across incompatible generic
+instantiations or test variants.
+.TP
+.B coverage, inventory
+Coverage plus optional -all unfiltered source-function inventory.
+Emitted/omitted
+count the compatible summary projection, not graph size. Other counts retain
+selected packages/source functions across filters: effectful, direct, inherited,
+uncertain, unresolved_only, no_effects_no_uncertainty.
+Direct/inherited/uncertain
+can overlap. Site counts distinguish identified operations (selected versus
+dependency), unresolved-only leads, filter matches and emitted sites. Empty or
+no-effects/no-uncertainty results never prove purity.
+.TP
+.B truncated
+Report-level sites/edges/depth and per-reverse-graph edges/depth flags identify
+omissions. Cycle/revisit flags do not mean relationships were omitted. Limits
+bound output explanations, not Go loading/SSA cost. Reverse limits are in
+reverse[].truncated.
+.SH FUNCTION COMPATIBILITY
+-view functions text contains package.Function effect pairs, with receiver
+identities for methods and $1-style closure suffixes. Only recognized effects
+appear. JSON is an array of objects with exactly package, function, effects,
+uncertain. Each effects item has identifier and direct. Effects may be empty.
+Uncertain means unresolved or opaque behavior is reachable; it is not an effect.
+.PP
+-details emits records, stats and details. Sites group one deterministic
+shortest
+forward witness per selected root/site. Witness edge IDs reference
+details.call_edges; direct means zero edges. details.uncertainty distinguishes
+direct and inherited uncertainty (both may be true). Its depth/paths/sites
+truncation flags retain their previous meanings. Use the default reverse graph
+when alternate callers or multiple call sites matter. All projections use the
+same analysis, not separate resolution frameworks.
+.SH UNCERTAINTY
+Direct grouped origins retain reasons: interface_dispatch (open receiver),
+function_value (unsupported parameter/memory/result flow), missing_body,
+unrecognized_stdlib, reflection_opaque, callback (summary hooks/drivers), and
+unsupported_resolution (including builtin printing). Inherited uncertainty is
+traceable through graph edges or forward witnesses, not duplicated origins.
+Effect/API filters can hide origins; remove them or query -unresolved as
+appropriate.
+.PP
+Named ResponseWriter.Write/WriteHeader contracts report possible http.response
+while open dispatch remains uncertain, without a concrete target edge.
+A response
+may be recorded in memory. Unknown io.Writer.Write remains unclassified.
+.SH EFFECT VOCABULARY
+fs.read, fs.write, fs.create, fs.remove, fs.rename; net.connect, net.listen, net.close;
+http.response; resource.acquire, resource.release; process.exec, process.exit;
+env.read, env.write; db.query, db.exec.
+.PP
+Summaries use resolved Go package/receiver identities, never method names alone.
+Calls into summarized standard-library APIs are direct operations; effects
+reached through application helpers are inherited. Resource acquisition/release
+is distinct from filesystem mutation. File.Close is resource.release, not
+fs.write. Network half-close is net.close without full release.
+HTTP/TLS shutdown
+can retain callback uncertainty. These are possible operations, not successful
+acquisitions, ownership, lifetime or leak proofs. File descriptors can refer to
+pipes/devices/standard output. Constant os.OpenFile flags narrow effects;
+unknown
+flags retain possible reads, writes and creation.
+.PP
+io.Closer.Close, including embedded contracts such as io.ReadWriteCloser,
+reports resource.release. Open implementation dispatch remains uncertain;
+no concrete edge or network resource kind is inferred. Independently declared
+application Close methods are not matched by name. Application persistence
+interfaces retain API identity and reverse callers but are not classified as
+filesystem/database effects based on names such as Save.
+.PP
+os.Rename and os.(*Root).Rename additionally report fs.rename, a distinct
+category rather than an alias for fs.write. Existing fs.create/fs.remove entry
+change categories remain for compatibility; they do not assert separate
+create/remove calls or a new destination. This adds vocabulary without changing
+JSON structures or source IDs. Use -effect rename or -api os.Rename.
 .SH EXAMPLES
 .nf
-reffector .
-reffector ./...
-reffector -direct ./internal/...
-reffector -tests -json ./billing
+reffector -max-depth 0 ./billing
+reffector -effect fs.write -max-depth 3 ./billing
+reffector -api os.ReadFile -json ./internal
+reffector -site 'site:<copied ID>' -max-depth 2 ./internal
+reffector -unresolved -max-edges 100 ./internal
+reffector -unresolved -reason interface_dispatch -operation ').Save' ./internal
+reffector -all -json -effect http.response ./http
+reffector -view functions -all -json ./billing
+reffector -details -function '=Top' -max-paths 100 ./billing
 .fi
 .SH LIMITATIONS
-A result is possible static reachability, not actual execution. The analyzer
-follows static calls, methods, closures, known local function values, phi
-merges, instantiated generics, goroutines, defers, and calls across packages.
-It handles a known concrete interface receiver by following that method.
+Follows static calls, closures, known local function values/phi merges,
+generics,
+goroutines, defers, and proven concrete interface receivers. Never expands open
+interfaces to all loaded implementations. Missing bodies, cgo, assembly,
+reflection, unknown stdlib APIs and unmodeled callbacks remain uncertain.
+Branch feasibility, resource destinations/permissions, shared-memory mutation,
+plugins, all platforms/tags and secondary driver effects are not modeled.
+Lowered iterator callbacks and generated instructions without source locations
+can lack complete provenance. Uncertainty does not enumerate all missing
+effects.
 .PP
-It intentionally does not use class-hierarchy expansion for an open interface
-receiver. An interface parameter or memory-loaded interface does not establish
-that every loaded implementation is a callee; such a call is marked uncertain.
-This avoids speculative effects such as assigning an arbitrary io.Writer call
-to os.File.Write, but may miss effects of the real receiver. Function values
-flowing through memory, parameters, or returns are also uncertain.
-.PP
-Reflection, cgo, assembly, missing Go bodies, unknown standard-library calls,
-and behavior outside summaries are uncertain. Branch feasibility, paths, URLs,
-resource identities, permissions, shared-memory mutation, plugin code,
-secondary callbacks or drivers, and all build tags/platforms are not modeled.
-Uncertainty does not enumerate every possible missing effect.
-.PP
-Module loading uses -mod=readonly. It copies workspace metadata to temporary
-files so source and workspace checksum files are not modified. The Go toolchain
-may still update its caches; this command is not a sandbox for untrusted tools.
+Uses -mod=readonly and temporary workspace metadata so source module/workspace
+checksums are not repaired. Go tooling may update its own caches. For offline
+analysis set GOPROXY=off GOSUMDB=off GOTOOLCHAIN=local; missing dependencies are
+an environment limit, not permission to download. This is not a tool sandbox.
+.SH SKILL INSTALLATION
+reffector skill install installs the optional bundled skill at
+~/.agents/skills/reffector/SKILL.md. Repeated installation updates only a copy
+previously installed by reffector; unmanaged/local modifications are refused.
+The skill guides effect-site, reverse-caller and uncertainty investigation;
+it does not add analyzer subcommands or impose a refactoring workflow.
+Pi also discovers this installation location. In Pi, invoke /skill:reffector
+with a question and package scope. The CLI is usable without the skill.
 .SH EXIT STATUS
-.TP
-.B 0
-Successful analysis, including no reported effects and help.
-.TP
-.B 1
-Package loading, analysis, or output failed.
-.TP
-.B 2
-Invalid command-line flags.
+0: analysis/help succeeded (including empty results). 1: loading/analysis/output
+failed. 2: invalid flags.
 .SH SEE ALSO
 .BR go (1),
 .BR go-test (1),
-.BR go-vet (1),
-.BR man (7)
-.PP
-https://pkg.go.dev/golang.org/x/tools/go/packages
+.BR go-vet (1)
