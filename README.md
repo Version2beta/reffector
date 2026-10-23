@@ -35,9 +35,8 @@ Optionally, `reffector skill install` installs the bundled skill at
 `~/.agents/skills/reffector/SKILL.md`, a location Pi also discovers. Rebuild the
 CLI from the current checkout before installing an updated skill. The skill
 does not add analyzer subcommands or require a refactoring workflow; the
-analyzer remains fully useful without it. See
-[`PHASE2_SKILL_VERIFICATION.md`](PHASE2_SKILL_VERIFICATION.md) for tested commands
-and local loading instructions.
+analyzer remains fully useful without it. The verification commands below cover
+build, test, and static analysis for the release tree.
 
 Repeated installation updates a copy previously installed by reffector. A
 pre-existing or locally modified skill is refused rather than overwritten.
@@ -113,6 +112,69 @@ function-pair text output. A function with no recognized effects and
 in the effect view. Neither an empty effect list nor
 `uncertain: false` proves a function is pure.
 
+In function view, `-effect` matches both `effects` and `possible_effects`,
+filtering each list without changing its evidence label. `-direct` reports only
+recognized operations in the function itself, never inherited or VTA-only
+effects; uncertainty still propagates. In effect view, `-direct` restricts
+origins to the selected roots, excluding operations reached through helpers
+(including VTA candidates). It does not suppress explicitly requested unresolved
+leads or filter the unfiltered inventory and contract-implementation summaries.
+
+## Unresolved-operation audit inventory
+
+```sh
+reffector -audit-unresolved -stats ./... > unresolved.jsonl
+reffector -audit-unresolved -audit-include-known -all -stats ./... > audit.jsonl
+```
+
+This opt-in JSON Lines projection uses the **same** SSA graph, summaries and VTA
+candidates, without reverse graph construction, per-site whole-program scans or
+site limits (including the ordinary 1000-site default). SSA loading/building is
+still in memory; only output encoding is one record at a time. Stdout contains
+records only; stderr is empty on success unless `-stats` requests coverage JSON.
+Errors return nonzero; output-write failures can leave partial JSONL.
+
+Default records have `record_type: "site"`, `schema_version: 1`, `uncertain: true`
+and empty established `effects`. `-audit-include-known` also includes sites with
+recognized effects **and** uncertainty. A site may have VTA-only `possible_effects`
+even in the default export. Sites retain the ordinary canonical IDs, API
+alternatives, operation evidence, all reasons and source positions. `primary_reason`
+is the lexicographically first reason (or explicit `unknown`), a deterministic
+sampling key, not a severity ranking. `unknown_api` explicitly marks an unknown
+operation target, even when other alternatives have names; no API is guessed.
+`origin`/`selected`, `ssa_nodes` (original node IDs and variants),
+`dispatch_kinds` (`interface`, `function_value`, `other`, `unknown`) and
+`vta_candidates`/`vta_candidate_count` expose the available evidence. A missing
+call instruction, including a declaration boundary, has unknown dispatch.
+
+`possible_effects` unions transitive summaries only of this call instruction's
+existing VTA candidates accepted by the analyzer's effect propagation, minus the
+site's established effects. It never copies unrelated effects from the owner.
+Candidates include identities/variants and `effect_propagation_supported`; raw
+VTA candidates excluded from propagation contribute no effects. Candidate
+summaries are not proof of execution or exhaustiveness. Bound method wrappers
+can have unknown API identity; their SSA identity remains available. Source-
+equivalent generic/test sites merge their evidence, not graph nodes or edges.
+`kind: "declaration"` denotes a body/summary boundary, **not** an actual call;
+existing declaration evidence can be uncertainty-only even when the function's
+summary recognizes effects. Synthetic/non-source/invalid-position origins remain
+excluded, exactly as in the ordinary site universe. Counts are not all program
+operations or all uncertain functions.
+
+`-all` appends `record_type: "function"` records for the full selected source
+inventory, including owner `locations`, established `effects`, optional
+`possible_effects`, and `uncertain`. This reuses the same analysis for controls:
+select only functions with **empty effects, empty possible_effects and false
+uncertainty**; this does not prove purity. `-stats` distinguishes site counts,
+declaration counts, function-record counts and function coverage. The legacy
+`no_effects_no_uncertainty` coverage category alone does not exclude possible
+effects. Selected package paths are included in audit coverage.
+
+Only `-audit-include-known`, `-all`, `-tests`, `-exact`, and `-stats` may accompany
+`-audit-unresolved`. Explicit view, JSON, graph-limit and filter flags are rejected
+rather than silently ignored; filter JSONL after export. `-audit-include-known`
+without audit mode is also an error. Existing effect and function views are unchanged.
+
 ## Effect JSON, source provenance and queries
 
 ```sh
@@ -149,6 +211,12 @@ edges; `open: true` means implementations outside the loaded universe may
 remain. A practical sequence is: find `interface_dispatch` with `-unresolved
 -reason interface_dispatch`, rerun the focused query with `-contracts`, then
 inspect candidate effects and source before making an execution claim.
+Implementation `effects` are established-call effects; `possible_effects` (when
+present, shown as `possible=` in text) require VTA edges. These lists are sorted,
+and possible-only effects exclude those established by any aggregated variant.
+Contracts at one source site combine the strongest relationship and effect
+evidence across generic/test SSA variants; graph nodes and execution edges stay
+separate. An open boundary in any variant remains open.
 
 A site is the same source-based object in both views. It groups operations at
 actual source calls, with stable IDs, containing package/function, types-based
@@ -334,9 +402,17 @@ modified. The Go toolchain may still update its own caches.
 
 ```sh
 go build ./...
-go test ./...
+go test ./... -count=1
 go vet ./...
 ```
+
+The release CI matrix targets Go 1.26+ on Linux, macOS, and Windows. Local
+acceptance evidence is environment-specific; it does not imply that hosted CI
+has run successfully. Keep private benchmark workspaces, source checkouts,
+sessions and evaluation outputs outside this repository. Local source checkouts
+live at `/Users/rob/Development/benchmark-sources`; historical evaluation material
+is retained privately outside the release tree. Do not recreate `experiments/`
+inside this repository.
 
 The executable integration suite analyzes fixtures without running them. It
 covers recursive/exact/pattern/test selection, source inventory/counts and JSON

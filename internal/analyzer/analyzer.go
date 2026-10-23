@@ -25,6 +25,7 @@ type Options struct {
 	Exact                                  bool // Do not expand local directories to recursive patterns.
 	All                                    bool // Include source functions without effects or uncertainty.
 	Details                                bool
+	AuditUnresolved, AuditIncludeKnown     bool // JSONL projection without reverse graphs or limits.
 	EffectView                             bool
 	Unresolved, Contracts                  bool   // Contracts adds opt-in interface implementation leads.
 	API, Site                              string // Exact identities.
@@ -53,6 +54,7 @@ type Report struct {
 	Stats   Stats         `json:"stats"`
 	Details *Details      `json:"details,omitempty"`
 	Effects *EffectReport `json:"-"`
+	Audit   *AuditReport  `json:"-"`
 }
 
 type identity struct{ pkg, name string }
@@ -132,7 +134,7 @@ func AnalyzeReport(patterns []string, opts Options) (Report, error) {
 	prog, _ := ssautil.AllPackages(pkgs, ssa.InstantiateGenerics)
 	prog.Build()
 	g := &graph{prog: prog, nodes: make(map[*ssa.Function]*node), standard: make(map[*types.Package]bool),
-		detailed: opts.Details || opts.EffectView, packageIDs: make(map[*types.Package]string), sites: make(map[string]*Site), edges: make(map[string]CallEdge), fileKeys: make(map[string]string), siteNodes: make(map[string]map[*node]bool), candidates: make(map[ssa.CallInstruction][]*ssa.Function), contracts: make(map[string]*interfaceContract)}
+		detailed: opts.Details || opts.EffectView || opts.AuditUnresolved, audit: opts.AuditUnresolved, packageIDs: make(map[*types.Package]string), sites: make(map[string]*Site), edges: make(map[string]CallEdge), fileKeys: make(map[string]string), siteNodes: make(map[string]map[*node]bool), candidates: make(map[ssa.CallInstruction][]*ssa.Function), contracts: make(map[string]*interfaceContract)}
 
 	// Module metadata, rather than import-path spelling, identifies standard
 	// packages. A loaded package with a module (including module "reffector")
@@ -199,10 +201,11 @@ func AnalyzeReport(patterns []string, opts Options) (Report, error) {
 	for fn := range selected {
 		g.ensure(fn)
 	}
-	g.resolveCandidates(selected)
+	funcs := g.selectedFunctions()
+	g.resolveCandidates(funcs)
 	g.contractsEnabled = opts.Contracts
 	if opts.Contracts {
-		g.prepareContracts(selected)
+		g.prepareContracts(funcs)
 	}
 	g.build()
 	g.propagate()
@@ -254,14 +257,18 @@ func AnalyzeReport(patterns []string, opts Options) (Report, error) {
 				r.Effects = append(r.Effects, Effect{Identifier: name, Direct: direct[name]})
 			}
 		}
-		for _, name := range s.possible.Names() {
-			r.PossibleEffects = append(r.PossibleEffects, name)
+		if !opts.Direct {
+			for _, name := range (s.possible &^ s.reachable).Names() {
+				if matches(name, opts.Effect) {
+					r.PossibleEffects = append(r.PossibleEffects, name)
+				}
+			}
 		}
 		full := Record{Package: id.pkg, Function: id.name, Effects: []Effect{}, PossibleEffects: []string{}, Uncertain: s.uncertain}
 		for _, name := range s.reachable.Names() {
 			full.Effects = append(full.Effects, Effect{Identifier: name, Direct: direct[name]})
 		}
-		for _, name := range s.possible.Names() {
+		for _, name := range (s.possible &^ s.reachable).Names() {
 			full.PossibleEffects = append(full.PossibleEffects, name)
 		}
 		inventory = append(inventory, full)
@@ -281,7 +288,8 @@ func AnalyzeReport(patterns []string, opts Options) (Report, error) {
 		if s.uncertain {
 			stats.Uncertain++
 		}
-		if recordMatches(r, opts) && (opts.Effect == "" || len(r.Effects) != 0) && (opts.All || len(r.Effects) != 0 || r.Uncertain) {
+		hasEffects := len(r.Effects) != 0 || len(r.PossibleEffects) != 0
+		if recordMatches(r, opts) && (opts.Effect == "" || hasEffects) && (opts.All || hasEffects || r.Uncertain) {
 			records = append(records, r)
 		}
 	}
@@ -294,6 +302,9 @@ func AnalyzeReport(patterns []string, opts Options) (Report, error) {
 	stats.Emitted = len(records)
 	stats.Omitted = stats.SourceFunctions - stats.Emitted
 	report := Report{Records: records, Stats: stats}
+	if opts.AuditUnresolved {
+		report.Audit = g.auditReport(opts, stats, inventory)
+	}
 	if opts.EffectView {
 		sort.Slice(inventory, func(i, j int) bool {
 			return symbolKey(Symbol{inventory[i].Package, inventory[i].Function}) < symbolKey(Symbol{inventory[j].Package, inventory[j].Function})
@@ -375,6 +386,8 @@ type graph struct {
 	selected         map[*ssa.Function]identity
 	selectedPackages map[string]bool
 	detailed         bool
+	audit            bool
+	auditCalls       map[string][]auditCall
 	sites            map[string]*Site
 	edges            map[string]CallEdge
 	fileKeys         map[string]string
@@ -443,6 +456,9 @@ func (g *graph) build() {
 				if builtin, ok := call.Value.(*ssa.Builtin); ok {
 					if builtin.Name() == "print" || builtin.Name() == "println" {
 						g.unknown(n, site.Pos(), "builtin."+builtin.Name(), "unsupported_resolution")
+						if g.audit {
+							g.recordAuditCall(n, site, nil)
+						}
 					}
 					continue
 				}
@@ -484,7 +500,7 @@ func (g *graph) build() {
 					} else {
 						callee := g.ensure(target)
 						callee.callers[n] = true
-						if g.detailed {
+						if g.detailed && !g.audit {
 							callee.incoming = append(callee.incoming, callLink{caller: n, edge: g.addEdge(n, target, site.Pos(), false)})
 						}
 					}
@@ -498,23 +514,79 @@ func (g *graph) build() {
 					}
 					callee := g.ensure(target)
 					callee.candidateCallers[n] = true
-					if g.detailed {
+					if g.detailed && !g.audit {
 						callee.incoming = append(callee.incoming, callLink{caller: n, edge: g.addEdge(n, target, site.Pos(), true), candidate: true})
 					}
+				}
+				if g.audit {
+					g.recordAuditCall(n, site, targets)
 				}
 			}
 		}
 	}
 }
 
-// resolveCandidates runs VTA over selected source functions and their closures.
+// selectedFunctions adds local instantiations and closures referenced by the
+// selected source functions, including methods of local concrete interface values.
+// Do not enumerate AllFunctions: it walks dependency
+// bodies and materializes unrelated method wrappers before we can filter them.
+// Keep both discovery and VTA bounded to the selected packages, and do not add
+// synthetic package initializers (which would expand the previous VTA scope).
+func (g *graph) selectedFunctions() map[*ssa.Function]bool {
+	funcs := make(map[*ssa.Function]bool)
+	var visit func(*ssa.Function)
+	visit = func(fn *ssa.Function) {
+		if fn == nil || funcs[fn] {
+			return
+		}
+		if _, selected := g.selected[fn]; !selected {
+			pkg := fn.Package()
+			if origin := fn.Origin(); origin != nil {
+				pkg = origin.Package()
+			}
+			if pkg == nil || pkg.Pkg == nil || !g.selectedPackages[pkg.Pkg.Path()] {
+				return
+			}
+		}
+		funcs[fn] = true
+		for _, child := range fn.AnonFuncs {
+			visit(child)
+		}
+		var operands [10]*ssa.Value
+		for _, block := range fn.Blocks {
+			for _, instruction := range block.Instrs {
+				if value, ok := instruction.(*ssa.MakeInterface); ok {
+					// Interface-only generic instantiations have no direct function
+					// operand. Materialize only local receiver methods, not every
+					// method of every runtime type in the dependency program.
+					typ := types.Unalias(value.X.Type())
+					if ptr, ok := typ.(*types.Pointer); ok {
+						typ = types.Unalias(ptr.Elem())
+					}
+					if named, ok := typ.(*types.Named); ok && named.Obj().Pkg() != nil && g.selectedPackages[named.Obj().Pkg().Path()] {
+						for method := range g.prog.MethodSets.MethodSet(value.X.Type()).Methods() {
+							visit(g.prog.MethodValue(method))
+						}
+					}
+				}
+				for _, operand := range instruction.Operands(operands[:0]) {
+					if target, ok := (*operand).(*ssa.Function); ok {
+						visit(target)
+					}
+				}
+			}
+		}
+	}
+	for fn := range g.selected {
+		visit(fn)
+	}
+	return funcs
+}
+
+// resolveCandidates runs VTA over selected source functions, instantiations and closures.
 // This bounds the cost for library investigations while still modeling value
 // flow through the code under analysis. Edges are candidate evidence only.
-func (g *graph) resolveCandidates(selected map[*ssa.Function]identity) {
-	funcs := make(map[*ssa.Function]bool, len(selected))
-	for fn := range selected {
-		funcs[fn] = true
-	}
+func (g *graph) resolveCandidates(funcs map[*ssa.Function]bool) {
 	for _, n := range vta.CallGraph(funcs, nil).Nodes {
 		for _, edge := range n.Out {
 			if edge.Site != nil && edge.Callee != nil && edge.Callee.Func != nil && edge.Site.Common().StaticCallee() == nil {

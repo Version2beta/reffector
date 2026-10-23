@@ -28,6 +28,37 @@ remain, and tests that verify behavior. Never consolidate automatically because
 two sites share a category. Completing analysis is not completing a review.
 .SH OPTIONS
 .TP
+.B -audit-unresolved
+Write uncertain source sites as JSON Lines, without reverse graphs or site
+limits. Default excludes sites with established effects, but retains VTA-only
+possible effects. Uses the same analysis, not another engine. Stdout is records
+only; -stats writes coverage to stderr. SSA building remains in memory.
+Only -audit-include-known, -all, -tests, -exact and -stats may accompany this
+mode. Explicit filters, view/JSON flags and traversal limits are errors.
+.TP
+.B -audit-include-known
+With -audit-unresolved, include recognized-effect sites that also have
+uncertainty. Without audit mode this flag is an error.
+.PP
+Audit site records have record_type site and schema_version 1, the original
+canonical site ID, owner/location, API alternatives, operation evidence and all
+reasons. primary_reason is the first lexicographically sorted reason (unknown
+if absent), not severity. unknown_api explicitly marks unnamed alternatives.
+origin/selected, dispatch_kinds, ssa_nodes and vta_candidates preserve existing
+SSA identities and variants. Candidate counts include raw VTA alternatives;
+effect_propagation_supported identifies those accepted for propagation.
+possible_effects derives only from accepted candidates at this call instruction,
+not unrelated enclosing-function effects. Transitive candidate effects are not
+proof of execution. Declaration boundaries have kind declaration, not call;
+summary-boundary site evidence may be uncertainty-only. Invalid-position and
+synthetic/non-source origins are excluded as in the ordinary site universe.
+.PP
+In audit mode -all appends record_type function records for the full selected
+source inventory, with owner locations. Select controls using empty effects,
+empty possible_effects and false uncertain together, not the legacy coverage
+category alone. No such selection proves purity. Encoding is one record at a
+time; output-write failures can leave partial JSONL. See README for schema details.
+.TP
 .B -view effects|functions
 Default effects: readable groups, canonical sites and bounded reverse graph.
 Functions: compatible function/effect text pairs or function-record JSON array.
@@ -61,9 +92,11 @@ source inventory; source closures and explicit init declarations are included.
 Also write coverage JSON to stderr. Effect reports always include coverage.
 .TP
 .B -direct
-Restrict origins to selected roots rather than reachable dependency helpers.
-In function view, report only direct effect categories; uncertainty still
-propagates.
+In effect view, restrict origins to selected roots rather than reachable helpers,
+including VTA candidates. Explicit unresolved leads remain available.
+In function view, report only recognized operations in the function itself,
+never inherited or VTA-only effects; uncertainty still propagates.
+Unfiltered inventory and contract-implementation summaries are unchanged.
 .TP
 .B -package substring, -function substring
 Select source roots by case-sensitive substring, retaining their reachable
@@ -74,8 +107,9 @@ stay within this reachable subgraph; remove root filters to see other callers.
 Function-view filters select summary/witness roots.
 .TP
 .B -effect substring
-Select effect categories by case-sensitive substring. Does not rewrite site
-metadata or the full effect-view inventory.
+Select effect categories by case-sensitive substring. Function view matches and
+filters both effects and possible_effects without changing their evidence labels.
+Does not rewrite site metadata or the full effect-view inventory.
 .TP
 .B -api identity
 Select an exact package/receiver-qualified API, such as os.ReadFile or
@@ -91,7 +125,12 @@ Select one canonical direct site ID copied from output. Effect view only.
 .B -contracts
 Include method-set-compatible implementation leads for matching interface call
 sites. Leads are labelled established, candidate_vta, or contract_compatible;
-the latter is not a call edge. Effect view only.
+the latter is not a call edge. Implementation effects use established calls;
+possible_effects require VTA edges (shown as possible= in text). Lists are sorted
+and possible-only effects exclude established ones across aggregated variants.
+One source site's contract combines the strongest relationship and effect
+evidence across generic/test variants without merging graph nodes or creating
+execution edges. Any open variant keeps the contract open. Effect view only.
 .TP
 .B -unresolved
 Switch from the default recognized operation sites to unresolved leads without
@@ -188,8 +227,10 @@ reverse[].truncated.
 .SH FUNCTION COMPATIBILITY
 -view functions text contains package.Function effect pairs, with receiver
 identities for methods and $1-style closure suffixes. Only recognized effects
-appear. JSON is an array of objects with exactly package, function, effects,
-uncertain. Each effects item has identifier and direct. Effects may be empty.
+appear. JSON is an array of objects with package, function, effects,
+uncertain and optional possible_effects. Each effects item has identifier and
+direct; possible_effects lists VTA-only effects, not established reachability.
+Effects may be empty.
 Uncertain means unresolved or opaque behavior is reachable; it is not an effect.
 .PP
 -details emits records, stats and details. Sites group one deterministic

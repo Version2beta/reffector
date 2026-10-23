@@ -22,11 +22,12 @@ type InterfaceContract struct {
 }
 
 type ContractImplementation struct {
-	Symbol       Symbol   `json:"symbol"`
-	Location     Location `json:"location"`
-	Relationship string   `json:"relationship"` // established, candidate_vta, contract_compatible
-	Effects      []string `json:"effects"`
-	Selected     bool     `json:"selected"`
+	Symbol          Symbol   `json:"symbol"`
+	Location        Location `json:"location"`
+	Relationship    string   `json:"relationship"` // established, candidate_vta, contract_compatible
+	Effects         []string `json:"effects"`
+	PossibleEffects []string `json:"possible_effects,omitempty"`
+	Selected        bool     `json:"selected"`
 }
 
 type interfaceContract struct {
@@ -41,8 +42,8 @@ func (g *graph) contractSiteID(n *node, pos token.Pos) string {
 // prepareContracts inventories method-set-compatible implementations before
 // graph construction so their recognized effects are available to the opt-in
 // report. It never creates execution edges.
-func (g *graph) prepareContracts(selected map[*ssa.Function]identity) {
-	for fn := range selected {
+func (g *graph) prepareContracts(funcs map[*ssa.Function]bool) {
+	for fn := range funcs {
 		for _, block := range fn.Blocks {
 			for _, instruction := range block.Instrs {
 				site, ok := instruction.(ssa.CallInstruction)
@@ -55,25 +56,36 @@ func (g *graph) prepareContracts(selected map[*ssa.Function]identity) {
 					continue
 				}
 				id := g.contractSiteID(g.ensure(fn), site.Pos())
-				if _, exists := g.contracts[id]; exists {
-					continue
-				}
+				c, exists := g.contracts[id]
 				targets, open := g.invoke(call)
-				c := &interfaceContract{InterfaceContract: InterfaceContract{
-					Site: id, Method: effects.Key(call.Method), Open: open,
-					AvailablePackages: g.availablePackages(), Implementations: []ContractImplementation{},
-				}, implementations: make(map[*ssa.Function]string)}
-				for _, target := range g.implementations(iface, call.Method) {
+				if !exists {
+					c = &interfaceContract{InterfaceContract: InterfaceContract{
+						Site: id, Method: effects.Key(call.Method), Open: open,
+						AvailablePackages: g.availablePackages(), Implementations: []ContractImplementation{},
+					}, implementations: make(map[*ssa.Function]string)}
+					g.contracts[id] = c
+				} else {
+					c.Open = c.Open || open
+				}
+				implementations := g.implementations(iface, call.Method)
+				// Instantiated generic receiver types are not package members.
+				// Keep actual SSA targets as evidence as well as the compatible
+				// source inventory; only the report merges their source identities.
+				implementations = append(implementations, targets...)
+				implementations = append(implementations, g.candidates[site]...)
+				for _, target := range implementations {
 					relationship := "contract_compatible"
 					if containsFunction(targets, target) {
 						relationship = "established"
 					} else if containsFunction(g.candidates[site], target) {
 						relationship = "candidate_vta"
 					}
-					c.implementations[target] = relationship
+					old := c.implementations[target]
+					if relationshipRank(relationship) > relationshipRank(old) {
+						c.implementations[target] = relationship
+					}
 					g.ensure(target)
 				}
-				g.contracts[id] = c
 			}
 		}
 	}
@@ -132,8 +144,10 @@ func relationshipRank(relationship string) int {
 		return 3
 	case "candidate_vta":
 		return 2
-	default:
+	case "contract_compatible":
 		return 1
+	default:
+		return 0
 	}
 }
 
@@ -156,7 +170,7 @@ func (g *graph) contractReports(sites map[string]bool) []InterfaceContract {
 			}
 			implementation := ContractImplementation{
 				Symbol: g.symbol(fn), Location: g.location(fn.Pos()), Relationship: relationship,
-				Effects: n.reachable.Names(), Selected: selected,
+				Effects: n.reachable.Names(), PossibleEffects: (n.possible &^ n.reachable).Names(), Selected: selected,
 			}
 			key := symbolKey(implementation.Symbol) + "\x00" + g.positionKey(implementation.Location)
 			old, exists := unique[key]
@@ -168,18 +182,41 @@ func (g *graph) contractReports(sites map[string]bool) []InterfaceContract {
 			for _, effect := range implementation.Effects {
 				old.Effects = appendUnique(old.Effects, effect)
 			}
+			for _, effect := range implementation.PossibleEffects {
+				old.PossibleEffects = appendUnique(old.PossibleEffects, effect)
+			}
 			if relationshipRank(implementation.Relationship) > relationshipRank(old.Relationship) {
 				old.Relationship = implementation.Relationship
 			}
 			unique[key] = old
 		}
 		for _, implementation := range unique {
+			// A variant can establish an effect that was only possible in another.
+			// Normalize after the union, not only on each individual SSA node.
+			possible := implementation.PossibleEffects[:0]
+			for _, effect := range implementation.PossibleEffects {
+				if !contains(implementation.Effects, effect) {
+					possible = append(possible, effect)
+				}
+			}
+			implementation.PossibleEffects = possible
+			sort.Strings(implementation.Effects)
+			sort.Strings(implementation.PossibleEffects)
 			result.Implementations = append(result.Implementations, implementation)
 		}
 		sort.Slice(result.Implementations, func(i, j int) bool {
 			a, b := result.Implementations[i], result.Implementations[j]
 			if symbolKey(a.Symbol) != symbolKey(b.Symbol) {
 				return symbolKey(a.Symbol) < symbolKey(b.Symbol)
+			}
+			if a.Location.File != b.Location.File {
+				return a.Location.File < b.Location.File
+			}
+			if a.Location.Line != b.Location.Line {
+				return a.Location.Line < b.Location.Line
+			}
+			if a.Location.Column != b.Location.Column {
+				return a.Location.Column < b.Location.Column
 			}
 			return a.Relationship < b.Relationship
 		})

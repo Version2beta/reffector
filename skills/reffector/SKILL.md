@@ -73,6 +73,10 @@ cycles/revisits are references, not omissions. Graphs show supported reachabilit
 not all execution paths. Package/function filters restrict roots and reachable
 callers; remove them for broader caller context. Prefix a full local function
 name with `=` for one exact root, excluding uncalled closures as separate roots.
+`-direct` keeps only operations in the selected roots, not helpers or indirect
+VTA effects; in function view it emits recognized direct effects only, while
+uncertainty still propagates. Explicit unresolved leads, unfiltered inventory
+and contract-implementation summaries are not suppressed by `-direct`.
 
 ## Interpret and verify
 
@@ -87,6 +91,7 @@ arguments, returns, fields, or callbacks. A candidate is a conservative
 possible callee, not proof that it executes; unresolved boundaries remain open.
 Function JSON keeps established effects in `effects` and reports VTA-only paths
 in `possible_effects`, so an empty established list is not an absence claim.
+Function-view `-effect` matches and filters both lists, preserving their labels.
 
 Uncertainty is separate from effects. `interface_dispatch` means the concrete
 implementation remains unresolved: a named contract summary (such as response
@@ -97,8 +102,12 @@ selection; it does not classify significance. Remove filters to inspect other
 origins, including opaque calls and callbacks. `-contracts` adds available
 `contract_compatible` method-set implementations beside `established` and
 `candidate_vta` targets. Contract-compatible leads are not call edges and the
-available type universe may omit external implementations. Never invent
-implementation edges.
+available type universe may omit external implementations. Implementation
+`effects` use established calls; `possible_effects` (text: `possible=`) require
+VTA edges. Source-site contracts aggregate the strongest relationship and sorted
+effect unions across generic/test variants, excluding established effects from
+the possible-only list. This does not merge graph nodes or close open boundaries.
+Never invent implementation edges.
 
 Check coverage: selected packages/functions, selected versus dependency sites,
 identified versus matching versus emitted counts. `-all -json` adds unfiltered

@@ -61,7 +61,11 @@ func WriteEffects(w io.Writer, report *analyzer.EffectReport, asJSON bool) error
 	for _, contract := range report.Contracts {
 		fmt.Fprintf(b, "\nInterface contract %s at %s (open=%t; implementation leads, not call edges):\n", contract.Method, contract.Site, contract.Open)
 		for _, implementation := range contract.Implementations {
-			fmt.Fprintf(b, "  %s.%s at %s:%d:%d [%s; effects=%s]\n", implementation.Symbol.Package, implementation.Symbol.Function, implementation.Location.File, implementation.Location.Line, implementation.Location.Column, implementation.Relationship, strings.Join(implementation.Effects, ","))
+			effectsDesc := "effects=" + strings.Join(implementation.Effects, ",")
+			if len(implementation.PossibleEffects) > 0 {
+				effectsDesc += "; possible=" + strings.Join(implementation.PossibleEffects, ",")
+			}
+			fmt.Fprintf(b, "  %s.%s at %s:%d:%d [%s; %s]\n", implementation.Symbol.Package, implementation.Symbol.Function, implementation.Location.File, implementation.Location.Line, implementation.Location.Column, implementation.Relationship, effectsDesc)
 		}
 	}
 	for _, site := range report.Sites {

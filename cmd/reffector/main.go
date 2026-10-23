@@ -22,6 +22,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	flags := flag.NewFlagSet("reffector", flag.ContinueOnError)
 	flags.SetOutput(stderr)
+	audit := flags.Bool("audit-unresolved", false, "write unlimited uncertain source sites as JSON Lines without reverse graphs")
+	auditKnown := flags.Bool("audit-include-known", false, "also export recognized-effect sites with uncertainty (requires -audit-unresolved)")
 	direct := flags.Bool("direct", false, "direct function effects; effect view restricts origins to selected roots")
 	tests := flags.Bool("tests", false, "include functions defined in test files")
 	asJSON := flags.Bool("json", false, "write structured JSON for the selected view")
@@ -58,6 +60,19 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	specified := map[string]bool{}
 	flags.Visit(func(f *flag.Flag) { specified[f.Name] = true })
+	if *auditKnown && !*audit {
+		fmt.Fprintln(stderr, "reffector: -audit-include-known requires -audit-unresolved")
+		return 2
+	}
+	if *audit {
+		allowed := map[string]bool{"audit-unresolved": true, "audit-include-known": true, "tests": true, "exact": true, "stats": true, "all": true}
+		for name := range specified {
+			if !allowed[name] {
+				fmt.Fprintln(stderr, "reffector: -audit-unresolved supports only -audit-include-known/-tests/-exact/-stats/-all; incompatible flag: -"+name)
+				return 2
+			}
+		}
+	}
 	explicitView := specified["view"]
 	if *details {
 		if explicitView && *view != "functions" {
@@ -76,7 +91,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	report, err := analyzer.AnalyzeReport(flags.Args(), analyzer.Options{
 		Direct: *direct, Tests: *tests, Exact: *exact, All: *all, Details: *details,
-		EffectView: *view == "effects", API: *apiFilter, Site: *siteFilter, Unresolved: *unresolved, Contracts: *contracts, Reason: *reasonFilter,
+		AuditUnresolved: *audit, AuditIncludeKnown: *auditKnown,
+		EffectView: *view == "effects" && !*audit, API: *apiFilter, Site: *siteFilter, Unresolved: *unresolved, Contracts: *contracts, Reason: *reasonFilter,
 		Package: *packageFilter, Function: *functionFilter, Effect: *effectFilter, Operation: *operationFilter,
 		MaxDepth: *maxDepth, MaxPaths: *maxPaths, MaxSites: *maxSites, MaxEdges: *maxEdges,
 	})
@@ -89,11 +105,16 @@ func run(args []string, stdout, stderr io.Writer) int {
 		if report.Effects != nil {
 			coverage = report.Effects.Coverage
 		}
+		if report.Audit != nil {
+			coverage = report.Audit.Coverage
+		}
 		if err := json.NewEncoder(stderr).Encode(coverage); err != nil {
 			return 1
 		}
 	}
-	if report.Effects != nil {
+	if report.Audit != nil {
+		err = report.Audit.WriteJSONL(stdout)
+	} else if report.Effects != nil {
 		err = output.WriteEffects(stdout, report.Effects, *asJSON)
 	} else if *details {
 		err = output.WriteReport(stdout, report)
