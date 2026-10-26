@@ -1,0 +1,8 @@
+# Local metadata and release-preparation artifacts
+.DS_Store
+reffector-self.json
+.tmp-phase3/
+
+# Private benchmark workspaces, subject repositories, sessions, archives,
+# binaries, caches, copied sources and evaluation evidence.
+/experiments/
