@@ -108,12 +108,12 @@ func (g *graph) auditReport(opts Options, stats Stats, inventory []Record) *Audi
 			continue
 		}
 		r.Coverage.UncertainSites++
-		if len(s.Effects) == 0 {
+		if len(s.effectNames()) == 0 {
 			r.Coverage.UnresolvedSites++
 		} else {
 			r.Coverage.KnownUncertainSites++
 		}
-		if !opts.AuditIncludeKnown && len(s.Effects) > 0 {
+		if !opts.AuditIncludeKnown && len(s.effectNames()) > 0 {
 			continue
 		}
 		r.sites = append(r.sites, id)
@@ -192,6 +192,9 @@ func (r *AuditReport) WriteJSONL(w io.Writer) error {
 		sort.Slice(a.Nodes, func(i, j int) bool { return a.Nodes[i].ID < a.Nodes[j].ID })
 		candidates := map[string]AuditCandidate{}
 		var possible effects.Set
+		for _, name := range s.PossibleEffects {
+			a.PossibleEffects = appendUnique(a.PossibleEffects, name)
+		}
 		for _, call := range r.g.auditCalls[id] {
 			a.Dispatch = appendUnique(a.Dispatch, call.dispatch)
 			for _, fn := range call.candidates {
@@ -220,7 +223,7 @@ func (r *AuditReport) WriteJSONL(w io.Writer) error {
 		a.CandidateCount = len(a.Candidates)
 		for _, name := range possible.Names() {
 			if !contains(s.Effects, name) {
-				a.PossibleEffects = append(a.PossibleEffects, name)
+				a.PossibleEffects = appendUnique(a.PossibleEffects, name)
 			}
 		}
 		if err := enc.Encode(a); err != nil {

@@ -103,7 +103,8 @@ operations in the program.
 `effects` is an array (possibly empty). `direct` says that the function itself
 calls a summarized operation; otherwise the effect was reached through an
 established SSA call. `possible_effects`, when present, lists effects reachable
-only through one or more `candidate_vta` edges; it is never a guaranteed
+only through one or more candidate relationships (`candidate_vta` or
+`candidate_function_value`); it is never a guaranteed
 execution or an inherited `effects` entry. `uncertain` means an unresolved or
 opaque operation is reachable. It is deliberately
 separate from effects: uncertainty is not an operation and is never printed in
@@ -112,9 +113,32 @@ function-pair text output. A function with no recognized effects and
 in the effect view. Neither an empty effect list nor
 `uncertain: false` proves a function is pure.
 
+### Bounded dependency VTA
+
+`-dependency-vta-functions N -dependency-vta-edges N` opts into bounded VTA
+expansion through loaded dependency bodies. VTA relationships remain
+`candidate_vta`; they are never promoted to established calls. With this opt-in,
+possible effects are also evaluated per selected source root. For interface
+calls, concrete receiver types proven through direct calls and parameter
+forwarding can exclude incompatible candidate implementations for that root.
+Open parameters and flows Reffector cannot resolve (such as memory loads,
+returns, and closure captures) retain all VTA candidates, and the unresolved
+interface site remains. This is a bounded refinement, not generally
+context-sensitive call resolution; the global candidate relationship remains
+available as candidate evidence.
+
+The per-root context-state budget is the sum of the two supplied VTA budgets.
+If it is exceeded, context refinement is abandoned for the whole analysis and
+conservative global VTA propagation is used instead. Opt-in coverage reports
+`context_states`, `context_budget`, `context_truncated`, and
+`context_roots_fallback`; the latter counts selected SSA root contexts (including
+variants) using the fallback. Dependency function/edge truncation is reported
+separately. Without both dependency-VTA flags, existing default behavior is
+unchanged.
+
 In function view, `-effect` matches both `effects` and `possible_effects`,
 filtering each list without changing its evidence label. `-direct` reports only
-recognized operations in the function itself, never inherited or VTA-only
+recognized operations in the function itself, never inherited or candidate-only
 effects; uncertainty still propagates. In effect view, `-direct` restricts
 origins to the selected roots, excluding operations reached through helpers
 (including VTA candidates). It does not suppress explicitly requested unresolved
@@ -147,12 +171,14 @@ operation target, even when other alternatives have names; no API is guessed.
 `vta_candidates`/`vta_candidate_count` expose the available evidence. A missing
 call instruction, including a declaration boundary, has unknown dispatch.
 
-`possible_effects` unions transitive summaries only of this call instruction's
-existing VTA candidates accepted by the analyzer's effect propagation, minus the
-site's established effects. It never copies unrelated effects from the owner.
-Candidates include identities/variants and `effect_propagation_supported`; raw
-VTA candidates excluded from propagation contribute no effects. Candidate
-summaries are not proof of execution or exhaustiveness. Bound method wrappers
+`possible_effects` unions transitive summaries of this call instruction's
+existing VTA candidates accepted by the analyzer's effect propagation, minus
+the site's established effects. With bounded dependency VTA, proven incompatible
+interface inputs can exclude candidate effects for a selected root; unknown
+inputs retain them. It never copies unrelated effects from the owner. Candidates
+include identities/variants and `effect_propagation_supported`; raw VTA
+candidates excluded from propagation contribute no effects. Candidate summaries
+are not proof of execution or exhaustiveness. Bound method wrappers
 can have unknown API identity; their SSA identity remains available. Source-
 equivalent generic/test sites merge their evidence, not graph nodes or edges.
 `kind: "declaration"` denotes a body/summary boundary, **not** an actual call;
@@ -212,23 +238,52 @@ remain. A practical sequence is: find `interface_dispatch` with `-unresolved
 -reason interface_dispatch`, rerun the focused query with `-contracts`, then
 inspect candidate effects and source before making an execution claim.
 Implementation `effects` are established-call effects; `possible_effects` (when
-present, shown as `possible=` in text) require VTA edges. These lists are sorted,
+present, shown as `possible=` in text) require candidate edges. These lists are sorted,
 and possible-only effects exclude those established by any aggregated variant.
 Contracts at one source site combine the strongest relationship and effect
 evidence across generic/test SSA variants; graph nodes and execution edges stay
 separate. An open boundary in any variant remains open.
 
-A site is the same source-based object in both views. It groups operations at
-actual source calls, with stable IDs, containing package/function, types-based
+### Architectural characterization harness
+
+Run `python3 -B -m tools.archchar prepare REPO --out DIR [--reffector PATH]`
+with repeatable `--pattern` options (default `./...`) to create offline
+Reffector/source evidence packets and a Go AST structural index. Token-aware
+preparation can use a count-only command to partition oversized packages by
+source declarations without dropping evidence. Import saved evidence with
+`--effects FILE --audit FILE`. The resumable phases are `investigate`,
+`aggregate`, `verify`, and paired `benchmark`; generation is optional and is
+blocked unless a separate token-count preflight fits the configured runtime
+budget. Preparation and tests make no generation calls. See
+`tools/archchar/README.md` for token-count protocols, offline configuration,
+retrieval/context limits, evidence scope, artifacts, and benchmark
+interpretation. Package and namespace boundaries are starting points, not
+inferred architecture.
+
+A site is the same source-based object in both views. It groups recognized
+operations at source calls or SSA-native instructions, with stable IDs,
+containing package/function, types-based
 API identities, exact file/line/column, effect categories, recognition and
 uncertainty. `apis` lists exact API identities supported at the site; `api` is
 the sole identity, or empty when multiple alternatives exist (or no target is
 known). A function-value phi may have multiple APIs at one source site, not
-several independent sites. Site IDs do not depend on effects, reasons or filters.
-Site `kind` is `call`, or `declaration` for missing-body/opaque-boundary origins.
-Call positions refer to the SSA instruction (usually the opening parenthesis).
-Selecting a summarized standard-library function does not fabricate a call to
-itself. IDs use package/source identity, not traversal order.
+several independent sites. Alternative summarized APIs carry optional
+`possible_effects` on the site and each operation, separate from established
+`effects`. Effect groups put those site IDs in optional `possible_sites`, not
+`sites`; coverage separately counts `possible_operation_sites_identified`.
+These fields are absent when unused. Open alternatives retain their unresolved
+`function_value` boundary and remain queryable with `-unresolved`. Site IDs do not depend on effects, reasons or filters.
+Site `kind` is `call`, `go`, or `defer`; `declaration` denotes a missing-body
+or opaque-boundary origin. Go/defer values distinguish invocation forms
+without changing source-site identity. Call positions refer to the SSA
+instruction (usually the opening parenthesis for calls). Each source call edge
+has `kind: "call"`, `"go"`, or `"defer"`, preserving whether the relationship
+is an ordinary call, goroutine launch, or deferred invocation. This additive
+field leaves edge IDs and schema version unchanged. An established `go` edge
+identifies a possible spawned body, not completion; a `defer` edge identifies
+work registered for a later function exit, not immediate execution. Selecting a
+summarized standard-library function does not fabricate a call to itself. IDs
+use package/source identity, not traversal order.
 
 `operations` keeps each API alternative's effects, recognition and uncertainty
 reasons together; the site-wide fields are their union. Known semantic interface
@@ -258,12 +313,14 @@ Their `uncertainty_reasons` are direct at the containing function:
 
 | Reason | Meaning |
 |---|---|
-| `interface_dispatch` | Receiver implementation is not resolved; any named semantic summary is not a concrete target |
-| `function_value` | Function value/callback flows through an unsupported parameter, memory or result |
+| `interface_dispatch` | An interface target (including a `sync.Locker` method) is unresolved; a semantic summary is not a concrete target |
+| `function_value` | Open function value/callback provenance, including unsupported parameters, memory, captures, opaque results, cycles or exhausted bounds |
 | `missing_body` | No analyzable Go body (for example assembly or cgo) |
 | `unrecognized_stdlib` | Standard-library call has no summary |
 | `reflection_opaque` | Reflection or opaque reflective invocation |
 | `callback` | Summary boundary may invoke unmodeled hooks, drivers or callbacks |
+| `argument_condition` | A summarized operation's effect depends on argument values that static evidence cannot establish |
+| `state_condition` | A summarized operation's effect depends on prior state that static evidence cannot establish |
 | `unsupported_resolution` | Other unsupported operation, including builtin print/println |
 
 `details.uncertainty` gives selected function identities with independent `direct`
@@ -322,9 +379,140 @@ API/operation/site selectors never rewrite source inventory or site metadata.
 | `http.response` | Write HTTP response body or status through `http.ResponseWriter` |
 | `resource.acquire`, `resource.release` | Acquire owned handles or release resources via recognized APIs |
 | `process.exec` | Start an external process |
+| `process.control` | Send a signal to or kill a process through `os.Process` |
+| `process.signal.register` | Register a channel for signal notifications through `os/signal.Notify` or `NotifyContext` |
+| `process.signal.unregister` | Stop signal relaying through `os/signal.Stop` or a proven `NotifyContext` stop function |
+| `process.signal.ignore` | Request that `os/signal.Ignore` suppress selected signals |
+| `process.signal.reset` | Request that `os/signal.Reset` restore selected signal handlers |
 | `process.exit` | Terminate the process with `os.Exit` |
+| `context.cancel` | Invoke a proven standard-context cancellation function or `NotifyContext` stop function |
 | `env.read`, `env.write` | Read or modify process environment values |
 | `db.query`, `db.exec` | Database query or command operations |
+| `concurrency.goroutine` | Start a goroutine (`go` statement, recognized `sync.WaitGroup.Go`, or a possible `NotifyContext` watcher) |
+| `channel.send`, `channel.receive` | Send to or receive from a channel |
+| `channel.select` | Execute a channel `select` operation |
+| `channel.close` | Invoke Go's built-in channel close operation |
+| `concurrency.lock`, `concurrency.unlock` | Lock/unlock recognized `sync.Mutex` and `sync.RWMutex` values, or release/reacquire the `sync.Locker` at exact `sync.Cond.Wait` calls |
+| `concurrency.task` | Adjust or start a task tracked by a recognized `sync.WaitGroup` |
+| `concurrency.wait` | Wait on a recognized `sync.WaitGroup` counter, `sync.Once` callback barrier, or exact `sync.Cond.Wait` call, including invocations of locally proven functions returned by `sync.OnceFunc`, `sync.OnceValue`, and `sync.OnceValues` |
+| `concurrency.condition.signal`, `concurrency.condition.broadcast` | Call exact `sync.Cond.Signal` (one waiter) or `Broadcast` (all waiters); waiter state remains uncertain |
+| `concurrency.sleep` | Delay the current goroutine through exact `time.Sleep` when its duration may be positive |
+| `concurrency.atomic` | Call an exact `sync/atomic` memory-operation API |
+| `concurrency.map.read`, `concurrency.map.write` | Read or mutate an exact `sync.Map`; state-dependent mutations and `Range` retain uncertainty |
+| `concurrency.pool.get`, `concurrency.pool.put` | Call exact `sync.Pool.Get` or `Put`; `Get` retains possible `New` callback uncertainty |
+| `crypto.x509.certpool.add` | Attempt to add certificates through exact `crypto/x509.CertPool` APIs; PEM parsing and constraint callbacks retain uncertainty |
+| `crypto.x509.certpool.system` | Request a copy of the platform system certificate pool through exact `crypto/x509.SystemCertPool` calls |
+| `concurrency.callback.register` | Schedule asynchronous callback work through `context.AfterFunc` or `time.AfterFunc` |
+| `concurrency.callback.stop` | Invoke a proven `context.AfterFunc` stop function; the callback may already have started |
+| `concurrency.timer.schedule` | Schedule time notifications through exact `time.After`, `NewTimer`, `NewTicker`, or `Tick` calls |
+| `concurrency.timer.stop` | Call exact `time.Timer.Stop` or `time.Ticker.Stop`; Timer state/success may be unknown |
+| `concurrency.timer.reset` | Call exact `time.Timer.Reset` or `time.Ticker.Reset`; timer state or interval may be unknown |
+
+SSA concurrency sites are recognized independently of API summaries:
+`ssa.Go`, `ssa.Defer`, `ssa.Send`, channel-receive `ssa.UnOp`, `ssa.Select`, and
+exact built-in `close` calls. The instruction `api` identities are those SSA
+instruction names; `close` uses `builtin.close`. Source locations and IDs
+use the existing source-site scheme. A `go` site has `kind: "go"`; a site for
+a summarized deferred operation has `kind: "defer"`; ordinary calls retain
+`kind: "call"`. Deferral does not add a separate operation category. A
+goroutine site records a launch, not guaranteed completion of its body. A
+defer site records registration for later execution, not an immediate
+invocation. The analyzer also follows statically established callee bodies as
+possible reachable work; this is not a runtime schedule or proof of execution.
+Channel operations mark coordination points only: a receive/send/select does
+not prove blocking, communication completion, or deadlock. `channel.close`
+identifies an exact built-in `close` call, not a successful state transition;
+closing a nil or already closed channel panics, and no receiver completion is
+inferred. These categories do not report arbitrary memory writes.
+
+Recognized `sync.Mutex.Lock` / `Unlock` and `sync.RWMutex.Lock`, `RLock`,
+`Unlock`, and `RUnlock` calls report `concurrency.lock` or
+`concurrency.unlock`. These identify synchronization calls, not lock ownership,
+critical-section safety, successful completion, or deadlock.
+
+Exact `sync.WaitGroup.Add`, `Done`, and `Go` methods report `concurrency.task`;
+`Wait` reports `concurrency.wait`. `Add` adjusts the counter; `Add` or `Done`
+can panic if it becomes negative. Positive additions to an empty group must
+happen before `Wait`. `Done` decrements the counter. These identify task-counter
+operations, not correct accounting or proof that associated work completed. `Wait` can
+block until the counter reaches zero, but that does not prove tasks were
+correctly registered or kept active for their full work. `WaitGroup.Go` also
+reports `concurrency.goroutine`; its callback must not panic and remains
+uncertain because the analyzer does not establish a synchronous call edge to
+the callback body. Exact `sync.Once.Do` calls also report `concurrency.wait`:
+all calls return only after the one callback finishes, and concurrent calls may
+wait for it. The callback remains uncertain and its effects are not inherited
+without a proven call edge. Calls through returned functions are also recognized
+when local SSA proves every value path comes from the same exact
+`sync.OnceFunc`, `sync.OnceValue`, or `sync.OnceValues` constructor. The wait is
+reported at invocation; construction alone is not a wait. Arbitrary, mixed,
+helper-returned, and memory-loaded function values remain unresolved. Callback
+bodies are not inherited without a proven call edge. These summaries do not
+establish callback execution per call, ordering beyond the API contract, or task
+completion. Same-named methods on other types are not summarized.
+
+Exact `sync.Cond.Wait` reports `concurrency.wait`, `concurrency.unlock`, and
+`concurrency.lock`: it releases the associated `sync.Locker` while waiting and
+reacquires it before returning. Because the locker is an interface, its concrete
+method dispatch remains unresolved and is retained as `interface_dispatch`
+uncertainty. The report does not identify a concrete lock or inherit effects
+from its methods.
+Callers should recheck their condition in a loop; a wake does not establish that
+an application predicate is true. Exact `sync.Cond.Signal` and `Broadcast`
+report distinct one-waiter and all-waiter notification attempts with
+`state_condition` uncertainty because the current waiter set is unknown. These
+effects do not establish which goroutine is awakened or that it runs promptly;
+the analysis does not pair a notification with the `Wait` calls it unblocks or
+report their conditional synchronizes-before relation. Same-named methods and
+open interfaces are not treated as exact Cond operations.
+
+Exact `sync/atomic` functions and typed methods report `concurrency.atomic`.
+Go defines these atomic operations as sequentially consistent; when one
+operation observes another, the first synchronizes before the second. A site
+identifies the API operation only: it does not establish that its value is
+shared, which operations observe each other, that a synchronization protocol is
+correct, or that the operation completed successfully. Ordinary local stores
+and map updates are not classified as atomic operations.
+
+Exact `sync.Map` methods report `concurrency.map.read` and/or
+`concurrency.map.write`: `Load` and `Range` read; `Store`, `Delete`, and
+`Clear` write; and `Swap` reads and writes. `LoadAndDelete`, `LoadOrStore`,
+`CompareAndSwap`, and `CompareAndDelete` report both with `state_condition`
+because their mutation depends on the current mapping. `Range` also retains
+`callback` uncertainty: its callback is not traversed, and the iteration is not
+a consistent snapshot. These categories identify exact map operations. The read/write labels denote
+access and update intent, not the formal Go memory-model classification or a
+synchronization edge. They do not establish a shared instance, a successful
+state change, observed synchronization, or a correct concurrent protocol. Go's
+`sync.Map` contract permits concurrent use; the report does not establish which
+calls use the same map or observe each other.
+
+Exact `sync.Pool.Get` and `Put` calls report `concurrency.pool.get` and
+`concurrency.pool.put`. `Get` may return an arbitrary pooled value, treat the
+pool as empty, and invoke `New`; it retains `callback` uncertainty because the
+analyzer does not establish pool contents or the `New` callback. `Put` may add
+a value that the runtime later removes without notice. The report identifies
+these API calls, not item reuse, ownership transfer, or a guaranteed state
+change. Go's memory-model relation applies only when `Get` returns the same
+value passed to `Put`; the analyzer does not establish shared pool identity or
+that relation for any pair of sites.
+
+Exact `crypto/x509.(*CertPool).AddCert`, `AppendCertsFromPEM`, and
+`AddCertWithConstraint` calls report `crypto.x509.certpool.add`. This identifies
+an attempted addition to an in-memory certificate pool, not proof the pool is
+used for TLS trust, the certificate is valid or trusted, or the addition
+succeeded. `AppendCertsFromPEM` retains `argument_condition` uncertainty because
+its input determines whether certificates are parsed and appended.
+`AddCertWithConstraint` retains `callback` uncertainty: its constraint may run
+later, zero or more times during certificate verification, and can run
+concurrently. Callback effects are not inherited at registration. Exact
+`x509.NewCertPool` is treated as an effect-free boundary because it creates an
+empty in-memory pool. Exact `x509.SystemCertPool` calls report
+`crypto.x509.certpool.system`, identifying a request for a copy of the platform
+system certificate pool. The call can return an error, and environment variables
+or platform APIs can affect the source of roots; the effect does not establish
+which roots were returned, whether the call succeeded, or whether the pool is
+used for TLS verification. This is not a general filesystem-read summary.
 
 The centralized table in `internal/effects/effects.go` recognizes common `os`
 (including `File` and `Root`), `path/filepath`, `io/ioutil`, `net`, `crypto/tls`,
@@ -351,6 +539,108 @@ remains uncertain and adds no concrete call edge. The response could be recorded
 in memory. Unknown `io.Writer.Write` remains unclassified, never `fs.write` just
 because some file type implements it.
 
+`os.Process.Kill` and `os.Process.Signal` report `process.control`;
+`os.Process.Wait` and `os.Process.Release` report `resource.release`. These
+identify process-control and lifecycle operations, not successful termination
+or completion; `Wait` may block until the process exits. Exact
+`os/signal.Notify` calls can report `process.signal.register`: this identifies
+channel registration only, not arrival of a signal or execution of code that
+receives it. A statically known nil channel is excluded because Notify panics
+before registering it. Statically known custom `os.Signal` types that the
+platform implementation does not recognize are also excluded. When static
+evidence cannot establish a non-nil channel or a supported signal value, the
+registration effect remains marked uncertain with `argument_condition`; an
+unknown signal argument may or may not cause registration. Even `os.Interrupt`
+and `syscall.Signal` values retain uncertainty because this summary does not
+prove their runtime value or platform support (`os.Interrupt` is a mutable
+package variable). With no signal arguments, Notify requests all signals.
+Exact `os/signal.Stop` calls report possible `process.signal.unregister` with
+`state_condition` uncertainty: a call site does not establish that the channel
+was previously registered. `Stop(nil)` is excluded because it is a no-op; a
+non-nil channel may still have no registration to remove. The analyzer does not
+track registrations across calls, even when a matching `Notify` appears nearby.
+`NotifyContext` reports possible registration and a possible watcher-goroutine
+launch when local SSA does not prove a nil parent or a list of unsupported
+signals. It retains `argument_condition` uncertainty: the parent may be nil,
+explicit signal support may depend on platform/runtime values, and the watcher
+is not started if the returned context is already done. It does not establish
+signal delivery or cancellation by an arriving signal.
+
+A call through the stop function is summarized only when local SSA directly
+traces the `context.CancelFunc` to the second result of `os/signal.NotifyContext`.
+That invocation reports `context.cancel` and `process.signal.unregister`: the
+contract cancels the returned context and stops relaying signals for its
+internal channel, releasing associated resources. If no supported signals were
+registered, there may be nothing to unregister. It does not prove a signal was
+registered or delivered. Arbitrary, mixed, and helper-returned function
+values remain unresolved; their named function type alone is not evidence.
+Exact `os/signal.Ignore` and `Reset` calls can report distinct possible policy
+operations. With no signal arguments (including a nil or proven empty slice
+passed with `...`), each applies to all signals. A single nil `os.Signal` value
+is unsupported. Signal-list inspection requires a single-use local array slice
+with proven bounds and initialization; helper uses, escaping aliases and dynamic
+bounds retain `argument_condition` uncertainty instead of assuming the initial
+values survive. Statically unsupported concrete signal types in proven lists
+are excluded, while syscall signal values and unknown argument flows retain
+`argument_condition` uncertainty. These effects do not establish signal
+delivery, correlate prior registrations, or prove a particular runtime signal
+state changed.
+
+`context.cancel` is also reported when local SSA proves that the invoked
+`context.CancelFunc` was extracted from `context.WithCancel`, `WithDeadline`,
+`WithDeadlineCause`, `WithTimeout`, or `WithTimeoutCause`, or that a
+`context.CancelCauseFunc` came from `WithCancelCause`. These named function
+types can wrap arbitrary application code, so other values—including values
+merged through unsupported memory flow or returned by helpers—remain
+unresolved rather than being assumed to cancel a context.
+
+Exact `context.AfterFunc` calls report `concurrency.callback.register` with
+`callback` uncertainty: they arrange for the callback to run asynchronously
+when the context is canceled, but it may never run, and its body is not followed
+as a synchronous call. Exact `time.AfterFunc` calls report the same effect with
+`callback` uncertainty: they schedule the supplied callback asynchronously
+when the duration elapses; callback execution and completion are not inferred.
+Exact `time.After` and `time.NewTimer` calls report
+`concurrency.timer.schedule`: they arrange a one-shot time notification, but do
+not establish when a receive occurs or that a receiver runs. Exact
+`time.NewTicker` and `time.Tick` calls report the same effect for recurring
+notifications. A statically known non-positive `NewTicker` interval is reported
+as uncertain with `argument_condition` and no scheduling effect because the API
+panics; an unknown interval retains possible scheduling with the same reason.
+`time.Tick` returns nil for a statically known non-positive interval, so that
+call has no scheduling effect. Unknown `Tick` intervals retain possible
+scheduling with `argument_condition`.
+
+Exact `time.Timer.Stop` and `Reset` calls report `concurrency.timer.stop` and
+`concurrency.timer.reset` with `state_condition` uncertainty. The report records
+the method attempt, not whether the timer was active, whether Stop prevented
+firing, or whether Reset rescheduled work. Exact `time.Ticker.Stop` reports
+`concurrency.timer.stop`: the API prevents future ticks after the call
+completes, but does not close the ticker channel. The report identifies the
+method call, not proof the receiver was non-nil or the call completed.
+`time.Ticker.Reset` reports `concurrency.timer.reset` for a known
+positive interval; an unknown interval retains `argument_condition`, and a
+statically non-positive interval is reported as unresolved because Reset
+panics. On an AfterFunc timer, Reset may schedule another callback while a
+prior callback is still running; neither method is treated as waiting for
+callback completion. These summaries do not establish timer delivery, receive,
+or callback execution. Same-named application timer methods are not matched.
+
+Exact `time.Sleep` calls with a statically positive duration report
+`concurrency.sleep`. A statically non-positive duration has no sleep effect;
+an unknown duration retains possible `concurrency.sleep` with
+`argument_condition` uncertainty because `Sleep` returns immediately for
+non-positive durations. This identifies a possible delay of the current
+goroutine only; it does not establish the duration or scheduling behavior.
+
+Local SSA traces the returned stop function only when
+all value paths lead directly to `context.AfterFunc`. Invoking it reports
+`concurrency.callback.stop` with `state_condition` uncertainty: it returns true
+only if it stopped the callback before it ran; false can mean the callback has
+started or the association was already stopped. It does not wait for callback
+completion or cancel the context. Arbitrary, mixed, and helper-returned stop
+functions remain unresolved; same-named application methods are not matched.
+
 Acquisition summaries include caller-owned file/root/pipe handles, concrete
 network dial/listen/accept operations, and selected SQL handles. Convenience APIs
 such as `ReadFile` do not expose an owned handle. Concrete network closes and
@@ -372,9 +662,50 @@ flags conservatively report read, write, and create.
 
 ## Analysis model and limits
 
-Direct effects come from a recognized call. Transitive effects are propagated
-through ordinary calls, methods, closures, known local function values, phi
-merges, generics, `go`, and `defer`; recursion uses a stable worklist.
+Direct effects come from recognized calls and the listed SSA operations.
+Transitive effects are propagated through ordinary calls, methods, closures,
+known local function values, bounded returned-function provenance, generics,
+`go`, and `defer`; recursion
+uses a stable worklist. In detailed and effect-view edge evidence, `kind`
+distinguishes ordinary `call`, `go`, and `defer` relationships. The latter two
+describe possible reachable work, not synchronous execution: a goroutine body
+may not complete, and a deferred call is registered for a later exit path. An
+empty effect set is not proof of purity.
+
+### Function-value provenance
+
+For function-typed results of static calls into loaded application/dependency
+bodies, bounded symbolic return summaries follow assignments, phi values,
+closures, tuple results and helper layers. Function parameters in return
+summaries are substituted with that call's arguments (including generic and
+named function types). A closed, non-nil singleton establishes the actual
+invocation target. Known finite alternatives instead have
+`candidate_function_value` edges and only `possible_effects`; they are not VTA
+proofs or several certain calls. Even common effects of summarized alternatives
+stay possible-only: normal invocation is not proven. Unknown alternatives retain
+uncertainty. Known alternatives with opaque work inside their bodies also retain
+uncertainty. `-effect` and both graph views include candidate evidence without
+promoting it. Source IDs and go/defer invocation forms are preserved.
+
+Each queried value has a memoized analysis bounded to 4,096 work steps and 64
+nested evaluator levels. Cycles, missing bodies, opaque standard-library results
+and budget exhaustion stay open; incomplete summaries are not shared between
+queries. No execution paths are enumerated. Summaries model return identity, not
+execution of a returned/retained callback or a closure environment. Captured
+ordinary data never establishes paths/permissions/arguments; captured function
+loads, aliases, struct/interface memory and external callback parameters stay
+uncertain. For callback-invoking helpers such as `execute`, function arguments
+observed at statically known calls can add `candidate_function_value` targets at
+helper's invocation site. They remain candidates: observed callers do not prove
+caller completeness, and context-insensitive summaries can include targets from
+other callers. Thus `execute(makeWriter(path))` remains uncertain rather than
+proving that `makeWriter` is its sole target. For callback-argument candidates,
+dependency bodies contribute only when they are in the selected or
+budget-expanded VTA scope. This does not specialize arbitrary callbacks or make
+open parameters globally certain. A factory with a defer may have SSA
+result-cell loads; these remain unsupported
+memory flow. Known stdlib function-value summaries retain their existing narrow
+provenance contracts rather than inspecting standard-library bodies.
 
 Interface dispatch is intentionally evidence-based. Standard-library packages
 are identified from Go loader module metadata, not import-path spelling. A

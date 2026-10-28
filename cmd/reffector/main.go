@@ -33,10 +33,26 @@ func run(args []string, stdout, stderr io.Writer) int {
 	unresolved := flags.Bool("unresolved", false, "switch from recognized operations to unresolved-only leads (effect view)")
 	reasonFilter := flags.String("reason", "", "filter uncertainty reasons by substring, e.g. interface_dispatch (effect view)")
 	contracts := flags.Bool("contracts", false, "include method-set-compatible implementation leads for matching interface calls (effect view)")
+	dependencyVTAFunctions := flags.Int("dependency-vta-functions", 0, "maximum loaded dependency SSA functions added to VTA input (requires -dependency-vta-edges)")
+	dependencyVTAEdges := flags.Int("dependency-vta-edges", 0, "maximum dependency static call edges traversed for VTA input (requires -dependency-vta-functions)")
 	exact := flags.Bool("exact", false, "select local directory packages without subpackages")
 	all := flags.Bool("all", false, "include full source inventory, independently of effect-view filters")
 	stats := flags.Bool("stats", false, "write coverage counts as JSON to stderr")
 	details := flags.Bool("details", false, "write compatibility function/witness JSON (implies -view functions -json)")
+	argumentProvenance := flags.Bool("argument-provenance", false, "emit bounded SSA argument provenance JSON (standalone opt-in projection)")
+	controlFlow := flags.Bool("control-flow", false, "emit bounded SSA control-flow JSON (standalone opt-in projection)")
+	controlFlowFunctions := flags.Int("control-flow-max-functions", 64, "control-flow maximum unique functions")
+	controlFlowBlocks := flags.Int("control-flow-max-blocks-per-function", 128, "control-flow maximum blocks per function")
+	controlFlowVisits := flags.Int("control-flow-max-block-visits", 4096, "control-flow maximum total block visits")
+	controlFlowBranches := flags.Int("control-flow-max-branches", 256, "control-flow maximum branches")
+	controlFlowRelationships := flags.Int("control-flow-max-relationships", 2048, "control-flow maximum relationships")
+	controlFlowDepth := flags.Int("control-flow-max-depth", 8, "control-flow maximum export depth")
+	controlFlowBytes := flags.Int("control-flow-max-json-bytes", 1048576, "control-flow maximum compact JSON bytes")
+	argumentMaxDepth := flags.Int("argument-max-depth", 8, "argument provenance maximum origin depth")
+	argumentMaxNodes := flags.Int("argument-max-nodes", 2000, "argument provenance maximum SSA value nodes")
+	argumentMaxCalls := flags.Int("argument-max-calls", 500, "argument provenance maximum call relations")
+	argumentMaxAlternatives := flags.Int("argument-max-alternatives", 32, "argument provenance maximum alternative origins per value")
+	argumentMaxJSONBytes := flags.Int("argument-max-json-bytes", 1048576, "argument provenance maximum compact JSON bytes")
 	packageFilter := flags.String("package", "", "select source-root packages by substring (summaries in function view)")
 	functionFilter := flags.String("function", "", "select source-root functions by substring; prefix = for one exact function")
 	effectFilter := flags.String("effect", "", "filter effect identifiers by substring (e.g. fs.rename, resource.release); see README for vocabulary")
@@ -64,8 +80,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, "reffector: -audit-include-known requires -audit-unresolved")
 		return 2
 	}
+	if specified["dependency-vta-functions"] != specified["dependency-vta-edges"] || (specified["dependency-vta-functions"] && (*dependencyVTAFunctions < 1 || *dependencyVTAEdges < 1)) {
+		fmt.Fprintln(stderr, "reffector: dependency VTA requires both positive -dependency-vta-functions and -dependency-vta-edges budgets")
+		return 2
+	}
 	if *audit {
-		allowed := map[string]bool{"audit-unresolved": true, "audit-include-known": true, "tests": true, "exact": true, "stats": true, "all": true}
+		allowed := map[string]bool{"audit-unresolved": true, "audit-include-known": true, "tests": true, "exact": true, "stats": true, "all": true, "dependency-vta-functions": true, "dependency-vta-edges": true}
 		for name := range specified {
 			if !allowed[name] {
 				fmt.Fprintln(stderr, "reffector: -audit-unresolved supports only -audit-include-known/-tests/-exact/-stats/-all; incompatible flag: -"+name)
@@ -85,13 +105,24 @@ func run(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, "reffector: reverse -max-edges requires effect view; -max-paths requires -details; traversal limits require a graph view")
 		return 2
 	}
-	if (*view != "effects" && *view != "functions") || *maxDepth < 0 || *maxPaths < 1 || *maxSites < 1 || *maxEdges < 1 || (*view == "functions" && ((!*details && *operationFilter != "") || *apiFilter != "" || *siteFilter != "" || *unresolved || *reasonFilter != "" || *contracts)) {
+	if (*view != "effects" && *view != "functions") || *controlFlowFunctions < 1 || *controlFlowBlocks < 1 || *controlFlowVisits < 1 || *controlFlowBranches < 1 || *controlFlowRelationships < 1 || *controlFlowDepth < 1 || *controlFlowBytes < 1 || *argumentMaxDepth < 1 || *argumentMaxNodes < 1 || *argumentMaxCalls < 1 || *argumentMaxAlternatives < 1 || *argumentMaxJSONBytes < 1 || *maxDepth < 0 || *maxPaths < 1 || *maxSites < 1 || *maxEdges < 1 || (*view == "functions" && ((!*details && *operationFilter != "") || *apiFilter != "" || *siteFilter != "" || *unresolved || *reasonFilter != "" || *contracts)) {
 		fmt.Fprintln(stderr, "reffector: use -view effects|functions, nonnegative depth, positive limits; -api/-site/-unresolved/-reason/-contracts require effect view; -operation requires effect view or -details")
 		return 2
 	}
+	if *controlFlow && *argumentProvenance {
+		fmt.Fprintln(stderr, "reffector: -control-flow and -argument-provenance emit mutually exclusive projections")
+		return 2
+	}
+	if *controlFlow && (*view != "effects" || *audit) {
+		fmt.Fprintln(stderr, "reffector: -control-flow requires effect view and is incompatible with -audit-unresolved")
+		return 2
+	}
 	report, err := analyzer.AnalyzeReport(flags.Args(), analyzer.Options{
-		Direct: *direct, Tests: *tests, Exact: *exact, All: *all, Details: *details,
-		AuditUnresolved: *audit, AuditIncludeKnown: *auditKnown,
+		Direct: *direct, Tests: *tests, Exact: *exact, All: *all, Details: *details, ArgumentProvenance: *argumentProvenance, ControlFlow: *controlFlow,
+		ControlFlowLimits:        analyzer.ControlFlowOptions{MaxFunctions: *controlFlowFunctions, MaxBlocksPerFunction: *controlFlowBlocks, MaxBlockVisits: *controlFlowVisits, MaxBranches: *controlFlowBranches, MaxRelationships: *controlFlowRelationships, MaxDepth: *controlFlowDepth, MaxJSONBytes: *controlFlowBytes},
+		ArgumentProvenanceLimits: analyzer.ArgumentProvenanceOptions{MaxDepth: *argumentMaxDepth, MaxNodes: *argumentMaxNodes, MaxCalls: *argumentMaxCalls, MaxAlternatives: *argumentMaxAlternatives, MaxJSONBytes: *argumentMaxJSONBytes},
+		AuditUnresolved:          *audit, AuditIncludeKnown: *auditKnown,
+		DependencyVTAFunctions: *dependencyVTAFunctions, DependencyVTAEdges: *dependencyVTAEdges,
 		EffectView: *view == "effects" && !*audit, API: *apiFilter, Site: *siteFilter, Unresolved: *unresolved, Contracts: *contracts, Reason: *reasonFilter,
 		Package: *packageFilter, Function: *functionFilter, Effect: *effectFilter, Operation: *operationFilter,
 		MaxDepth: *maxDepth, MaxPaths: *maxPaths, MaxSites: *maxSites, MaxEdges: *maxEdges,
@@ -99,6 +130,18 @@ func run(args []string, stdout, stderr io.Writer) int {
 	if err != nil {
 		fmt.Fprintln(stderr, "reffector:", err)
 		return 1
+	}
+	if report.Stats.DependencyVTA != nil && !*stats && (report.Effects == nil || !*asJSON) {
+		status := report.Stats.DependencyVTA.LimitHit
+		if status == "" {
+			status = "none"
+		}
+		fmt.Fprintf(stderr, "reffector: dependency VTA added %d functions across %d edges; truncated=%t limit_hit=%s (budgets %d functions/%d edges); context_states=%d/%d context_truncated=%t fallback_roots=%d\n",
+			report.Stats.DependencyVTA.FunctionsAdded, report.Stats.DependencyVTA.EdgesAdded,
+			report.Stats.DependencyVTA.Truncated, status,
+			report.Stats.DependencyVTA.FunctionBudget, report.Stats.DependencyVTA.EdgeBudget,
+			report.Stats.DependencyVTA.ContextStates, report.Stats.DependencyVTA.ContextBudget,
+			report.Stats.DependencyVTA.ContextTruncated, report.Stats.DependencyVTA.ContextRootsFallback)
 	}
 	if *stats {
 		var coverage any = report.Stats
@@ -112,7 +155,11 @@ func run(args []string, stdout, stderr io.Writer) int {
 			return 1
 		}
 	}
-	if report.Audit != nil {
+	if report.ControlFlow != nil {
+		err = json.NewEncoder(stdout).Encode(report.ControlFlow)
+	} else if report.ArgumentProvenance != nil {
+		err = json.NewEncoder(stdout).Encode(report.ArgumentProvenance)
+	} else if report.Audit != nil {
 		err = report.Audit.WriteJSONL(stdout)
 	} else if report.Effects != nil {
 		err = output.WriteEffects(stdout, report.Effects, *asJSON)

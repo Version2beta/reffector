@@ -24,14 +24,16 @@ type EffectReport struct {
 }
 
 type EffectGroup struct {
-	Effect string   `json:"effect"`
-	Sites  []string `json:"sites"`
+	Effect        string   `json:"effect"`
+	Sites         []string `json:"sites"`
+	PossibleSites []string `json:"possible_sites,omitempty"`
 }
 
 type EffectCoverage struct {
 	Stats
 	SelectedPackages         []string `json:"packages"`
 	OperationSites           int      `json:"operation_sites_identified"`
+	PossibleOperationSites   int      `json:"possible_operation_sites_identified,omitempty"`
 	SelectedOperationSites   int      `json:"selected_operation_sites"`
 	DependencyOperationSites int      `json:"dependency_operation_sites"`
 	UnresolvedSites          int      `json:"unresolved_sites_identified"`
@@ -56,7 +58,7 @@ type GraphEdge struct {
 	Callee    string    `json:"callee"`
 	Source    *CallEdge `json:"source,omitempty"`
 	Synthetic bool      `json:"synthetic"`
-	Candidate bool      `json:"candidate"` // VTA possibility, not established reachability.
+	Candidate bool      `json:"candidate"` // Candidate possibility, not established reachability.
 }
 
 type NodeRef struct {
@@ -154,10 +156,13 @@ func (g *graph) effectReport(opts Options, stats Stats, inventory []Record) *Eff
 			} else {
 				r.Coverage.DependencyOperationSites++
 			}
-		} else {
+		} else if s.Uncertain {
 			r.Coverage.UnresolvedSites++
 		}
-		if !inQuery || !effectMatches(s.Effects, opts.Effect) || !effectMatches(s.APIs, opts.Operation) || !effectMatches(s.Reasons, opts.Reason) || (opts.API != "" && !contains(s.APIs, opts.API)) || (opts.Site != "" && s.ID != opts.Site) || (opts.Unresolved && (len(s.Effects) != 0 || !s.Uncertain)) || (!opts.Unresolved && len(s.Effects) == 0 && !(opts.Contracts && g.contracts[s.ID] != nil)) {
+		if len(s.PossibleEffects) > 0 {
+			r.Coverage.PossibleOperationSites++
+		}
+		if !inQuery || !effectMatches(s.effectNames(), opts.Effect) || !effectMatches(s.APIs, opts.Operation) || !effectMatches(s.Reasons, opts.Reason) || (opts.API != "" && !contains(s.APIs, opts.API)) || (opts.Site != "" && s.ID != opts.Site) || (opts.Unresolved && (len(s.Effects) != 0 || !s.Uncertain)) || (!opts.Unresolved && len(s.effectNames()) == 0 && !(opts.Contracts && g.contracts[s.ID] != nil)) {
 			continue
 		}
 		sites = append(sites, s)
@@ -184,13 +189,14 @@ func (g *graph) effectReport(opts Options, stats Stats, inventory []Record) *Eff
 		r.Truncated.Sites = true
 	}
 	groups := map[string][]string{}
+	possibleGroups := map[string][]string{}
 	usedNodes, usedEdges := map[string]GraphNode{}, map[string]GraphEdge{}
 	budget := opts.MaxEdges // Global unique graph-edge budget, shared across sites.
 	emittedContracts := map[string]bool{}
 	for _, site := range sites {
 		r.Sites = append(r.Sites, *site)
 		emittedContracts[site.ID] = true
-		if len(site.Effects) == 0 {
+		if len(site.Effects) == 0 && site.Uncertain {
 			r.Unresolved = append(r.Unresolved, site.ID)
 		}
 		for _, effect := range site.Effects {
@@ -198,13 +204,28 @@ func (g *graph) effectReport(opts Options, stats Stats, inventory []Record) *Eff
 				groups[effect] = append(groups[effect], site.ID)
 			}
 		}
-		reverse := g.reverseGraph(site.ID, relevant, opts.MaxDepth, &budget, usedNodes, usedEdges)
+		for _, effect := range site.PossibleEffects {
+			if matches(effect, opts.Effect) {
+				possibleGroups[effect] = append(possibleGroups[effect], site.ID)
+			}
+		}
+		siteRelevant := relevant
+		var siteLinks map[contextualCandidateLink]bool
+		if g.contextualVTA && !opts.Direct && g.siteHasCandidatePath(site.ID) {
+			projection := g.contextualSiteNodes(site.ID, roots)
+			siteRelevant, siteLinks = projection.nodes, projection.links
+		}
+		reverse := g.reverseGraph(site.ID, siteRelevant, siteLinks, opts.MaxDepth, &budget, usedNodes, usedEdges)
 		r.Truncated.Edges = r.Truncated.Edges || reverse.Truncated.Edges
 		r.Truncated.Depth = r.Truncated.Depth || reverse.Truncated.Depth
 		r.Reverse = append(r.Reverse, reverse)
 	}
 	for effect, ids := range groups {
-		r.Groups = append(r.Groups, EffectGroup{effect, ids})
+		r.Groups = append(r.Groups, EffectGroup{Effect: effect, Sites: ids, PossibleSites: possibleGroups[effect]})
+		delete(possibleGroups, effect)
+	}
+	for effect, ids := range possibleGroups {
+		r.Groups = append(r.Groups, EffectGroup{Effect: effect, Sites: []string{}, PossibleSites: ids})
 	}
 	sort.Slice(r.Groups, func(i, j int) bool { return r.Groups[i].Effect < r.Groups[j].Effect })
 	for _, n := range usedNodes {
@@ -231,7 +252,7 @@ func contains(values []string, value string) bool {
 	return false
 }
 
-func (g *graph) reverseGraph(site string, relevant map[*node]bool, maxDepth int, budget *int, nodes map[string]GraphNode, edges map[string]GraphEdge) ReverseGraph {
+func (g *graph) reverseGraph(site string, relevant map[*node]bool, links map[contextualCandidateLink]bool, maxDepth int, budget *int, nodes map[string]GraphNode, edges map[string]GraphEdge) ReverseGraph {
 	r := ReverseGraph{Site: site, Origins: []string{}, Nodes: []NodeRef{}, Edges: []string{}}
 	distance := map[*node]int{}
 	queue := []*node{}
@@ -251,6 +272,9 @@ func (g *graph) reverseGraph(site string, relevant map[*node]bool, maxDepth int,
 		n := queue[0]
 		queue = queue[1:]
 		for _, link := range n.incoming {
+			if links != nil && !links[contextualCandidateLinkKey(link.caller, n, link.edge, link.candidate)] {
+				continue
+			}
 			if !relevant[link.caller] || maxDepth == 0 {
 				continue
 			}
@@ -303,6 +327,9 @@ func (g *graph) reverseGraph(site string, relevant map[*node]bool, maxDepth int,
 	r.Truncated.Depth = false
 	for _, n := range ordered {
 		for _, link := range n.incoming {
+			if links != nil && !links[contextualCandidateLinkKey(link.caller, n, link.edge, link.candidate)] {
+				continue
+			}
 			if !relevant[link.caller] {
 				continue
 			}

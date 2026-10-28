@@ -34,6 +34,10 @@ func WriteEffects(w io.Writer, report *analyzer.EffectReport, asJSON bool) error
 	fmt.Fprintln(b, "Possible effects — static reachability, not execution proof")
 	for _, group := range report.Groups {
 		fmt.Fprintf(b, "%s (%d sites)\n", group.Effect, len(group.Sites))
+		for _, id := range group.PossibleSites {
+			fmt.Fprintln(b, "  candidate function value:")
+			writeSiteReference(id)
+		}
 		for _, id := range group.Sites {
 			writeSiteReference(id)
 		}
@@ -73,12 +77,15 @@ func WriteEffects(w io.Writer, report *analyzer.EffectReport, asJSON bool) error
 		if len(site.Effects) > 0 {
 			fmt.Fprintf(b, "  possible: %s\n", strings.Join(site.Effects, ", "))
 		}
+		if len(site.PossibleEffects) > 0 {
+			fmt.Fprintf(b, "  candidate-only: %s\n", strings.Join(site.PossibleEffects, ", "))
+		}
 		if site.Uncertain {
 			fmt.Fprintf(b, "  unresolved: %s\n", strings.Join(site.Reasons, ", "))
 		}
 		if len(site.Operations) > 1 {
 			for _, op := range site.Operations {
-				fmt.Fprintf(b, "  alternative %s [%s] possible=%s uncertain=%t reasons=%s\n", op.API, op.Recognition, strings.Join(op.Effects, ","), op.Uncertain, strings.Join(op.Reasons, ","))
+				fmt.Fprintf(b, "  alternative %s [%s] possible=%s uncertain=%t reasons=%s\n", op.API, op.Recognition, strings.Join(append(append([]string(nil), op.Effects...), op.PossibleEffects...), ","), op.Uncertain, strings.Join(op.Reasons, ","))
 			}
 		}
 		g := graphs[site.ID]
@@ -129,6 +136,9 @@ func WriteEffects(w io.Writer, report *analyzer.EffectReport, asJSON bool) error
 	fmt.Fprintf(b, "\nCoverage: %d packages, %d source functions; %d effectful, %d direct, %d inherited, %d uncertain, %d unresolved-only, %d no-effects/no-uncertainty (not purity)\n", c.Packages, c.SourceFunctions, c.Effectful, c.Direct, c.Inherited, c.Uncertain, c.UnresolvedOnly, c.Uncharacterized)
 	fmt.Fprintf(b, "Sites: %d operations (%d selected, %d dependency), %d unresolved-only; %d match filters, %d emitted\n", c.OperationSites, c.SelectedOperationSites, c.DependencyOperationSites, c.UnresolvedSites, c.FilteredSites, c.EmittedSites)
 	fmt.Fprintf(b, "Truncated: sites=%t edges=%t depth=%t. Unresolved origins: -unresolved; full source inventory: -all -json (or -view functions -all -json).\n", report.Truncated.Sites, report.Truncated.Edges, report.Truncated.Depth)
+	if c.PossibleOperationSites > 0 {
+		fmt.Fprintf(b, "Candidate function-value operation sites: %d (not established)\n", c.PossibleOperationSites)
+	}
 	if report.Inventory != nil {
 		fmt.Fprintln(b, "\nSelected source inventory (unfiltered):")
 		for _, r := range report.Inventory {

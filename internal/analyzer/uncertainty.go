@@ -42,6 +42,18 @@ func summaryReason(api string, set effects.Set) string {
 		return ""
 	}
 	switch api {
+	case "os/signal.Notify", "os/signal.NotifyContext", "os/signal.Ignore", "os/signal.Reset", "time.NewTicker", "time.Tick", "time.(*Ticker).Reset", "time.Sleep":
+		return "argument_condition"
+	case "os/signal.Stop", "context.AfterFunc.stop", "time.(*Timer).Stop", "time.(*Timer).Reset":
+		return "state_condition"
+	case "context.AfterFunc", "time.AfterFunc", "sync.(*Map).Range", "sync.(*Pool).Get", "crypto/x509.(*CertPool).AddCertWithConstraint":
+		return "callback"
+	case "crypto/x509.(*CertPool).AppendCertsFromPEM":
+		return "argument_condition"
+	case "sync.(*Map).LoadAndDelete", "sync.(*Map).LoadOrStore", "sync.(*Map).CompareAndSwap", "sync.(*Map).CompareAndDelete", "sync.(*Cond).Signal", "sync.(*Cond).Broadcast":
+		return "state_condition"
+	case "sync.(*Cond).Wait":
+		return "interface_dispatch"
 	case "net/http.(ResponseWriter).Write", "net/http.(ResponseWriter).WriteHeader", "net.(Conn).Close", "net.(PacketConn).Close", "net.(Listener).Close", "io.(Closer).Close":
 		return "interface_dispatch"
 	}

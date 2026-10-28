@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "name": "rclone-vfs-cache-subsystem",
+  "repository": "github.com/rclone/rclone",
+  "revision": "81e7372f6fbedfa80592e9a564593d63a8dc32f3",
+  "patterns": [
+    "./vfs/vfscache/...",
+    "./vfs/vfscommon"
+  ],
+  "expected_packages": [
+    "github.com/rclone/rclone/vfs/vfscache",
+    "github.com/rclone/rclone/vfs/vfscache/downloaders",
+    "github.com/rclone/rclone/vfs/vfscache/writeback",
+    "github.com/rclone/rclone/vfs/vfscommon"
+  ],
+  "expected_source_files": 18,
+  "expected_source_bytes": 195529,
+  "expected_source_lines": 6992,
+  "questions": [
+    {
+      "id": "architecture-and-dataflow",
+      "prompt": "Describe the responsibilities and relationships of vfscache, downloaders, writeback, and vfscommon. Trace cache construction, item open/close, download, and writeback flow. Cite exact source lines; include test evidence when useful."
+    },
+    {
+      "id": "effects-and-limits",
+      "prompt": "Identify important I/O, concurrency, callback, timer, and state boundaries. Distinguish what the source and supplied static evidence establish from what remains possible or unresolved. Do not infer that a reachable operation ran, completed, or succeeded at runtime."
+    }
+  ],
+  "rubric": {
+    "required_facts": [
+      {
+        "id": "cache-constructs-writeback",
+        "all_terms": ["cache", "writeback"],
+        "any_terms": ["writeback.new", "writeback queue"],
+        "citation_options": [{"kind": "source", "file": "vfs/vfscache/cache.go", "line": 42}, {"kind": "source", "file": "vfs/vfscache/cache.go", "line": 131}]
+      },
+      {
+        "id": "item-opens-downloaders",
+        "all_terms": ["item.open", "downloaders.new"],
+        "any_terms": ["item", "downloaders"],
+        "citation_options": [{"kind": "source", "file": "vfs/vfscache/item.go", "line": 503}, {"kind": "source", "file": "vfs/vfscache/item.go", "line": 623}]
+      },
+      {
+        "id": "dirty-close-queues-writeback",
+        "all_terms": ["writeback.add", "callback"],
+        "any_terms": ["dirty", "upload"],
+        "citation_options": [{"kind": "source", "file": "vfs/vfscache/item.go", "line": 829}, {"kind": "source", "file": "vfs/vfscache/item.go", "line": 841}]
+      },
+      {
+        "id": "downloaders-manage-ranges-and-waiters",
+        "all_terms": ["download", "waiter"],
+        "any_terms": ["range", "ranges"],
+        "citation_options": [{"kind": "source", "file": "vfs/vfscache/downloaders/downloaders.go", "line": 37}, {"kind": "source", "file": "vfs/vfscache/downloaders/downloaders.go", "line": 59}]
+      },
+      {
+        "id": "shared-vfs-options",
+        "all_terms": ["vfscommon.options"],
+        "any_terms": ["cache", "downloaders", "writeback"],
+        "citation_options": [{"kind": "source", "file": "vfs/vfscommon/options.go", "line": 185}, {"kind": "source", "file": "vfs/vfscache/cache.go", "line": 48}]
+      },
+      {
+        "id": "candidate-evidence-stays-possible",
+        "all_terms": ["candidate", "possible"],
+        "any_terms": ["not proof", "not establish", "not guaranteed"],
+        "citation_options": [{"kind": "reffector", "record_types": ["sites", "audit_site"]}]
+      },
+      {
+        "id": "static-evidence-is-not-runtime-completion",
+        "all_terms": ["static", "runtime"],
+        "any_terms": ["not prove", "does not prove", "cannot establish"],
+        "citation_options": [{"kind": "reffector", "record_types": ["sites", "audit_site"]}]
+      }
+    ],
+    "citation_policy": "Claims should cite exact repository-relative source paths and line numbers; Reffector claims should cite stable site or edge IDs.",
+    "forbidden_promotions": ["candidate-to-established", "possible-effect-to-established", "static-reachability-to-runtime-execution"],
+    "scoring": "Deterministic lexical required-fact recall plus source/Reffector reference and confidence checks. This is not semantic accuracy scoring; unsupported or contradicted prose still needs independent review."
+  },
+  "notes": [
+    "This is a bounded cache-focused subset of the rclone VFS tree, not the entire rclone repository.",
+    "The source scope includes 4 selected Go packages and their Go/test files. Package names are inventory boundaries, not asserted architectural components.",
+    "Source revision and expected inventory were measured with offline go list at the recorded revision."
+  ]
+}

@@ -211,7 +211,11 @@ func Known(f *os.File) error { var c io.Closer = f; return c.Close() }
 		switch record.Function {
 		case "InterfaceClose", "CloseCaller":
 			seen[record.Function] = true
-			if !record.Uncertain || !reflect.DeepEqual(record.Effects, []analyzer.Effect{{Identifier: "resource.release", Direct: record.Function == "InterfaceClose"}}) {
+			want := []analyzer.Effect{{Identifier: "resource.release", Direct: record.Function == "InterfaceClose"}}
+			if record.Function == "CloseCaller" {
+				want = []analyzer.Effect{{Identifier: "concurrency.lock"}, {Identifier: "concurrency.unlock"}, {Identifier: "resource.release"}}
+			}
+			if !record.Uncertain || !reflect.DeepEqual(record.Effects, want) {
 				t.Fatalf("direct vs inherited contract: %+v", record)
 			}
 		case "Persist":

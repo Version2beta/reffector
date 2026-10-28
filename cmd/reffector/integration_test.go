@@ -24,7 +24,7 @@ type record struct {
 	Direct                    bool
 }
 
-var executable, fixtureSource string
+var executable, fixtureSource, concurrencySource, effectContractsSource, waitGroupSource, signalContractSource string
 
 func TestMain(m *testing.M) {
 	tmp, err := os.MkdirTemp("", "reffector-cli-test-*")
@@ -34,6 +34,10 @@ func TestMain(m *testing.M) {
 	}
 	executable = filepath.Join(tmp, "reffector")
 	fixtureSource, _ = filepath.Abs("../../testdata/fixture")
+	concurrencySource, _ = filepath.Abs("../../testdata/concurrency")
+	effectContractsSource, _ = filepath.Abs("../../testdata/effect-contracts")
+	waitGroupSource, _ = filepath.Abs("../../testdata/waitgroup")
+	signalContractSource, _ = filepath.Abs("../../testdata/signal-contracts")
 	cmd := exec.Command("go", "build", "-o", executable, ".")
 	if data, err := cmd.CombinedOutput(); err != nil {
 		fmt.Fprintf(os.Stderr, "building CLI: %v\n%s", err, data)
@@ -167,8 +171,8 @@ func TestAnalysisCLI(t *testing.T) {
 		"KnownInterface": "fs.read",
 		"Recursive":      "fs.read", "MutualA": "fs.create fs.write", "MutualB": "fs.create fs.write",
 
-		"KnownValue": "fs.read", "PhiValue": "fs.create fs.read fs.write", "BoundMethod": "fs.create fs.write", "BoundSink": "fs.read",
-		"Closure": "fs.read", "Closure$1": "fs.read", "Spawn": "fs.create fs.read fs.write",
+		"KnownValue": "fs.read", "ReturnedValue": "fs.read", "BoundMethod": "fs.create fs.write", "BoundSink": "fs.read",
+		"Closure": "fs.read", "Closure$1": "fs.read", "Spawn": "concurrency.goroutine fs.create fs.read fs.write",
 		"Generic": "env.read", "(Box[T]).Load": "fs.read", "GenericUse": "env.read fs.read",
 		"HTTP": "net.connect", "Connect": "net.connect resource.acquire", "Listen": "net.listen resource.acquire",
 		"Exec": "env.read fs.read process.exec", "Environment": "env.read env.write", "Database": "db.exec db.query",
@@ -181,16 +185,21 @@ func TestAnalysisCLI(t *testing.T) {
 	if err := json.Unmarshal([]byte(base), &summaries); err != nil {
 		t.Fatal(err)
 	}
+	for _, summary := range summaries {
+		if summary.Function == "PhiValue" && (len(summary.Effects) != 0 || !reflect.DeepEqual(summary.PossibleEffects, []string{"fs.create", "fs.read", "fs.write"}) || summary.Uncertain) {
+			t.Errorf("closed function alternatives must remain possible-only: %+v", summary)
+		}
+	}
 	uncertain := map[string]bool{}
 	for _, summary := range summaries {
 		uncertain[summary.Function] = summary.Uncertain
 	}
-	for _, name := range []string{"Unknown", "ForwardUnknown", "ReturnedValue", "Reflect", "External", "OpenInterface", "MissingInterface", "HTTP", "WriteOpen", "FormatStringer"} {
+	for _, name := range []string{"Unknown", "ForwardUnknown", "Reflect", "External", "OpenInterface", "MissingInterface", "HTTP", "WriteOpen", "FormatStringer"} {
 		if !uncertain[name] {
 			t.Errorf("%s should be marked uncertain", name)
 		}
 	}
-	for _, name := range []string{"Pure", "NotSinks", "KnownInterface", "Read", "OpenFile", "Format", "FormatInteger", "FormatMultiple", "TypeName", "WriteMemory"} {
+	for _, name := range []string{"ReturnedValue", "Pure", "NotSinks", "KnownInterface", "Read", "OpenFile", "Format", "FormatInteger", "FormatMultiple", "TypeName", "WriteMemory"} {
 		if uncertain[name] {
 			t.Errorf("%s should not be marked uncertain", name)
 		}
@@ -271,6 +280,91 @@ func TestAnalysisCLI(t *testing.T) {
 			t.Fatalf("test functions missing: %v", found)
 		}
 	})
+}
+
+func TestSSAConcurrencySites(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "concurrency")
+	if err := os.CopyFS(dir, os.DirFS(concurrencySource)); err != nil {
+		t.Fatal(err)
+	}
+	out, diagnostic, status := invoke(t, dir, nil, "-json", "-all", "-stats", ".")
+	if status != 0 || diagnostic == "" {
+		t.Fatalf("analysis: exit %d, stderr %q", status, diagnostic)
+	}
+	var report analyzer.EffectReport
+	if err := json.Unmarshal([]byte(out), &report); err != nil {
+		t.Fatal(err)
+	}
+	if report.Coverage.OperationSites != 8 || report.Coverage.SelectedOperationSites != 8 {
+		t.Fatalf("operation-site coverage: %+v", report.Coverage)
+	}
+	byFunction := map[string]analyzer.Record{}
+	for _, record := range report.Inventory {
+		byFunction[record.Function] = record
+	}
+	want := map[string]string{
+		"Goroutine": "concurrency.goroutine", "Deferred": "fs.remove",
+		"Send": "channel.send", "Receive": "channel.receive", "Select": "channel.select", "GenericSend": "channel.send",
+	}
+	for function, effect := range want {
+		record := byFunction[function]
+		if record.Package != "example.com/concurrency" || len(record.Effects) != 1 || record.Effects[0].Identifier != effect || !record.Effects[0].Direct {
+			t.Errorf("%s summary = %+v, want direct %s", function, record, effect)
+		}
+	}
+	for _, name := range []string{"LocalStore", "BufferWrite"} {
+		if r := byFunction[name]; len(r.Effects) != 0 || r.Uncertain {
+			t.Errorf("negative control %s has effects/uncertainty: %+v", name, r)
+		}
+	}
+	for _, name := range []string{"Inherited", "GenericUse"} {
+		if r := byFunction[name]; len(r.Effects) != 1 || r.Effects[0].Identifier != "channel.send" || r.Effects[0].Direct {
+			t.Errorf("inherited channel operation in %s = %+v", name, r)
+		}
+	}
+	if r := byFunction["MutexOperations"]; len(r.Effects) != 2 || !r.Effects[0].Direct || !r.Effects[1].Direct || r.Effects[0].Identifier != "concurrency.lock" || r.Effects[1].Identifier != "concurrency.unlock" {
+		t.Errorf("sync mutex summary = %+v", r)
+	}
+	if r := byFunction["MutexCaller"]; len(r.Effects) != 2 || r.Effects[0].Direct || r.Effects[1].Direct {
+		t.Errorf("inherited sync mutex summary = %+v", r)
+	}
+	if r := byFunction["FakeLock"]; len(r.Effects) != 0 || r.Uncertain {
+		t.Errorf("unrelated Lock method was summarized: %+v", r)
+	}
+	if r := byFunction["UnknownWriter"]; !r.Uncertain || len(r.Effects) != 0 {
+		t.Errorf("unresolved interface call lost uncertainty or gained an effect: %+v", r)
+	}
+	sites := map[string]analyzer.Site{}
+	for _, site := range report.Sites {
+		sites[site.Function] = site
+	}
+	mutexAPIs := map[string]bool{}
+	for _, site := range report.Sites {
+		if site.Function == "MutexOperations" {
+			mutexAPIs[site.API] = site.Location.Line > 0 && site.Location.Column > 0
+		}
+	}
+	if len(mutexAPIs) != 2 || !mutexAPIs["sync.(*Mutex).Lock"] || !mutexAPIs["sync.(*Mutex).Unlock"] {
+		t.Errorf("sync mutex operation sites = %v", mutexAPIs)
+	}
+	wantSites := map[string][2]string{
+		"Goroutine": {"ssa.Go", "go"}, "Deferred": {"os.Remove", "defer"},
+		"Send": {"ssa.Send", "call"}, "Receive": {"ssa.Receive", "call"}, "Select": {"ssa.Select", "call"}, "GenericSend": {"ssa.Send", "call"},
+	}
+	for function, want := range wantSites {
+		site := sites[function]
+		if site.API != want[0] || site.Kind != want[1] || site.Location.File == "" || site.Location.Line < 1 || site.Location.Column < 1 {
+			t.Errorf("%s site = %+v, want api/kind %q/%q and source location", function, site, want[0], want[1])
+		}
+	}
+	filtered, diagnostic, status := invoke(t, dir, nil, "-json", "-effect", "channel.receive", "-max-depth", "0", ".")
+	if status != 0 || diagnostic != "" {
+		t.Fatalf("effect filter: exit %d, stderr %q", status, diagnostic)
+	}
+	var selection analyzer.EffectReport
+	if err := json.Unmarshal([]byte(filtered), &selection); err != nil || len(selection.Groups) != 1 || selection.Groups[0].Effect != "channel.receive" || len(selection.Sites) != 1 || selection.Sites[0].Function != "Receive" {
+		t.Fatalf("channel receive filter: err %v report %+v", err, selection)
+	}
 }
 
 func TestSkillInstallCLI(t *testing.T) {

@@ -42,6 +42,29 @@ func Fake() { fake{}.ReadFile() }
 	return dir
 }
 
+func TestArgumentProvenancePayloadCapExcludesCLIFramingNewline(t *testing.T) {
+	dir := provenanceFixture(t)
+	stdout, stderr, status := invoke(t, dir, nil, "-argument-provenance", "-argument-max-json-bytes", "10000")
+	if status != 0 {
+		t.Fatalf("status=%d stderr=%s", status, stderr)
+	}
+	if !strings.HasSuffix(stdout, "\n") {
+		t.Fatalf("missing CLI framing newline: %q", stdout)
+	}
+	payload := strings.TrimSuffix(stdout, "\n")
+	if len(payload) > 10000 {
+		t.Fatalf("payload bytes=%d exceeds cap", len(payload))
+	}
+	var decoded analyzer.ArgumentProvenance
+	if err := json.Unmarshal([]byte(payload), &decoded); err != nil {
+		t.Fatal(err)
+	}
+	_, stderr, status = invoke(t, dir, nil, "-argument-provenance", "-argument-max-json-bytes", "1")
+	if status != 1 || !strings.Contains(stderr, "minimum valid schema") {
+		t.Fatalf("tiny cap status=%d stderr=%s", status, stderr)
+	}
+}
+
 func TestDetailedSourceSitesAndWitnesses(t *testing.T) {
 	dir := provenanceFixture(t)
 	before := snapshot(t, dir)

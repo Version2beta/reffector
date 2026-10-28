@@ -98,13 +98,13 @@ func Pick(b bool) { f := os.Getenv; if b { f = strings.TrimSpace }; _ = f("never
 		t.Fatalf("alternatives: %+v", r.Sites)
 	}
 	s := r.Sites[0]
-	if s.API != "" || !s.Uncertain || len(s.Effects) != 1 {
+	if s.API != "" || !s.Uncertain || len(s.Effects) != 0 || len(s.PossibleEffects) != 1 {
 		t.Fatalf("site union: %+v", s)
 	}
 	for _, op := range s.Operations {
 		switch op.API {
 		case "os.Getenv":
-			if op.Uncertain || len(op.Effects) != 1 || op.Effects[0] != "env.read" || op.Recognition != "summary" {
+			if op.Uncertain || len(op.Effects) != 0 || len(op.PossibleEffects) != 1 || op.PossibleEffects[0] != "env.read" || op.Recognition != "candidate_function_value" {
 				t.Fatalf("misattributed uncertainty: %+v", op)
 			}
 		case "strings.TrimSpace":

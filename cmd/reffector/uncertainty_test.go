@@ -102,7 +102,7 @@ func Phi(b bool) { fn := os.Getenv; if b { fn = os.ExpandEnv }; _ = fn("never") 
 		"Respond": {"http.response"}, "Forward": {"http.response"}, "BoundHTTP": {"http.response"},
 		"CloseFile": {"resource.release"}, "Acquire": {"fs.read", "resource.acquire", "resource.release"},
 		"TCP": {"net.close", "resource.release"}, "Conn": {"net.close", "resource.release"},
-		"Writer": {}, "Fake": {}, "Memory": {}, "Phi": {"env.read"},
+		"Writer": {}, "Fake": {}, "Memory": {}, "Phi": {},
 	} {
 		r, ok := summaries[name]
 		got := []string{}
@@ -112,6 +112,9 @@ func Phi(b bool) { fn := os.Getenv; if b { fn = os.ExpandEnv }; _ = fn("never") 
 		if !ok || !reflect.DeepEqual(got, want) {
 			t.Fatalf("%s got %+v want %v", name, r, want)
 		}
+	}
+	if got := summaries["Phi"]; !reflect.DeepEqual(got.PossibleEffects, []string{"env.read"}) || got.Uncertain {
+		t.Fatalf("closed summary alternatives: %+v", got)
 	}
 	if !summaries["Respond"].Uncertain || !summaries["Forward"].Uncertain || summaries["TCP"].Uncertain || summaries["CloseFile"].Uncertain || summaries["Memory"].Uncertain {
 		t.Fatal("uncertainty lost or invented")

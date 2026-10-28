@@ -6,3 +6,7 @@ reffector-self.json
 # Private benchmark workspaces, subject repositories, sessions, archives,
 # binaries, caches, copied sources and evaluation evidence.
 /experiments/
+
+# Python interpreter caches from the local archchar tooling and tests.
+/tools/archchar/__pycache__/
+/tools/archchar/tests/__pycache__/
