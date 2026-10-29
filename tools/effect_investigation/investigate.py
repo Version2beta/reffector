@@ -1003,8 +1003,11 @@ def _reduction_report(packet, state):
     source_ref_ids = {ref["id"] for ref in source_refs}
     included_excerpt_ids = {excerpt["id"] for excerpt in packet.get("source_excerpts", [])}
     all_sources = state["source_items"]
-    source_ref_ids_all = {item["ref"]["id"] for item in all_sources}
-    source_excerpt_ids_all = {item["ref"]["id"] for item in all_sources}
+    # Only the complete source inventory is immutable during a reduction. Packet
+    # reference/excerpt selections above must be recomputed after every trial.
+    source_ref_ids_all = state.get("source_ref_ids_all")
+    if source_ref_ids_all is None:
+        source_ref_ids_all = {item["ref"]["id"] for item in all_sources}
 
     provenance_full = state["provenance_summary"]
     provenance_packet = packet.get("argument_provenance")
@@ -1082,7 +1085,7 @@ def _reduction_report(packet, state):
             "total_excerpt_refs": len(all_sources),
             "included_excerpt_count": len(included_excerpt_ids),
             "included_excerpt_refs_field": "source_excerpts",
-            "deferred_excerpt_count": max(0, len(source_excerpt_ids_all) - len(included_excerpt_ids)),
+            "deferred_excerpt_count": max(0, len(source_ref_ids_all) - len(included_excerpt_ids)),
             "included_source_ref_count": len(source_ref_ids & source_ref_ids_all),
             "deferred_source_ref_count": max(0, len(source_ref_ids_all) - len(source_ref_ids)),
             "unavailable_source_count": len(state["unavailable_source"]),
@@ -1132,19 +1135,41 @@ def _reduction_report(packet, state):
     }
 
 
-def _refresh_reduction_report(packet, state):
-    normalized = normalize_model_paths(packet, state.get("source_root"), state.get("manifest"))
-    packet.clear()
-    packet.update(normalized)
+def _checked_reduction_size(packet, expected_size):
+    """Independently verify completed packets; never trust a stale size report."""
+    actual_size = len(canonical_json(packet))
+    report = packet["reduction_report"]
+    if (actual_size != expected_size or report["final_serialized_bytes"] != actual_size or
+            report["net_bytes_saved"] != report["original_expanded_bytes"] - actual_size):
+        raise ValueError("packet canonical size does not match reduction report")
+    return actual_size
+
+
+def _refresh_reduction_report(packet, state, normalize=True, verify=True):
+    if normalize:
+        normalized = normalize_model_paths(packet, state.get("source_root"), state.get("manifest"))
+        packet.clear()
+        packet.update(normalized)
     packet["reduction_report"] = _reduction_report(packet, state)
     report = packet["reduction_report"]
+    # Only these two integers change during convergence. Measure all other UTF-8
+    # bytes (including escaping, keys and delimiters) once. JSON integers have
+    # exactly their decimal spelling, including a minus sign when savings < 0.
+    # This is local to this refresh: no trial/rollback or mutable evidence is cached.
+    fixed_bytes = (len(canonical_json(packet)) - len(str(report["final_serialized_bytes"]))
+                   - len(str(report["net_bytes_saved"])))
     for _ in range(8):
-        size = len(canonical_json(packet))
+        size = (fixed_bytes + len(str(report["final_serialized_bytes"]))
+                + len(str(report["net_bytes_saved"])))
         saved = report["original_expanded_bytes"] - size
         if report["final_serialized_bytes"] == size and report["net_bytes_saved"] == saved:
-            return size
+            return _checked_reduction_size(packet, size) if verify else size
         report["final_serialized_bytes"] = size
         report["net_bytes_saved"] = saved
+    # Preserve the original eight-pass trial fallback. A completed packet must
+    # additionally pass the independent report/size check, even at this boundary.
+    if verify:
+        return _checked_reduction_size(packet, report["final_serialized_bytes"])
     return len(canonical_json(packet))
 
 
@@ -1160,13 +1185,19 @@ def _try_packet_addition(packet, state, max_packet_bytes, label, rollback):
     added_step = label not in state["steps"]
     if added_step:
         state["steps"].append(label)
-    size = _refresh_reduction_report(packet, state)
+    # Graph trials add only IDs, package/function strings, relationship classes and
+    # counts; none introduces file/path fields. The minimum packet was normalized
+    # before trials began. Other additions can contain new locations and must still
+    # pass through the full normalizer (including containment and hash checks).
+    graph_trial = label in ("caller_relationships", "compact_call_chain_segments",
+                            "compact_segment_references")
+    size = _refresh_reduction_report(packet, state, normalize=not graph_trial, verify=False)
     if size <= max_packet_bytes:
         return True
     if added_step:
         state["steps"].pop()
     rollback()
-    _refresh_reduction_report(packet, state)
+    _refresh_reduction_report(packet, state, normalize=not graph_trial, verify=False)
     return False
 
 
@@ -1190,6 +1221,10 @@ def _progressively_reduce_packet(candidate, report, original_expanded_bytes,
              "source_items": source_items, "unavailable_source": unavailable,
              "audit_evidence": audit_evidence, "provenance_summary": provenance_summary,
              "control_flow_summary": control_flow_summary, "report_truncated": report["truncated"],
+             # source_items and their ref IDs are fixed for this invocation; only
+             # packet selections change. Never share this snapshot across candidates
+             # or invocations, and never cache selected packet IDs here.
+             "source_ref_ids_all": frozenset(item["ref"]["id"] for item in source_items),
              "original_expanded_bytes": original_expanded_bytes, "strategy": "progressive",
              "source_root": source_root, "manifest": manifest,
              "steps": ["minimum_investigation_packet"]}
