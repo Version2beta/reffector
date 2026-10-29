@@ -1288,13 +1288,114 @@ def _progressively_reduce_packet(candidate, report, original_expanded_bytes,
     return packet, final_size, final_size <= max_packet_bytes
 
 
+EVENT_FIELDS = {
+    "reffector_invocation": {"invocation_id", "target_revision", "argv", "status", "exit_code", "binary_sha256"},
+    "source_read": {"source_path", "start_line", "end_line", "status", "reason"},
+    "source_search": {"query", "scope", "status", "matches"},
+    "candidate": {"candidate_id", "status"},
+    "reproduction": {"candidate_id", "attempt", "outcome"},
+    "operation_group": {"group_id", "operation_ids"},
+    "termination": {"reason", "wall_duration_ms", "active_duration_ms", "active_duration_status"},
+}
+
+
+def validate_event_ledger(events):
+    """Validate externally supplied observations; never infer absent activity."""
+    result = {"availability": "provided" if events is not None else "not_provided",
+              "completeness": "only supplied ledger entries; not independently verified",
+              "reffector_invocations": [], "source_reads": [], "source_searches": [],
+              "candidates": [], "reproduction_attempts": [], "operation_groups": [],
+              "termination": None, "recorded_counts": None}
+    for number, event in enumerate(events or (), 1):
+        require_object(event, f"event {number}")
+        kind = event.get("type")
+        if kind not in EVENT_FIELDS:
+            raise ValueError(f"event {number} has unsupported type")
+        if set(event) - (EVENT_FIELDS[kind] | {"type"}):
+            raise ValueError(f"event {number} has unsupported fields")
+        row = {key: value for key, value in event.items() if key != "type"}
+        if kind == "source_read":
+            source_path = row.get("source_path")
+            if not isinstance(source_path, str) or not source_path or row.get("status") not in ("success", "failed"):
+                raise ValueError(f"event {number} invalid source_read")
+            relative = pathlib.PurePosixPath(source_path)
+            windows = pathlib.PureWindowsPath(source_path)
+            if (source_path == "." or relative.is_absolute() or windows.drive or ".." in relative.parts or
+                    relative.as_posix() != source_path or windows.as_posix() != source_path):
+                raise ValueError(f"event {number} source_path must be canonical and repository-relative")
+            if "reason" in row and not isinstance(row["reason"], str):
+                raise ValueError(f"event {number} invalid source_read reason")
+            if ("start_line" in row) != ("end_line" in row):
+                raise ValueError(f"event {number} source range requires both lines")
+            for field in ("start_line", "end_line"):
+                if field in row and (not isinstance(row[field], int) or isinstance(row[field], bool) or row[field] < 1):
+                    raise ValueError(f"event {number} invalid {field}")
+            if "start_line" in row and row["start_line"] > row["end_line"]:
+                raise ValueError(f"event {number} reversed source range")
+            result["source_reads"].append(row)
+        elif kind == "reffector_invocation":
+            required_strings = ("invocation_id", "target_revision", "status")
+            if any(not isinstance(row.get(field), str) or not row[field] for field in required_strings):
+                raise ValueError(f"event {number} missing required invocation fields")
+            if not isinstance(row.get("argv"), list) or not row["argv"] or any(not isinstance(arg, str) for arg in row["argv"]):
+                raise ValueError(f"event {number} invalid invocation argv")
+            if "exit_code" in row and (not isinstance(row["exit_code"], int) or isinstance(row["exit_code"], bool)):
+                raise ValueError(f"event {number} invalid invocation exit_code")
+            if "binary_sha256" in row and (not isinstance(row["binary_sha256"], str) or not re.fullmatch(r"[0-9a-fA-F]{64}", row["binary_sha256"])):
+                raise ValueError(f"event {number} invalid binary_sha256")
+            result["reffector_invocations"].append(row)
+        elif kind == "termination":
+            if result["termination"] is not None or not isinstance(row.get("reason"), str) or not row["reason"]:
+                raise ValueError(f"event {number} invalid/duplicate termination")
+            if row.get("active_duration_status") not in ("measured", "unavailable"):
+                raise ValueError(f"event {number} invalid active_duration_status")
+            if (row["active_duration_status"] == "measured") != ("active_duration_ms" in row):
+                raise ValueError(f"event {number} active duration/status mismatch")
+            for field in ("wall_duration_ms", "active_duration_ms"):
+                if field in row and (not isinstance(row[field], int) or isinstance(row[field], bool) or row[field] < 0):
+                    raise ValueError(f"event {number} invalid {field}")
+            result["termination"] = row
+        else:
+            required_strings = {
+                "source_search": ("query", "scope", "status"),
+                "candidate": ("candidate_id", "status"),
+                "reproduction": ("candidate_id", "attempt", "outcome"),
+                "operation_group": ("group_id",),
+            }[kind]
+            if any(not isinstance(row.get(field), str) or not row[field] for field in required_strings):
+                raise ValueError(f"event {number} missing required string fields")
+            if kind == "source_search" and "matches" in row and (not isinstance(row["matches"], int) or isinstance(row["matches"], bool) or row["matches"] < 0):
+                raise ValueError(f"event {number} invalid search matches")
+            if kind == "operation_group" and (not isinstance(row.get("operation_ids"), list) or any(not isinstance(item, str) or not item for item in row["operation_ids"])):
+                raise ValueError(f"event {number} invalid operation_ids")
+            target = {"source_search": "source_searches", "candidate": "candidates",
+                      "reproduction": "reproduction_attempts", "operation_group": "operation_groups"}[kind]
+            result[target].append(row)
+    if events is not None:
+        successful_paths = {event["source_path"] for event in result["source_reads"] if event["status"] == "success"}
+        result["recorded_counts"] = {
+            "reffector_invocations": len(result["reffector_invocations"]),
+            "source_read_events": len(result["source_reads"]),
+            "successful_source_read_events": sum(event["status"] == "success" for event in result["source_reads"]),
+            "failed_source_read_events": sum(event["status"] == "failed" for event in result["source_reads"]),
+            "distinct_successfully_read_paths": len(successful_paths),
+            "source_search_events": len(result["source_searches"]),
+            "candidate_status_events": len(result["candidates"]),
+            "distinct_candidate_ids": len({event["candidate_id"] for event in result["candidates"]}),
+            "reproduction_attempts": len(result["reproduction_attempts"]),
+            "distinct_operation_groups": len({event["group_id"] for event in result["operation_groups"]}),
+        }
+    return result
+
+
 def build(report, audit=(), max_candidates=100, max_packet_bytes=48000,
           source_root=None, manifest=None, program_model=None, argument_provenance=None,
-          control_flow=None):
+          control_flow=None, event_ledger=None):
     if not isinstance(max_candidates, int) or max_candidates <= 0:
         raise ValueError("max_candidates must be positive")
     if not isinstance(max_packet_bytes, int) or max_packet_bytes <= 0:
         raise ValueError("max_packet_bytes must be positive")
+    ledger = validate_event_ledger(event_ledger)
     indexes = validate_effect_report(report)
     sites, nodes, edges = (indexes[key] for key in ("sites", "nodes", "edges"))
     provenance = validate_argument_provenance(argument_provenance, sites) if argument_provenance is not None else None
@@ -1614,6 +1715,9 @@ def build(report, audit=(), max_candidates=100, max_packet_bytes=48000,
                    "candidates": len(candidates), "packets_emitted": len(packets),
                    "packets_deferred": len(deferred)},
         "audit_coverage": audit_coverage,
+        "investigation_evidence": {**ledger,
+                                   "packet_builder_source_reads": "separate; excerpts and unavailable-source markers are in packets",
+                                   "external_activity_capture": "not automatic; only supplied events are represented"},
         "coverage": {"report": report["coverage"], "report_truncated": report["truncated"]},
         "graph_reduction": {
             "raw_site_node_refs": raw_node_refs, "unique_node_refs": len(unique_node_ids),
@@ -1649,6 +1753,7 @@ def main():
     parser.add_argument("--program-model")
     parser.add_argument("--provenance", help="Go argument-provenance JSON")
     parser.add_argument("--control-flow", help="Go control-flow projection JSON")
+    parser.add_argument("--events", help="validated external investigation event ledger (JSONL)")
     parser.add_argument("--out", required=True)
     parser.add_argument("--max-candidates", type=int, default=100)
     parser.add_argument("--max-packet-bytes", type=int, default=48000)
@@ -1661,12 +1766,22 @@ def main():
                     audit.append(json.loads(line))
                 except json.JSONDecodeError as error:
                     raise SystemExit(f"audit line {line_number}: {error}") from error
+    events = None
+    if args.events:
+        events = []
+        with open(args.events, encoding="utf-8") as stream:
+            for line_number, line in enumerate(stream, 1):
+                try:
+                    events.append(json.loads(line))
+                except json.JSONDecodeError as error:
+                    raise SystemExit(f"event line {line_number}: {error}") from error
     result = build(
         load_json(args.effects), audit, args.max_candidates, args.max_packet_bytes,
         args.source_root, load_json(args.manifest) if args.manifest else None,
         load_json(args.program_model) if args.program_model else None,
         load_json(args.provenance) if args.provenance else None,
         load_json(args.control_flow) if args.control_flow else None,
+        events,
     )
     output_dir = pathlib.Path(args.out)
     output_dir.mkdir(parents=True, exist_ok=True)

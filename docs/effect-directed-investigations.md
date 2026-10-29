@@ -22,6 +22,12 @@ Candidate IDs and categories are deterministic investigation leads, not a rankin
 
 Source excerpts come only from program-model declaration ranges and operation locations whose relative paths are listed in the supplied manifest and resolve beneath the supplied source root. File hashes are checked before reading excerpts. Outside-manifest/dependency-cache paths and path escapes are explicitly unavailable; they are not probed.
 
+## Coverage and external investigation events
+
+The analyzer's `-stats` JSON reports selected roots, source module path/version, host OS/architecture, process `GOOS`/`GOARCH` values (host fallback), test-selection mode, successful package-load status, function/site counts, configured graph caps, and analysis duration. Effect coverage separates selected-source/dependency sites, unresolved sites, emitted established/candidate edges, and truncation. The whole-source function denominator is explicitly `unavailable` with a reason, so no source-coverage percentage is emitted. Git/source revision, custom build tags, and per-package load failures are unavailable; a package-load failure is returned as an error without partial stats. See `reports/investigation-observability-implementation.md` for field meanings and limits.
+
+The packet builder accepts an optional external event ledger with `--events events.jsonl`. It validates an allowlisted JSONL schema for Reffector invocations, direct source reads with canonical repository-relative paths/ranges, source searches, candidate status, reproduction attempts, operation groups, and run termination. Termination records distinguish wall duration from measured or unavailable active duration. Recorded counts describe only supplied entries; absent input is `not_provided`, and ledger completeness is not independently verified. The builder does not launch or observe an agent, shell, tests, or active time. Its own packet-building source excerpts remain separate from investigator-read events. Invocation arguments are retained verbatim, so event producers must omit or redact sensitive values; environment variables are not collected.
+
 ## Purpose and investigation examples
 
 The tool helps a reviewer ask a narrow behavior question with traceable code and call evidence. Examples of questions for later investigation include:

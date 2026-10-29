@@ -31,14 +31,17 @@ type EffectGroup struct {
 
 type EffectCoverage struct {
 	Stats
-	SelectedPackages         []string `json:"packages"`
-	OperationSites           int      `json:"operation_sites_identified"`
-	PossibleOperationSites   int      `json:"possible_operation_sites_identified,omitempty"`
-	SelectedOperationSites   int      `json:"selected_operation_sites"`
-	DependencyOperationSites int      `json:"dependency_operation_sites"`
-	UnresolvedSites          int      `json:"unresolved_sites_identified"`
-	FilteredSites            int      `json:"sites_matching_filters"`
-	EmittedSites             int      `json:"sites_emitted"`
+	SelectedPackages         []string        `json:"packages"`
+	OperationSites           int             `json:"operation_sites_identified"`
+	PossibleOperationSites   int             `json:"possible_operation_sites_identified,omitempty"`
+	SelectedOperationSites   int             `json:"selected_operation_sites"`
+	DependencyOperationSites int             `json:"dependency_operation_sites"`
+	UnresolvedSites          int             `json:"unresolved_sites_identified"`
+	FilteredSites            int             `json:"sites_matching_filters"`
+	EmittedSites             int             `json:"sites_emitted"`
+	EstablishedEdges         int             `json:"established_edges_emitted"`
+	CandidateEdges           int             `json:"candidate_edges_emitted"`
+	Truncated                GraphTruncation `json:"truncated"`
 }
 
 type GraphNode struct {
@@ -237,6 +240,14 @@ func (g *graph) effectReport(opts Options, stats Stats, inventory []Record) *Eff
 	sort.Slice(r.Nodes, func(i, j int) bool { return r.Nodes[i].ID < r.Nodes[j].ID })
 	sort.Slice(r.Edges, func(i, j int) bool { return r.Edges[i].ID < r.Edges[j].ID })
 	r.Coverage.EmittedSites = len(r.Sites)
+	r.Coverage.Truncated = r.Truncated
+	for _, edge := range r.Edges {
+		if edge.Candidate {
+			r.Coverage.CandidateEdges++
+		} else {
+			r.Coverage.EstablishedEdges++
+		}
+	}
 	if opts.Contracts {
 		r.Contracts = g.contractReports(emittedContracts)
 	}

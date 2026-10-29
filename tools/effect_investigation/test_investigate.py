@@ -2,11 +2,15 @@
 import hashlib
 import json
 import os
+import pathlib
+import subprocess
+import sys
 import tempfile
 import unittest
 
 from investigate import (CONTROL_FLOW_STRUCTURAL_LIMITATION, build,
-                         canonical_component_bytes, canonical_json, validate_effect_report)
+                         canonical_component_bytes, canonical_json, validate_effect_report,
+                         validate_event_ledger)
 
 
 def identifier(prefix, value):
@@ -164,6 +168,73 @@ def make_provenance(report):
 
 
 class InvestigationTests(unittest.TestCase):
+    def test_event_ledger_is_optional_validated_and_distinguishes_packet_reads(self):
+        self.assertEqual(validate_event_ledger(None)["availability"], "not_provided")
+        self.assertIsNone(validate_event_ledger(None)["recorded_counts"])
+        empty = validate_event_ledger([])
+        self.assertEqual(empty["availability"], "provided")
+        self.assertEqual(empty["recorded_counts"]["source_read_events"], 0)
+        events = [
+            {"type": "reffector_invocation", "invocation_id": "run-1", "target_revision": "abc123",
+             "argv": ["reffector", "-stats", "."], "status": "success", "exit_code": 0,
+             "binary_sha256": "a" * 64},
+            {"type": "source_read", "source_path": "src.go", "start_line": 3, "end_line": 8, "status": "success"},
+            {"type": "source_read", "source_path": "missing.go", "status": "failed", "reason": "not found"},
+            {"type": "source_search", "query": "os.Open", "scope": "internal", "status": "success", "matches": 2},
+            {"type": "candidate", "candidate_id": "candidate:1", "status": "open"},
+            {"type": "reproduction", "candidate_id": "candidate:1", "attempt": "go test", "outcome": "passed"},
+            {"type": "operation_group", "group_id": "files", "operation_ids": ["site:1"]},
+            {"type": "termination", "reason": "phase complete", "wall_duration_ms": 1200,
+             "active_duration_status": "unavailable"},
+        ]
+        ledger = validate_event_ledger(events)
+        self.assertEqual(len(ledger["source_reads"]), 2)
+        self.assertEqual(ledger["source_searches"][0]["matches"], 2)
+        self.assertEqual(ledger["termination"]["wall_duration_ms"], 1200)
+        self.assertEqual(ledger["recorded_counts"]["distinct_successfully_read_paths"], 1)
+        self.assertEqual(ledger["recorded_counts"]["distinct_operation_groups"], 1)
+        self.assertEqual(ledger["completeness"], "only supplied ledger entries; not independently verified")
+        measured = validate_event_ledger([{"type": "termination", "reason": "budget stop",
+                                           "active_duration_status": "measured", "active_duration_ms": 900}])
+        self.assertEqual(measured["termination"]["active_duration_ms"], 900)
+        with self.assertRaises(ValueError):
+            validate_event_ledger([{"type": "source_read", "source_path": "x", "start_line": 8, "end_line": 2, "status": "success"}])
+        with self.assertRaises(ValueError):
+            validate_event_ledger([{"type": "source_read", "source_path": "x", "end_line": 2, "status": "success"}])
+        with self.assertRaises(ValueError):
+            validate_event_ledger([{"type": "source_read", "source_path": "../outside.go", "status": "success"}])
+        with self.assertRaises(ValueError):
+            validate_event_ledger([{"type": "termination", "reason": "done", "active_duration_status": "measured"}])
+        with self.assertRaises(ValueError):
+            validate_event_ledger([{"type": "source_search", "query": "search", "scope": "all", "status": "success", "environment": "unsafe"}])
+
+    def test_build_marks_external_activity_not_provided(self):
+        result = build(make_report())
+        evidence = result["investigation_evidence"]
+        self.assertEqual(evidence["availability"], "not_provided")
+        self.assertEqual(evidence["external_activity_capture"], "not automatic; only supplied events are represented")
+        self.assertEqual(evidence["packet_builder_source_reads"], "separate; excerpts and unavailable-source markers are in packets")
+        self.assertIsNone(evidence["recorded_counts"])
+
+    def test_cli_loads_supplied_jsonl_events(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = pathlib.Path(temp_dir)
+            (root / "effects.json").write_text(json.dumps(make_report()), encoding="utf-8")
+            event = {"type": "source_read", "source_path": "src.go", "start_line": 2, "end_line": 4, "status": "success"}
+            (root / "events.jsonl").write_text(json.dumps(event) + "\n", encoding="utf-8")
+            output = root / "out"
+            script = pathlib.Path(__file__).with_name("investigate.py")
+            process = subprocess.run(
+                [sys.executable, str(script), str(root / "effects.json"), "--events",
+                 str(root / "events.jsonl"), "--out", str(output)],
+                capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(process.returncode, 0, process.stderr)
+            result = json.loads((output / "investigation.json").read_text(encoding="utf-8"))
+            evidence = result["investigation_evidence"]
+            self.assertEqual(evidence["source_reads"][0]["source_path"], "src.go")
+            self.assertEqual(evidence["recorded_counts"]["successful_source_read_events"], 1)
+
     def test_shared_catalog_frontiers_degrees_and_reduction_math(self):
         report = make_report(two_sites=True)
         result = build(report, max_packet_bytes=100_000)

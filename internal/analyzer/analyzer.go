@@ -8,6 +8,7 @@ import (
 	"go/types"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 
@@ -55,6 +56,13 @@ type DependencyVTAStats struct {
 	ContextRootsFallback int    `json:"context_roots_fallback,omitempty"`
 }
 
+// SourceModule identifies module metadata for selected package roots. It does
+// not identify a particular checkout revision or source-tree content.
+type SourceModule struct {
+	Path    string `json:"path"`
+	Version string `json:"version,omitempty"`
+}
+
 // Stats counts functions, not effect pairs. Direct and inherited can overlap.
 // Counts describe the selected inventory before output filtering.
 type Stats struct {
@@ -69,6 +77,21 @@ type Stats struct {
 	UnresolvedOnly  int                 `json:"unresolved_only"`
 	Uncharacterized int                 `json:"no_effects_no_uncertainty"`
 	DependencyVTA   *DependencyVTAStats `json:"dependency_vta,omitempty"`
+	HostOS                string         `json:"host_os"`
+	HostArch              string         `json:"host_arch"`
+	BuildGOOS             string         `json:"build_goos"`
+	BuildGOARCH           string         `json:"build_goarch"`
+	SourceModules                  []SourceModule `json:"source_modules"`
+	SourceRevisionStatus           string         `json:"source_revision_status"`
+	SourceRevisionReason           string         `json:"source_revision_reason"`
+	WholeSourceFunctionDenominator string         `json:"whole_source_function_denominator_status"`
+	FunctionDenominatorReason      string         `json:"whole_source_function_denominator_reason"`
+	TestsIncluded                  bool           `json:"tests_included"`
+	PackageLoad           string         `json:"package_load_status"`
+	SelectedRoots         []string       `json:"selected_package_roots"`
+	MaxSites              int            `json:"max_sites"`
+	MaxDepth              int            `json:"max_depth"`
+	MaxEdges              int            `json:"max_edges"`
 }
 
 type Report struct {
@@ -276,7 +299,42 @@ func AnalyzeReport(patterns []string, opts Options) (Report, error) {
 		s.inheritedUncertain = s.inheritedUncertain || n.inheritedUncertain
 		merged[id] = s
 	}
-	stats := Stats{Packages: len(selectedPackages), SourceFunctions: len(merged), DependencyVTA: dependencyVTA}
+	selectedRoots := make([]string, 0, len(selectedPackages))
+	for pkg := range selectedPackages {
+		selectedRoots = append(selectedRoots, pkg)
+	}
+	sort.Strings(selectedRoots)
+	sourceModuleSet := make(map[SourceModule]bool)
+	for _, pkg := range pkgs {
+		if pkg.Module != nil && pkg.Module.Path != "" {
+			sourceModuleSet[SourceModule{Path: pkg.Module.Path, Version: pkg.Module.Version}] = true
+		}
+	}
+	sourceModules := make([]SourceModule, 0, len(sourceModuleSet))
+	for module := range sourceModuleSet {
+		sourceModules = append(sourceModules, module)
+	}
+	sort.Slice(sourceModules, func(i, j int) bool {
+		if sourceModules[i].Path != sourceModules[j].Path {
+			return sourceModules[i].Path < sourceModules[j].Path
+		}
+		return sourceModules[i].Version < sourceModules[j].Version
+	})
+	buildGOOS, buildGOARCH := os.Getenv("GOOS"), os.Getenv("GOARCH")
+	if buildGOOS == "" {
+		buildGOOS = runtime.GOOS
+	}
+	if buildGOARCH == "" {
+		buildGOARCH = runtime.GOARCH
+	}
+	stats := Stats{Packages: len(selectedPackages), SourceFunctions: len(merged), DependencyVTA: dependencyVTA,
+		HostOS: runtime.GOOS, HostArch: runtime.GOARCH, BuildGOOS: buildGOOS, BuildGOARCH: buildGOARCH,
+		SourceModules: sourceModules, SourceRevisionStatus: "unavailable",
+		SourceRevisionReason: "the analyzer does not inspect VCS metadata or source snapshot provenance",
+		WholeSourceFunctionDenominator: "unavailable",
+		FunctionDenominatorReason:      "analysis covers selected loaded roots, not all packages or build/platform source variants",
+		TestsIncluded: opts.Tests, PackageLoad: "successful", SelectedRoots: selectedRoots,
+		MaxSites: opts.MaxSites, MaxDepth: opts.MaxDepth, MaxEdges: opts.MaxEdges}
 	records := make([]Record, 0, len(merged))
 	inventory := make([]Record, 0, len(merged))
 	for id, s := range merged {

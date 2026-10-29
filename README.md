@@ -87,7 +87,27 @@ the last category is **not purity**. `emitted`/`omitted` describe the compatible
 summary projection, not graph size. Site counts distinguish total identified
 operations (selected vs dependency), unresolved-only leads, filter matches and
 emitted sites after output limits. Counts reflect this analyzer, not all possible
-operations in the program.
+operations in the program. Stats also include host OS/architecture, `GOOS`/`GOARCH`
+(environment override or host fallback), selected module paths/versions and
+package roots, test-selection mode, successful package-load status, and configured
+site/depth/edge caps. Git revision/content identity, custom build tags, and detailed per-package failure
+status are unavailable. Package-load failures remain command errors and do not
+emit fabricated partial counts. Effect coverage distinguishes emitted established
+and candidate edges and includes graph truncation flags. The `-stats` JSON surface
+also reports measured analysis duration without making ordinary output
+nondeterministic. The whole-source function denominator is explicitly unavailable,
+with a reason; root counts are not source-code coverage.
+
+The investigation packet builder accepts optional externally supplied JSONL
+observations via `--events`. Supported event types are `reffector_invocation`,
+`source_read`, `source_search`, `candidate`, `reproduction`, `operation_group`,
+and `termination`; see `reports/investigation-observability-implementation.md`
+for fields and validation. Without this input, external activity is explicitly
+`not_provided`; supplied event counts describe ledger entries, not verified
+completeness. Packet-builder source excerpts are separate from investigator
+reads. The builder does not launch or observe tools, shells, tests, or active
+time. Invocation arguments are stored as supplied, so omit or redact sensitive
+values; environment variables are not collected.
 
 `-view functions -json` emits records with this unchanged schema:
 

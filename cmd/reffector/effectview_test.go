@@ -73,6 +73,17 @@ func TestEffectViewPreservesAllCallerRelationships(t *testing.T) {
 	if len(r.Sites) != 2 || len(r.Groups) != 1 || len(r.Groups[0].Sites) != 2 {
 		t.Fatalf("not canonical groups: %+v", r.Groups)
 	}
+	var established, candidate int
+	for _, edge := range r.Edges {
+		if edge.Candidate {
+			candidate++
+		} else {
+			established++
+		}
+	}
+	if r.Coverage.EstablishedEdges != established || r.Coverage.CandidateEdges != candidate {
+		t.Fatalf("edge coverage mismatch: %+v edges=%+v", r.Coverage, r.Edges)
+	}
 	site, g, nodes, edges := reverseFor(t, r, "Read")
 	if site.API != "os.ReadFile" || site.Location.Line != 3 || site.Location.Column != 33 || site.Recognition != "summary" {
 		t.Fatalf("source identity: %+v", site)
@@ -158,12 +169,12 @@ func TestEffectDepthLimitsAndSelectorsPreserveProvenance(t *testing.T) {
 		t.Fatalf("exact API/full inventory: %+v", none)
 	}
 	limited, _ := effectResult(t, dir, "-max-sites", "1")
-	if len(limited.Sites) != 1 || !limited.Truncated.Sites {
-		t.Fatalf("site limit: %+v", limited.Truncated)
+	if len(limited.Sites) != 1 || !limited.Truncated.Sites || limited.Coverage.Truncated != limited.Truncated {
+		t.Fatalf("site limit/coverage truncation: %+v %+v", limited.Truncated, limited.Coverage.Truncated)
 	}
 	limited, _ = effectResult(t, dir, "-site", site.ID, "-max-edges", "1")
-	if len(limited.Edges) != 1 || !limited.Truncated.Edges {
-		t.Fatalf("edge limit: %+v", limited.Truncated)
+	if len(limited.Edges) != 1 || !limited.Truncated.Edges || limited.Coverage.EstablishedEdges+limited.Coverage.CandidateEdges != len(limited.Edges) {
+		t.Fatalf("edge limit/coverage: %+v", limited.Coverage)
 	}
 	unresolved, _ := effectResult(t, dir, "-unresolved")
 	if len(unresolved.Groups) != 0 || len(unresolved.Sites) != 1 || unresolved.Sites[0].Function != "Open" || unresolved.Sites[0].Reasons[0] != "interface_dispatch" {

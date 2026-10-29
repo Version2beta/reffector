@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"github.com/Version2beta/reffector/internal/analyzer"
 	"github.com/Version2beta/reffector/internal/output"
@@ -117,6 +118,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, "reffector: -control-flow requires effect view and is incompatible with -audit-unresolved")
 		return 2
 	}
+	analysisStarted := time.Now()
 	report, err := analyzer.AnalyzeReport(flags.Args(), analyzer.Options{
 		Direct: *direct, Tests: *tests, Exact: *exact, All: *all, Details: *details, ArgumentProvenance: *argumentProvenance, ControlFlow: *controlFlow,
 		ControlFlowLimits:        analyzer.ControlFlowOptions{MaxFunctions: *controlFlowFunctions, MaxBlocksPerFunction: *controlFlowBlocks, MaxBlockVisits: *controlFlowVisits, MaxBranches: *controlFlowBranches, MaxRelationships: *controlFlowRelationships, MaxDepth: *controlFlowDepth, MaxJSONBytes: *controlFlowBytes},
@@ -151,7 +153,23 @@ func run(args []string, stdout, stderr io.Writer) int {
 		if report.Audit != nil {
 			coverage = report.Audit.Coverage
 		}
-		if err := json.NewEncoder(stderr).Encode(coverage); err != nil {
+		summary := make(map[string]json.RawMessage)
+		encoded, marshalErr := json.Marshal(coverage)
+		if marshalErr != nil {
+			fmt.Fprintln(stderr, "reffector: encode stats:", marshalErr)
+			return 1
+		}
+		if err := json.Unmarshal(encoded, &summary); err != nil {
+			fmt.Fprintln(stderr, "reffector: encode stats:", err)
+			return 1
+		}
+		duration, err := json.Marshal(time.Since(analysisStarted).Milliseconds())
+		if err != nil {
+			fmt.Fprintln(stderr, "reffector: encode stats:", err)
+			return 1
+		}
+		summary["execution_duration_ms"] = duration
+		if err := json.NewEncoder(stderr).Encode(summary); err != nil {
 			return 1
 		}
 	}
