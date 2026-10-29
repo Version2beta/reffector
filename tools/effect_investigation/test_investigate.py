@@ -475,8 +475,11 @@ class InvestigationTests(unittest.TestCase):
         self.assertEqual(result["coverage"]["report"], full_coverage)
         summary = result["packets"][0]["argument_provenance"]["sites"][0]
         self.assertEqual(summary["roles"][0]["role"], "path")
+        # Candidate VTA/function-value evidence must not be promoted into a proven origin path.
         self.assertEqual(summary["edges"][0]["resolution"], "candidate_vta")
         self.assertEqual(summary["calls"][0]["resolution"], "candidate_function_value")
+        self.assertNotIn("established", summary["edges"][0]["resolution"])
+        self.assertNotIn("established", summary["calls"][0]["resolution"])
         self.assertEqual(summary["origins"][0]["label"], "semantic/path-string")
         packet_size = len(canonical_json(result["packets"][0]))
         exact_fit = build(report, max_packet_bytes=packet_size, argument_provenance=provenance)
@@ -519,6 +522,9 @@ class InvestigationTests(unittest.TestCase):
         result = build(report, control_flow=projection, max_packet_bytes=100_000)
         packet_cf = result["packets"][0]["control_flow"]
         self.assertIn(CONTROL_FLOW_STRUCTURAL_LIMITATION, packet_cf["limitations"])
+        # A structurally mapped block is not a path-condition or execution proof.
+        self.assertIsNone(packet_cf["rows"][0]["branches"])
+        self.assertNotIn("path_condition", packet_cf["rows"][0])
         self.assertEqual(packet_cf["rows"][0]["id"], projection["rows"][0]["id"])
         self.assertEqual(result["control_flow"]["rows"][0]["id"], projection["rows"][0]["id"])
 
