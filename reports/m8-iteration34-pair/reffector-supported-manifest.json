@@ -1,0 +1,26 @@
+{
+  "returncode": 0,
+  "elapsed_seconds": 9.365,
+  "provider": "openai-codex",
+  "model": "gpt-6-luna",
+  "request_sha256": "9671d67723b41067d3cd11a6f573a57da3a7253e2815336fba17b648c892b0af",
+  "events_bytes": 145631,
+  "returned_provider": "openai-codex",
+  "returned_model": "gpt-6-luna",
+  "usage": {
+    "input": 1688,
+    "output": 464,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "reasoning": 0,
+    "totalTokens": 2152,
+    "cost": {
+      "input": 0.0001688,
+      "output": 0.000232,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "total": 0.0004008
+    }
+  },
+  "answer_bytes": 2269
+}

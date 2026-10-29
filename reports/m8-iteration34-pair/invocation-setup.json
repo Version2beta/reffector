@@ -1,0 +1,21 @@
+{
+  "provider": "openai-codex",
+  "model": "gpt-6-luna",
+  "thinking": "low",
+  "fresh_session": true,
+  "no_session": true,
+  "tools": false,
+  "mcp": false,
+  "extensions": false,
+  "skills": false,
+  "prompt_templates": false,
+  "context_files": false,
+  "timeout_seconds": 120,
+  "max_response_bytes": 16000,
+  "max_event_stream_bytes": 256000,
+  "order": [
+    "source-only",
+    "reffector-supported"
+  ],
+  "system_prompt": "You are independently investigating one bounded source question. Treat supplied source as static evidence; do not infer runtime behavior. Return exactly one JSON object, no markdown, with keys: assessment (string), cleanup_error_paths (array of strings), callback_and_caller (array of strings), removal_guarantee (string), defect (string or null), contrary (array of strings), limitations (array of strings), and evidence (array of strings). Cite source path and line numbers in evidence. Distinguish facts from inference."
+}

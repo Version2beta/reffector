@@ -2,7 +2,7 @@
 
 ## Current increment
 
-The local tool `tools/effect_investigation/investigate.py` consumes Reffector EffectReport v1, optional audit JSONL, optional argument-provenance/control-flow projections, and optional source-manifest/program-model JSON. It deterministically identifies review leads, reduces reverse call graphs, and emits bounded JSON and Markdown packets. The opt-in Go SSA projections are separately versioned structural evidence; they do not change effect recognition or classification. No provider is called.
+The local tool `tools/effect_investigation/investigate.py` consumes Reffector EffectReport v1, optional audit JSONL, optional argument-provenance/control-flow projections, and optional source-manifest/program-model JSON. It deterministically identifies review leads, reduces reverse call graphs, and emits bounded JSON and Markdown packets. The opt-in Go SSA projections are separately versioned structural evidence; they do not change effect recognition or classification. The core packet-building command makes no provider call.
 
 ```sh
 python3 tools/effect_investigation/investigate.py effects.json \
@@ -32,6 +32,16 @@ The tool helps a reviewer ask a narrow behavior question with traceable code and
 - **State/obligations:** Which shared resource or operation paths converge, and what lifecycle obligations are visible in their source?
 
 These are investigation prompts, not inferred bugs. Argument provenance is an opt-in Go projection (`-argument-provenance`) integrated by Python `--provenance`; control flow is separately opt-in (`-control-flow`, consumed by Python `--control-flow`). Neither establishes execution, feasibility, trust, authorization, aliasing, path predicates, or runtime behavior.
+
+## Optional isolated model investigation (implemented, separate opt-in)
+
+`tools/effect_investigation/model_investigation.py` provides an optional adapter boundary; it is not invoked by the deterministic `investigate.py` command above. Its version-2 response schema accepts a free-form hypothesis plus typed claims that cite an operation site, a direct graph relationship, or a canonical source reference. A claim must match the operation site and API. Relationship claims resolve to the packet's canonical edge ID, endpoints, and recorded resolution; candidate classifications remain candidate and are never reported as executed. Source claims resolve to a stable source-reference ID whose path, whole-file digest, and exact line range are re-read under the supplied `repository_root`. Cached excerpts are replaced before the model call.
+
+These checks bind evidence identity only. They do not establish that source text entails a free-form hypothesis, that a static edge is feasible, or that any operation ran. Model-selected `supporting`/`contrary`/`context` roles are retained as opinions, not verification outcomes. The system assigns `identity-bound` to checked citations, `unresolved` when no hypothesis is supplied, `unsupported` when a hypothesis has no identity-bound supporting citation, and `plausible-unverified` when it has at least one. A model-selected supporting role is still only an opinion, not semantic proof. `runtime_status` is always `not-confirmed`; `contradicted`, `supported-static`, and `runtime-confirmed` cannot be asserted by the model.
+
+`run_and_persist` writes each invocation to a fresh, caller-selected directory; an existing directory is refused rather than reused. It writes the request and either a qualified result or error, retains captured provider events, and writes the manifest last with request/result or error hashes. Readers must require a successful manifest and matching hashes. `aggregate_findings` consumes these persisted invocation directories, revalidates typed claims against each request (and requires the repository root for source claims), and groups only exact duplicate hypotheses with the same canonical site and complete verified claim set. Groups are provisional evidence-equivalence deduplications, not shared-resource or common-cause conclusions; individual hypotheses, statuses, and citation identities remain in each group. Opaque resource/obligation labels and older unverified finding records are not accepted.
+
+This module's schema and aggregation input are intentionally stricter than earlier artifacts. Historical M5/M7/M8 files remain unchanged and are not retroactively reclassified. No model/provider is called by the deterministic packet-building command, and this optional boundary does not run a benchmark.
 
 ## Principles and implemented pipeline
 
@@ -63,7 +73,7 @@ Validate small deterministic fixtures for IDs, category correctness, candidate s
 - reviewer effort, elapsed time, and context consumed;
 - reduction and packet byte bounds, not only candidate counts.
 
-A future controlled ordinary-agent comparison should use the same repository, task, evidence budget, and time limit, with blinded review where practical. Compare useful supported findings and unsupported claims, effort/time/context, and coverage. No model generation or comparison occurs in this implementation.
+A future controlled ordinary-agent comparison should use the same repository, task, evidence budget, and time limit, with blinded review where practical. Compare useful supported findings and unsupported claims, effort/time/context, and coverage. The deterministic packet-building command does not generate model answers; optional isolated investigations are separate and are not a benchmark comparison.
 
 ## Current bounded changes and measured baseline
 
@@ -109,6 +119,10 @@ Optional evidence is then attempted in deterministic priority order: the operati
 
 Every emitted packet includes a `reduction_report` with original expanded bytes, final serialized bytes, net bytes saved, applied steps, included/deferred graph node and relationship references, source references and excerpts, audit/provenance/control-flow detail counts, analysis truncation, and recovery pointers. Graph connectivity and explicit relationship-reference completeness are reported separately. The report itself counts against the 48,000-byte cap. Existing result keys and packet status values remain available: `deferred_over_budget` now means that even the minimum packet cannot fit; `deferred_max_candidates` remains the unchanged 100-candidate-count deferral. The result-level `candidates`, `node_catalog`, `relationship_catalog`, source references, audit records, and full projections retain retrieval paths for omitted packet evidence. Selected candidates additionally include `compact_graph_catalog`; packet references resolve by candidate ID and stable source/node/relationship/projection IDs. This is additive retrieval metadata, not a second analysis store.
 
+### Reducer work reuse
+
+The minimum packet is normalized before optional additions. Graph trials introduce no `file`/`path` fields, so they reuse that normalized evidence; additions containing source, provenance, control-flow, or audit locations still run the full path verifier. Rollbacks retain their existing graph/report refresh behavior. Each refresh measures the canonical packet once, then accounts exactly for the decimal widths of the two changing size-report integers rather than serializing the whole packet again for each convergence pass. Completed expanded, minimum, and progressive packets receive an independent canonical serialization check; a size/report mismatch raises an error. Only the immutable complete source-reference ID universe is reused within a progressive invocation; selected reference/excerpt sets and all other report metadata are recomputed on each refresh. The snapshot is never shared across candidates or invocations. No source-read cache is used.
+
 ### Pinned before/after demonstration
 
 The comparison reused the saved EffectReport, audit, argument-provenance, control-flow, program-model, and manifest artifacts from pinned rclone revision `81e7372f6fbedfa80592e9a564593d63a8dc32f3`. The matched four-package scope was `vfs/vfscache`, `vfs/vfscache/downloaders`, `vfs/vfscache/writeback`, and `vfs/vfscommon`, selected by `./vfs/vfscache/... ./vfs/vfscommon`; analysis settings were `-all -max-sites 50000 -max-edges 200000 -max-depth 100`. The source checkout and manifest were verified in the earlier pinned run. This packet comparison reused those local outputs; it did not rerun Go analysis or call a model/provider.
@@ -134,6 +148,6 @@ The 6,281,987-byte comparison sums the old expanded packet size for all first 10
 2. Path-normalized evidence and deterministic size-independent candidate selection (implemented).
 3. Bounded Go SSA argument provenance and packet integration (implemented).
 4. Bounded structural control-flow projection and packet integration (implemented, opt-in).
-5. Effect/shared-resource interactions and model investigation (future).
-6. Related-finding aggregation and architectural simplification (future).
+5. Optional isolated model investigation with typed evidence binding (implemented; semantic/runtime verification remains future work).
+6. Conservative persisted evidence-equivalent duplicate aggregation (implemented; shared-resource and common-cause inference remains future work).
 7. Controlled comparison (future).

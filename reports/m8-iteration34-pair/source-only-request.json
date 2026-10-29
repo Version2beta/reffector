@@ -1,0 +1,17 @@
+{
+  "question": "In loadConfig, once os.MkdirTemp succeeds, is temporary workspace cleanup guaranteed for every return/error path after construction? Analyze only the source provided; distinguish cleanup-closure creation, explicit cleanup calls, returned cleanup callback, and caller defer. State whether ordinary AnalyzeReport flows prove attempted cleanup and whether successful removal is guaranteed. Is a correctness defect supported?",
+  "source": [
+    {
+      "path": "internal/analyzer/loading.go",
+      "start_line": 73,
+      "end_line": 93,
+      "text": "73: \twork.Cleanup()\n74: \ttmp, err := os.MkdirTemp(\"\", \"reffector-work-*\")\n75: \tif err != nil {\n76: \t\treturn nil, nil, err\n77: \t}\n78: \tcleanup := func() { _ = os.RemoveAll(tmp) }\n79: \tpath := filepath.Join(tmp, \"go.work\")\n80: \tif err := os.WriteFile(path, modfile.Format(work.Syntax), 0600); err != nil {\n81: \t\tcleanup()\n82: \t\treturn nil, nil, err\n83: \t}\n84: \tif sum, err := os.ReadFile(env.GOWORK + \".sum\"); err == nil {\n85: \t\tif err := os.WriteFile(path+\".sum\", sum, 0600); err != nil {\n86: \t\t\tcleanup()\n87: \t\t\treturn nil, nil, err\n88: \t\t}\n89: \t} else if !os.IsNotExist(err) {\n90: \t\tcleanup()\n91: \t\treturn nil, nil, err\n92: \t}\n93: \tcfg.Env = append(os.Environ(), \"GOWORK=\"+path)"
+    },
+    {
+      "path": "internal/analyzer/analyzer.go",
+      "start_line": 139,
+      "end_line": 143,
+      "text": "139: \tcfg, cleanup, err := loadConfig(opts)\n140: \tif err != nil {\n141: \t\treturn Report{}, err\n142: \t}\n143: \tdefer cleanup()"
+    }
+  ]
+}

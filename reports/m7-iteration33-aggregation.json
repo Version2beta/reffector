@@ -1,0 +1,17 @@
+{
+  "input_scope": "one accepted real investigation result; no other eligible investigation findings exist in this loop",
+  "findings": [
+    {
+      "finding_id": "candidate:3e6912d4ffc8d1c4921236f8340e8003057cab19a109be352fb707e9aa01493f",
+      "site_id": "site:3e6912d4ffc8d1c4921236f8340e8003057cab19a109be352fb707e9aa01493f",
+      "effect_id": "fs.delete",
+      "status": "contradicted",
+      "evidence_ids": ["ev:operation", "src:loading-go-60-88"],
+      "resource_id": "unknown:resource:not-established",
+      "obligation_id": "unknown:obligation:not-established",
+      "supported_caller_segments": []
+    }
+  ],
+  "groups": [],
+  "interpretation": "No shared-cause grouping is justified from this single finding. Resource identity and a repeated obligation are not established by the packet; caller/source challenge evidence is in reports/m6-iteration31-independent-source-challenge.md. The unknown IDs are exclusion sentinels, not asserted resource or obligation identities."
+}

@@ -1,0 +1,19 @@
+{
+  "candidate_id": "candidate:3e6912d4ffc8d1c4921236f8340e8003057cab19a109be352fb707e9aa01493f",
+  "invocation_setup": {
+    "context_files": false,
+    "extensions": false,
+    "fresh_session": true,
+    "mcp": false,
+    "model": "gpt-6-luna",
+    "no_session": true,
+    "provider": "openai-codex",
+    "thinking": "low",
+    "tools": false
+  },
+  "model": "gpt-6-luna",
+  "outcome": "error",
+  "provider": "openai-codex",
+  "request_sha256": "7891638d65a47ad3c0ee55a763447ee0f4ef1d8f60beaf6dd3a022968b3342c6",
+  "site_id": "site:3e6912d4ffc8d1c4921236f8340e8003057cab19a109be352fb707e9aa01493f"
+}
