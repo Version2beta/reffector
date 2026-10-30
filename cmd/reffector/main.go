@@ -11,16 +11,11 @@ import (
 
 	"github.com/Version2beta/reffector/internal/analyzer"
 	"github.com/Version2beta/reffector/internal/output"
-	"github.com/Version2beta/reffector/internal/skillinstall"
-	"github.com/Version2beta/reffector/skills/reffector"
 )
 
 func main() { os.Exit(run(os.Args[1:], os.Stdout, os.Stderr)) }
 
 func run(args []string, stdout, stderr io.Writer) int {
-	if len(args) > 0 && args[0] == "skill" {
-		return runSkill(args[1:], stdout, stderr)
-	}
 	flags := flag.NewFlagSet("reffector", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	audit := flags.Bool("audit-unresolved", false, "write unlimited uncertain source sites as JSON Lines without reverse graphs")
@@ -64,9 +59,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	maxEdges := flags.Int("max-edges", 1000, "maximum unique reverse edges (effect view)")
 	flags.Usage = func() {
 		fmt.Fprintln(stderr, "Usage: reffector [flags] [packages]")
-		fmt.Fprintln(stderr, "       reffector skill install")
 		fmt.Fprintln(stderr, "Report statically reachable side effects; local directories recurse (default .)")
-		fmt.Fprintln(stderr, "Install the bundled Pi skill with: reffector skill install")
 		flags.PrintDefaults()
 	}
 	if err := flags.Parse(args); err != nil {
@@ -189,29 +182,6 @@ func run(args []string, stdout, stderr io.Writer) int {
 	if err != nil {
 		fmt.Fprintln(stderr, "reffector:", err)
 		return 1
-	}
-	return 0
-}
-
-func runSkill(args []string, stdout, stderr io.Writer) int {
-	if len(args) != 1 || args[0] != "install" {
-		fmt.Fprintln(stderr, "Usage: reffector skill install")
-		return 2
-	}
-	home, err := os.UserHomeDir()
-	if err != nil {
-		fmt.Fprintln(stderr, "reffector: determine home directory:", err)
-		return 1
-	}
-	result, err := skillinstall.Install(skillinstall.Config{Home: home, Name: "reffector", Content: reffectorskill.Content})
-	if err != nil {
-		fmt.Fprintln(stderr, "reffector:", err)
-		return 1
-	}
-	if result.Updated {
-		fmt.Fprintln(stdout, "Installed skill:", result.Path)
-	} else {
-		fmt.Fprintln(stdout, "Skill is current:", result.Path)
 	}
 	return 0
 }

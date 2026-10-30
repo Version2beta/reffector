@@ -367,30 +367,6 @@ func TestSSAConcurrencySites(t *testing.T) {
 	}
 }
 
-func TestSkillInstallCLI(t *testing.T) {
-	home := t.TempDir()
-	out, diagnostic, status := invoke(t, fixtureSource, []string{"HOME=" + home}, "skill", "install")
-	if status != 0 || diagnostic != "" || !strings.Contains(out, "Installed skill:") {
-		t.Fatalf("install: stdout %q stderr %q exit %d", out, diagnostic, status)
-	}
-	installed, err := os.ReadFile(filepath.Join(home, ".agents", "skills", "reffector", "SKILL.md"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	canonical, err := os.ReadFile("../../skills/reffector/SKILL.md")
-	if err != nil || !bytes.Equal(installed, canonical) {
-		t.Fatalf("skill content mismatch: %v", err)
-	}
-	out, diagnostic, status = invoke(t, fixtureSource, []string{"HOME=" + home}, "skill", "install")
-	if status != 0 || diagnostic != "" || !strings.Contains(out, "Skill is current:") {
-		t.Fatalf("repeat install: stdout %q stderr %q exit %d", out, diagnostic, status)
-	}
-	_, diagnostic, status = invoke(t, fixtureSource, nil, "skill", "remove")
-	if status != 2 || !strings.Contains(diagnostic, "Usage: reffector skill install") {
-		t.Fatalf("bad subcommand: stderr %q exit %d", diagnostic, status)
-	}
-}
-
 func TestCanonicalModulePath(t *testing.T) {
 	data, err := os.ReadFile("../../go.mod")
 	if err != nil || !strings.HasPrefix(string(data), "module github.com/Version2beta/reffector\n") {
@@ -401,7 +377,7 @@ func TestCanonicalModulePath(t *testing.T) {
 func TestCLIUsageAndErrors(t *testing.T) {
 	for _, flag := range []string{"-h", "-help"} {
 		out, diagnostic, status := invoke(t, fixtureSource, nil, flag)
-		if out != "" || status != 0 || !strings.Contains(diagnostic, "Usage: reffector") || !strings.Contains(diagnostic, "reffector skill install") {
+		if out != "" || status != 0 || !strings.Contains(diagnostic, "Usage: reffector") {
 			t.Fatalf("%s: stdout %q stderr %q exit %d", flag, out, diagnostic, status)
 		}
 	}

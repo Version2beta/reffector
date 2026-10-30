@@ -5,8 +5,6 @@ reffector \- investigate Go effects by source site and reverse callers
 .B reffector
 .RI [ flags ]
 .RI [ packages ]
-.br
-.B reffector skill install
 .SH DESCRIPTION
 Analyzes Go source without executing functions, initializers or tests, modifying
 analyzed source, or performing refactoring. The default view is effect category,
@@ -545,14 +543,6 @@ Uses -mod=readonly and temporary workspace metadata so source module/workspace
 checksums are not repaired. Go tooling may update its own caches. For offline
 analysis set GOPROXY=off GOSUMDB=off GOTOOLCHAIN=local; missing dependencies are
 an environment limit, not permission to download. This is not a tool sandbox.
-.SH SKILL INSTALLATION
-reffector skill install installs the optional bundled skill at
-~/.agents/skills/reffector/SKILL.md. Repeated installation updates only a copy
-previously installed by reffector; unmanaged/local modifications are refused.
-The skill guides effect-site, reverse-caller and uncertainty investigation;
-it does not add analyzer subcommands or impose a refactoring workflow.
-Pi also discovers this installation location. In Pi, invoke /skill:reffector
-with a question and package scope. The CLI is usable without the skill.
 .SH EXIT STATUS
 0: analysis/help succeeded (including empty results). 1: loading/analysis/output
 failed. 2: invalid flags.

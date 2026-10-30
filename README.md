@@ -10,7 +10,6 @@ reffector ./...
 reffector -effect fs.write -max-depth 2 ./internal
 reffector -api os.ReadFile -json ./internal
 reffector -view functions -tests -json example.com/project/billing
-reffector skill install
 man "$PWD/man/man1/reffector.1"
 ```
 
@@ -23,37 +22,12 @@ origins in reachable dependencies and labels selected versus dependency nodes.
 Function summaries contain selected source functions. `-tests` includes internal
 and external test-file functions.
 
-## Optional agent skill
+## Effect-directed investigation
 
-The canonical [`skills/reffector/SKILL.md`](skills/reffector/SKILL.md) is a short,
-task-neutral guide to retrieving effect sites, reverse callers and uncertainty.
-For one Pi session without installation or settings changes, use
-`pi --no-skills --skill /absolute/path/to/reffector/skills/reffector/SKILL.md`,
-then `/skill:reffector` with your question and package scope.
-
-Optionally, `reffector skill install` installs the bundled skill at
-`~/.agents/skills/reffector/SKILL.md`, a location Pi also discovers. Rebuild the
-CLI from the current checkout before installing an updated skill. The skill
-does not add analyzer subcommands or require a refactoring workflow; the
-analyzer remains fully useful without it. The verification commands below cover
-build, test, and static analysis for the release tree.
-
-Repeated installation updates a copy previously installed by reffector. A
-pre-existing or locally modified skill is refused rather than overwritten.
-
-## Investigate independent responsibilities
-
-1. Start with `reffector -max-depth 0 ./billing` to discover effect groups and
-   independent operation sites. Pick a category, then an exact API or site.
-2. Expand reverse callers with `-effect fs.write -max-depth 3` or `-site ID`.
-   Multiple callers of one helper share one operation; independent calls remain
-   separate even when they use the same API. A multi-effect call has one ID.
-3. Read the cited source, controlling policy, authorization, failure paths and
-   cleanup. Compare independent paths, not just similar category names.
-4. Propose simplification only when justified: identify which old independent
-   responsibilities or bypasses would actually disappear, where effects remain,
-   and how behavior will be verified. Shared categories alone do **not** justify
-   consolidation. Completing analysis is **not** completing a review.
+Use the concise, practical [investigation guide](docs/effect-directed-investigations.md)
+for a bounded query, evidence-review checklist, and copyable framework-neutral
+prompt. It complements the analyzer reference below; static effects and
+reachability do not prove runtime execution or a defect.
 
 ## Output and compatibility
 
@@ -97,23 +71,6 @@ and candidate edges and includes graph truncation flags. The `-stats` JSON surfa
 also reports measured analysis duration without making ordinary output
 nondeterministic. The whole-source function denominator is explicitly unavailable,
 with a reason; root counts are not source-code coverage.
-
-The investigation packet builder accepts optional JSONL observations via
-`--events`. Its compatible allowlist includes Reffector invocations, source reads
-and searches, candidate/reproduction/operation-group records, termination, tool
-invocation/results, test commands, session metadata, worker lifecycle, and
-supervisor decisions. See `reports/investigation-observability-implementation.md`
-and `tools/effect_investigation/INVESTIGATION_PROTOCOL.md`. For saved Pi 1.4
-JSONL, `tools/effect_investigation/pi_event_import.py` writes this ledger plus a
-separate coverage report; optional `--run-metadata` and
-`--supervisor-decision` inputs are allowlisted and validated. Counts describe
-only emitted/supplied ledger rows, not completeness or true zero activity.
-The importer preserves references, omits tool output/prompts and Bash arguments,
-and records only recognized executable labels; requested read ranges are not
-verified returned extents. Its simple Bash parser accepts quoted search
-metacharacters and only exact safe Go environment prefixes; pipelines and unknown
-shell forms remain unclassified. Packet-builder excerpts remain separate from
-investigator reads.
 
 `-view functions -json` emits records with this unchanged schema:
 
@@ -269,22 +226,6 @@ and possible-only effects exclude those established by any aggregated variant.
 Contracts at one source site combine the strongest relationship and effect
 evidence across generic/test SSA variants; graph nodes and execution edges stay
 separate. An open boundary in any variant remains open.
-
-### Architectural characterization harness
-
-Run `python3 -B -m tools.archchar prepare REPO --out DIR [--reffector PATH]`
-with repeatable `--pattern` options (default `./...`) to create offline
-Reffector/source evidence packets and a Go AST structural index. Token-aware
-preparation can use a count-only command to partition oversized packages by
-source declarations without dropping evidence. Import saved evidence with
-`--effects FILE --audit FILE`. The resumable phases are `investigate`,
-`aggregate`, `verify`, and paired `benchmark`; generation is optional and is
-blocked unless a separate token-count preflight fits the configured runtime
-budget. Preparation and tests make no generation calls. See
-`tools/archchar/README.md` for token-count protocols, offline configuration,
-retrieval/context limits, evidence scope, artifacts, and benchmark
-interpretation. Package and namespace boundaries are starting points, not
-inferred architecture.
 
 A site is the same source-based object in both views. It groups recognized
 operations at source calls or SSA-native instructions, with stable IDs,
