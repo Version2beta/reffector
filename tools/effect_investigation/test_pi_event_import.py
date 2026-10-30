@@ -275,6 +275,147 @@ class PiEventImportTests(unittest.TestCase):
         self.assertEqual([row["status"] for row in lifecycle], ["started", "aborted"])
         self.assertEqual(report["metadata"]["worker_status"], "aborted observed")
 
+    def test_phased_decision_sequence_and_session_identity(self):
+        decisions = []
+        for phase, decision in ((1, "continue"), (2, "stop")):
+            decisions.append({"phase": phase, "decision": decision, "timestamp": f"2026-01-02T03:0{phase}:00Z",
+                              "rationale": "coverage reviewed", "scope_adequate": phase == 2,
+                              "another_phase_warranted": phase == 1,
+                              "coverage_achieved": {"operational_areas": ["rpc"], "source_paths": ["src.go"],
+                                                    "tests_and_probes": ["focused test"]},
+                              "remaining_leads": []})
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            events = root / "events.jsonl"
+            events.write_text(json.dumps(event("agent_start")) + "\n" +
+                              json.dumps(event("agent_settled", aborted=False)) + "\n" +
+                              json.dumps(event("agent_settled", aborted=False)) + "\n")
+            rows, report = import_session(events, root, run_metadata={"session_id": "rpc-session"},
+                                          supervisor_decisions=decisions)
+        ledger = validate_event_ledger(rows)
+        self.assertEqual([row["phase"] for row in ledger["supervisor_decisions"] if row["status"] == "recorded"], [1, 2])
+        self.assertEqual(report["session_id"], "rpc-session")
+        self.assertEqual(len([row for row in rows if row.get("type") == "worker_lifecycle"]), 3)
+
+    def test_rpc_supervised_continue_then_stop_records_checkpoint_evidence(self):
+        decisions = []
+        for phase, choice in ((1, "continue"), (2, "stop")):
+            decisions.append({"phase": phase, "decision": choice, "timestamp": f"2026-01-02T03:0{phase}:00Z",
+                              "rationale": "reviewed", "scope_adequate": choice == "stop",
+                              "another_phase_warranted": choice == "continue",
+                              "coverage_achieved": {"operational_areas": ["rpc"], "source_paths": ["src/file.py"],
+                                                    "tests_and_probes": ["test"]}, "remaining_leads": []})
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            events, decisions_path = root / "events.jsonl", root / "decisions.jsonl"
+            events.write_text("\n".join(json.dumps(event("agent_settled", aborted=False)) for _ in range(2)))
+            decisions_path.write_text("\n".join(map(json.dumps, decisions)))
+            rows, report = import_session(events, root, supervisor_decisions=decisions,
+                supervisor_decisions_path=decisions_path,
+                run_metadata={"execution_mode": "rpc-supervised", "termination_reason": "supervisor_stop",
+                              "settled_checkpoints": 2, "final_decision": "stop", "process_exit_code": 0,
+                              "session_id": "rpc-identity"})
+        ledger = validate_event_ledger(rows)
+        recorded = ledger["supervisor_decisions"]
+        self.assertEqual([item["evidence_ref"]["line"] for item in recorded], [1, 2])
+        self.assertEqual([item["decision"] for item in recorded], ["continue", "stop"])
+        self.assertEqual(recorded[0]["session_id"], "rpc-identity")
+        self.assertEqual(report["session_id"], "rpc-identity")
+        self.assertEqual([item["status"] for item in ledger["worker_lifecycle"]], ["settled", "settled", "completed"])
+
+    def test_rpc_completion_requires_matching_counts_and_unaborted_settlements(self):
+        decision = {"phase": 1, "decision": "stop", "timestamp": "2026-01-02T03:01:00Z",
+                    "rationale": "reviewed", "scope_adequate": True, "another_phase_warranted": False,
+                    "coverage_achieved": {"operational_areas": [], "source_paths": [], "tests_and_probes": []},
+                    "remaining_leads": []}
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            path = root / "events.jsonl"
+            metadata = {"execution_mode": "rpc-supervised", "session_id": "s", "termination_reason": "supervisor_stop",
+                        "settled_checkpoints": 2, "final_decision": "stop", "process_exit_code": 0}
+            path.write_text(json.dumps(event("agent_settled", aborted=False)))
+            rows, report = import_session(path, root, run_metadata=metadata, supervisor_decisions=[decision])
+            ledger = validate_event_ledger(rows)
+            self.assertEqual(ledger["worker_lifecycle"][-1]["status"], "incomplete")
+            self.assertEqual(report["availability"], "partial")
+            self.assertIn("mismatch", " ".join(report["limitations"]))
+
+            metadata["settled_checkpoints"] = 1
+            path.write_text(json.dumps(event("agent_settled", aborted=True)))
+            rows, report = import_session(path, root, run_metadata=metadata, supervisor_decisions=[decision])
+            lifecycle = validate_event_ledger(rows)["worker_lifecycle"]
+            self.assertEqual(lifecycle[-1]["status"], "incomplete")
+            self.assertTrue(lifecycle[0]["aborted"])
+            self.assertEqual(report["availability"], "partial")
+
+    def test_rpc_rejects_unphased_decisions_and_marks_continue_without_stop_missing(self):
+        legacy = {"decision": "continue", "timestamp": "2026-01-02T03:01:00Z", "rationale": "more",
+                  "scope_adequate": False, "another_phase_warranted": True}
+        continue_decision = {"phase": 1, **legacy,
+                             "coverage_achieved": {"operational_areas": [], "source_paths": [], "tests_and_probes": []},
+                             "remaining_leads": []}
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            path = root / "events.jsonl"
+            path.write_text(json.dumps(event("agent_settled", aborted=False)))
+            metadata = {"execution_mode": "rpc-supervised", "session_id": "s", "termination_reason": "external_deadline",
+                        "settled_checkpoints": 1, "final_decision": "missing"}
+            with self.assertRaisesRegex(ValueError, "explicitly phased"):
+                import_session(path, root, run_metadata=metadata, supervisor_decisions=[legacy])
+            rows, report = import_session(path, root, run_metadata=metadata, supervisor_decisions=[continue_decision])
+            decisions = validate_event_ledger(rows)["supervisor_decisions"]
+            self.assertEqual([row["status"] for row in decisions], ["recorded", "missing"])
+            self.assertEqual(report["supervisor_decision"], "incomplete (missing final stop)")
+
+    def test_physical_decision_line_refs_are_preserved(self):
+        decision = {"phase": 1, "decision": "stop", "timestamp": "2026-01-02T03:01:00Z",
+                    "rationale": "reviewed", "scope_adequate": True, "another_phase_warranted": False,
+                    "coverage_achieved": {"operational_areas": [], "source_paths": [], "tests_and_probes": []},
+                    "remaining_leads": []}
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            path = root / "events.jsonl"
+            path.write_text("{}")
+            rows, _ = import_session(path, root, supervisor_decisions=[decision],
+                                     supervisor_decision_line_numbers=[4])
+        row = validate_event_ledger(rows)["supervisor_decisions"][0]
+        self.assertEqual(row["evidence_ref"]["line"], 4)
+
+    def test_rpc_deadline_missing_decision_and_early_pi_exit_are_not_completion(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            path = root / "events.jsonl"
+            path.write_text(json.dumps(event("agent_settled", aborted=False)))
+            metadata = {"execution_mode": "rpc-supervised", "session_id": "s", "termination_reason": "external_deadline",
+                        "settled_checkpoints": 1, "final_decision": "missing"}
+            rows, report = import_session(path, root, run_metadata=metadata)
+            ledger = validate_event_ledger(rows)
+            self.assertEqual(ledger["supervisor_decisions"][0]["status"], "missing")
+            self.assertEqual(ledger["worker_lifecycle"][-1]["status"], "timed_out")
+            self.assertEqual(report["supervisor_decision"], "incomplete (missing)")
+            path.write_text(json.dumps(event("agent_settled", aborted=False)))
+            metadata.update(termination_reason="pi_exit", process_exit_code=0, settled_checkpoints=1)
+            rows, report = import_session(path, root, run_metadata=metadata)
+            self.assertEqual(validate_event_ledger(rows)["worker_lifecycle"][-1]["status"], "failed")
+            self.assertNotEqual(report["metadata"]["worker_status"], "completed observed")
+
+    def test_phased_decisions_reject_sequence_and_noncanonical_paths(self):
+        base = {"decision": "stop", "timestamp": "2026-01-02T03:01:00Z", "rationale": "done",
+                "scope_adequate": True, "another_phase_warranted": False,
+                "coverage_achieved": {"operational_areas": [], "source_paths": ["../outside.go"], "tests_and_probes": []},
+                "remaining_leads": []}
+        with tempfile.TemporaryDirectory() as directory:
+            path = pathlib.Path(directory) / "events.jsonl"
+            path.write_text("{}\\n")
+            with self.assertRaises(ValueError):
+                import_session(path, directory, supervisor_decisions=[{"phase": 2, **base}])
+            for invalid_path in ("../outside.go", "src\\\\file.go"):
+                invalid = dict(base, coverage_achieved={"operational_areas": [], "source_paths": [invalid_path], "tests_and_probes": []})
+                with self.assertRaises(ValueError):
+                    import_session(path, directory, supervisor_decisions=[{"phase": 1, **invalid}])
+            with self.assertRaises(ValueError):
+                import_session(path, directory, supervisor_decisions=[{"phase": 1, **{key: value for key, value in base.items() if key not in ("coverage_achieved", "remaining_leads")}}])
+
     def test_run_metadata_and_explicit_supervisor_decision(self):
         run = {"run_id": "run-7", "started_at": "2026-01-02T03:00:00Z", "ended_at": "2026-01-02T03:02:00Z",
                "wall_duration_ms": 120000, "source_revision": "abc", "analyzer_revision": "def",

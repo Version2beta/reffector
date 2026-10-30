@@ -12,8 +12,10 @@ from datetime import datetime
 
 
 RUN_METADATA_FIELDS = {"run_id", "started_at", "ended_at", "wall_duration_ms", "source_revision", "analyzer_revision",
-                       "process_exit_code", "timed_out"}
-DECISION_FIELDS = {"decision", "timestamp", "rationale", "scope_adequate", "another_phase_warranted"}
+                       "process_exit_code", "timed_out", "session_id", "execution_mode", "termination_reason",
+                       "settled_checkpoints", "final_decision"}
+DECISION_FIELDS = {"phase", "decision", "timestamp", "rationale", "scope_adequate", "another_phase_warranted",
+                   "coverage_achieved", "remaining_leads"}
 SAFE_SHELL_ASSIGNMENTS = {"GOPROXY": "off", "GOSUMDB": "off", "GOTOOLCHAIN": "local",
                           "GOFLAGS": "-mod=readonly", "GOWORK": "off"}
 SHELL_ASSIGNMENT = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=(.*)$")
@@ -25,7 +27,7 @@ def _safe_ref(path, line, entry):
 
 
 def _canonical_source(root, value):
-    if not isinstance(value, str) or not value:
+    if not isinstance(value, str) or not value or "\\" in value:
         return None
     candidate = pathlib.Path(value)
     if pathlib.PureWindowsPath(value).is_absolute() or pathlib.PureWindowsPath(value).drive:
@@ -143,7 +145,7 @@ def _validate_run_metadata(metadata):
         raise ValueError("run metadata must be an object containing only allowlisted fields")
     safe = {}
     for field, value in metadata.items():
-        if field in ("run_id", "source_revision", "analyzer_revision"):
+        if field in ("run_id", "source_revision", "analyzer_revision", "session_id"):
             if not isinstance(value, str) or not value:
                 raise ValueError(f"run metadata {field} must be a nonempty string")
             safe[field] = value
@@ -163,14 +165,39 @@ def _validate_run_metadata(metadata):
             if not isinstance(value, bool):
                 raise ValueError("run metadata timed_out must be boolean")
             safe[field] = value
+        elif field == "execution_mode":
+            if value != "rpc-supervised":
+                raise ValueError("run metadata execution_mode must be rpc-supervised")
+            safe[field] = value
+        elif field == "termination_reason":
+            if value not in ("supervisor_stop", "supervisor_abort", "external_deadline", "pi_exit", "startup_error"):
+                raise ValueError("invalid run metadata termination_reason")
+            safe[field] = value
+        elif field == "settled_checkpoints":
+            if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+                raise ValueError("run metadata settled_checkpoints must be a nonnegative integer")
+            safe[field] = value
+        elif field == "final_decision":
+            if value not in ("stop", "missing"):
+                raise ValueError("run metadata final_decision must be stop or missing")
+            safe[field] = value
+    if safe.get("execution_mode") == "rpc-supervised":
+        for field in ("session_id", "termination_reason", "settled_checkpoints", "final_decision"):
+            if field not in safe:
+                raise ValueError(f"rpc-supervised run metadata requires {field}")
     return safe
 
 
-def _validate_decision(decision, path):
+def _validate_decision(decision, path, expected_phase=1, physical_line=None):
     if decision is None:
         return None
-    if not isinstance(decision, dict) or set(decision) != DECISION_FIELDS:
-        raise ValueError("supervisor decision requires exactly decision, timestamp, rationale, scope_adequate, and another_phase_warranted")
+    legacy_fields = {"decision", "timestamp", "rationale", "scope_adequate", "another_phase_warranted"}
+    if not isinstance(decision, dict) or set(decision) not in (legacy_fields, DECISION_FIELDS):
+        raise ValueError("supervisor decision has invalid fields")
+    if "phase" in decision and (not isinstance(decision["phase"], int) or isinstance(decision["phase"], bool) or decision["phase"] != expected_phase):
+        raise ValueError("supervisor decision phases must be consecutive positive integers")
+    if "phase" in decision and set(decision) != DECISION_FIELDS:
+        raise ValueError("phase decisions require coverage_achieved and remaining_leads")
     if decision["decision"] not in ("continue", "stop") or not _iso_timestamp(decision["timestamp"]):
         raise ValueError("invalid supervisor decision or timestamp")
     if not isinstance(decision["rationale"], str) or not decision["rationale"].strip():
@@ -178,25 +205,58 @@ def _validate_decision(decision, path):
     for key in ("scope_adequate", "another_phase_warranted"):
         if not isinstance(decision[key], bool):
             raise ValueError(f"supervisor decision {key} must be boolean")
-    return {**decision, "evidence_ref": {"input": path.name, "json_pointer": ""}}
+    if "coverage_achieved" in decision:
+        coverage = decision["coverage_achieved"]
+        expected = {"operational_areas", "source_paths", "tests_and_probes"}
+        if not isinstance(coverage, dict) or set(coverage) != expected:
+            raise ValueError("coverage_achieved requires operational_areas, source_paths, and tests_and_probes")
+        for key in expected:
+            if not isinstance(coverage[key], list) or any(not isinstance(item, str) or not item.strip() for item in coverage[key]):
+                raise ValueError(f"coverage_achieved.{key} must contain nonempty strings")
+        for source_path in coverage["source_paths"]:
+            rel = pathlib.PurePosixPath(source_path)
+            windows = pathlib.PureWindowsPath(source_path)
+            if (rel.is_absolute() or windows.drive or "\\" in source_path or rel.as_posix() != source_path or
+                    source_path in ("", ".") or ".." in rel.parts):
+                raise ValueError("coverage source paths must be canonical repository-relative paths")
+        leads = decision["remaining_leads"]
+        if not isinstance(leads, list) or any(not isinstance(item, dict) or set(item) != {"area", "lead", "next_step"} or
+                any(not isinstance(item[key], str) or not item[key].strip() for key in ("area", "lead", "next_step")) for item in leads):
+            raise ValueError("remaining_leads must contain area, lead, and next_step strings")
+    evidence_ref = ({"input": path.name, "line": physical_line if physical_line is not None else expected_phase} if "phase" in decision
+                    else {"input": path.name, "json_pointer": ""})
+    return {**decision, "evidence_ref": evidence_ref}
 
 
 def import_session(input_path, repository_root, *, run_metadata=None, run_metadata_path=None,
-                   supervisor_decision=None, supervisor_decision_path=None):
+                   supervisor_decision=None, supervisor_decision_path=None, supervisor_decisions=None,
+                   supervisor_decisions_path=None, supervisor_decision_line_numbers=None):
     """Return safe ledger rows and coverage; raw prompts/results are never copied."""
     path, root = pathlib.Path(input_path), pathlib.Path(repository_root).resolve()
     run_facts = _validate_run_metadata(run_metadata)
     run_metadata_path = pathlib.Path(run_metadata_path or "run-metadata.json")
     run_ref = {"input": run_metadata_path.name, "json_pointer": ""}
 
-    decision = _validate_decision(supervisor_decision, pathlib.Path(supervisor_decision_path or "supervisor-decision.json"))
+    decision_rows = supervisor_decisions if supervisor_decisions is not None else ([supervisor_decision] if supervisor_decision is not None else [])
+    decision_path = pathlib.Path(supervisor_decisions_path or supervisor_decision_path or "supervisor-decisions.jsonl")
+    decision_lines = supervisor_decision_line_numbers or list(range(1, len(decision_rows) + 1))
+    if len(decision_lines) != len(decision_rows):
+        raise ValueError("supervisor decision line numbers do not match decisions")
+    rpc_supervised = run_facts.get("execution_mode") == "rpc-supervised"
+    if rpc_supervised and any(not isinstance(item, dict) or "phase" not in item for item in decision_rows):
+        raise ValueError("rpc-supervised decisions must be explicitly phased")
+    validated_decisions = [_validate_decision(item, decision_path, index, physical_line)
+                           for index, (item, physical_line) in enumerate(zip(decision_rows, decision_lines), 1)]
+    if any(item["decision"] == "stop" for item in validated_decisions[:-1]):
+        raise ValueError("stop decision must be final")
+    decision = validated_decisions[-1] if validated_decisions else None
     rows, limitations, calls, seen, result_facts = [], [], {}, {}, {}
     conflicted_calls = set()
-    state = {"session_id": None, "worker_id": run_facts.get("run_id"), "settled": False}
+    state = {"session_id": run_facts.get("session_id"), "worker_id": run_facts.get("run_id"), "settled": False}
     report = {"schema": "reffector.pi-import-report.v1", "input": path.name, "availability": "complete",
               "input_records": 0, "malformed_records": [], "malformed_events": [], "conflicts": [], "outside_paths": [],
               "unclassified_shell_commands": [], "limitations": limitations,
-              "session_id": "unavailable", "worker_id": state["worker_id"] or "unavailable",
+              "session_id": state["session_id"] or "unavailable", "worker_id": state["worker_id"] or "unavailable",
               "runner_status": {"process_exit_code": run_facts.get("process_exit_code", "unavailable"),
                                 "timed_out": run_facts.get("timed_out", "unavailable")},
               "run_id": run_facts.get("run_id", "unavailable"),
@@ -490,9 +550,14 @@ def import_session(input_path, repository_root, *, run_metadata=None, run_metada
                 aborted = entry.get("aborted")
                 if isinstance(aborted, bool):
                     state["settled"] = True
-                    status = "aborted" if aborted else "completed"
-                    report["metadata"]["worker_status"] = status + " observed"
-                    add({"type": "worker_lifecycle", "status": status}, ref)
+                    state["settled_count"] = state.get("settled_count", 0) + 1
+                    state["settled_aborted"] = state.get("settled_aborted", False) or aborted
+                    if rpc_supervised:
+                        add({"type": "worker_lifecycle", "status": "settled", "aborted": aborted}, ref)
+                    else:
+                        status = "aborted" if aborted else "completed"
+                        report["metadata"]["worker_status"] = status + " observed"
+                        add({"type": "worker_lifecycle", "status": status, "aborted": aborted}, ref)
                 else:
                     report["metadata"]["worker_status"] = "unavailable"
                     report["availability"] = "partial"
@@ -553,17 +618,67 @@ def import_session(input_path, repository_root, *, run_metadata=None, run_metada
                  "wall_duration_ms": run_facts["wall_duration_ms"], "active_duration_status": "unavailable"}, run_ref)
         runner_failed = run_facts.get("timed_out") is True or (
             isinstance(run_facts.get("process_exit_code"), int) and run_facts["process_exit_code"] != 0)
-        if runner_failed and not state["settled"]:
+        if rpc_supervised:
+            event_checkpoints = state.get("settled_count", 0)
+            metadata_checkpoints = run_facts["settled_checkpoints"]
+            if event_checkpoints != metadata_checkpoints:
+                report["availability"] = "partial"
+                limitations.append(f"Settled checkpoint mismatch: transcript observed {event_checkpoints}, runner metadata reports {metadata_checkpoints}.")
+            recorded_phases = len(validated_decisions)
+            if recorded_phases != metadata_checkpoints:
+                report["availability"] = "partial"
+                limitations.append(f"Supervisor decision/checkpoint mismatch: {recorded_phases} decisions for {metadata_checkpoints} settled checkpoints.")
+            if run_facts["final_decision"] == "stop" and (not decision or decision["decision"] != "stop"):
+                report["availability"] = "partial"
+                limitations.append("Runner reports final_decision=stop but the final supervisor decision is missing or is not stop.")
+            reason = run_facts["termination_reason"]
+            exit_code = run_facts.get("process_exit_code")
+            completion_established = (event_checkpoints == metadata_checkpoints and
+                                      recorded_phases == metadata_checkpoints and
+                                      bool(validated_decisions) and all("phase" in item for item in validated_decisions) and
+                                      run_facts["final_decision"] == "stop" and decision["decision"] == "stop" and
+                                      reason == "supervisor_stop" and exit_code == 0 and
+                                      run_facts.get("timed_out") is not True and
+                                      not state.get("settled_aborted", False))
+            if state.get("settled_aborted", False):
+                report["availability"] = "partial"
+                limitations.append("A settled agent event was aborted; supervised completion is contradicted.")
+            if reason == "supervisor_stop" and run_facts["final_decision"] == "stop" and decision and decision["decision"] == "stop" and exit_code == 0 and completion_established:
+                lifecycle_status = "completed"
+                report["metadata"]["worker_status"] = "completed (supervisor stop)"
+            elif reason == "supervisor_abort":
+                lifecycle_status = "aborted"
+                report["metadata"]["worker_status"] = "aborted (supervisor abort)"
+            elif reason == "external_deadline":
+                lifecycle_status = "timed_out"
+                report["metadata"]["worker_status"] = "timed out (external deadline)"
+            elif reason in ("pi_exit", "startup_error"):
+                lifecycle_status = "failed"
+                report["metadata"]["worker_status"] = "failed (" + reason + ")"
+            else:
+                lifecycle_status = "incomplete"
+                report["metadata"]["worker_status"] = "incomplete (supervisor stop not established)"
+            add({"type": "worker_lifecycle", "status": lifecycle_status}, run_ref)
+        elif runner_failed and not state["settled"]:
             status = "failed (runner timeout)" if run_facts.get("timed_out") is True else "failed (runner exit)"
             report["metadata"]["worker_status"] = status
             add({"type": "worker_lifecycle", "status": "failed"}, run_ref)
-    if decision is None:
+    if not validated_decisions:
         rows.append({"type": "supervisor_decision", "status": "missing", "session_id": state["session_id"] or "unavailable",
                      "worker_id": state["worker_id"] or "unavailable"})
+        report["supervisor_decision"] = "incomplete (missing)" if rpc_supervised else "missing"
         limitations.append("Supervisor decision missing; Pi events do not encode supervisor decisions.")
     else:
-        rows.append({"type": "supervisor_decision", "status": "recorded", **decision,
-                     "session_id": state["session_id"] or "unavailable", "worker_id": state["worker_id"] or "unavailable"})
+        for recorded in validated_decisions:
+            rows.append({"type": "supervisor_decision", "status": "recorded", **recorded,
+                         "session_id": state["session_id"] or run_facts.get("session_id", "unavailable"),
+                         "worker_id": state["worker_id"] or "unavailable"})
+        if rpc_supervised and run_facts["final_decision"] == "missing":
+            rows.append({"type": "supervisor_decision", "status": "missing", "session_id": state["session_id"] or "unavailable",
+                         "worker_id": state["worker_id"] or "unavailable"})
+            report["supervisor_decision"] = "incomplete (missing final stop)"
+            report["availability"] = "partial"
+            limitations.append("Supervisor sequence has no final stop decision.")
     if report["malformed_records"]:
         limitations.append("Malformed JSONL records were skipped; transcript coverage is partial.")
     if report["malformed_events"]:
@@ -601,12 +716,28 @@ def main(argv=None):
     parser.add_argument("--report", type=pathlib.Path, required=True)
     parser.add_argument("--run-metadata", type=pathlib.Path)
     parser.add_argument("--supervisor-decision", type=pathlib.Path)
+    parser.add_argument("--supervisor-decisions", type=pathlib.Path,
+                        help="JSONL sequence of explicit phase decisions")
     args = parser.parse_args(argv)
     run_metadata = json.loads(args.run_metadata.read_text(encoding="utf-8")) if args.run_metadata else None
     decision = json.loads(args.supervisor_decision.read_text(encoding="utf-8")) if args.supervisor_decision else None
+    decisions, decision_lines = None, None
+    if args.supervisor_decisions:
+        decisions, decision_lines = [], []
+        for line_number, line in enumerate(args.supervisor_decisions.read_text(encoding="utf-8").splitlines(), 1):
+            if not line.strip():
+                raise ValueError(f"blank supervisor decision JSONL line {line_number}")
+            try:
+                decisions.append(json.loads(line))
+            except json.JSONDecodeError as error:
+                raise ValueError(f"malformed supervisor decision JSONL line {line_number}") from error
+            decision_lines.append(line_number)
     rows, report = import_session(args.transcript, args.repository_root, run_metadata=run_metadata,
                                   run_metadata_path=args.run_metadata, supervisor_decision=decision,
-                                  supervisor_decision_path=args.supervisor_decision)
+                                  supervisor_decision_path=args.supervisor_decision,
+                                  supervisor_decisions=decisions,
+                                  supervisor_decisions_path=args.supervisor_decisions,
+                                  supervisor_decision_line_numbers=decision_lines)
     args.ledger.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows), encoding="utf-8")
     args.report.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 

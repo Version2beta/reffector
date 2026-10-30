@@ -1303,9 +1303,11 @@ EVENT_FIELDS = {
     "test_command": {"tool_call_id", "command", "argv", "exit_status"},
     "session_metadata": {"kind", "provider", "model", "modelId", "thinkingLevel", "usage", "usage_kind", "timestamp", "session_id", "role", "response_id",
                          "run_id", "started_at", "ended_at", "wall_duration_ms", "source_revision", "analyzer_revision",
-                         "process_exit_code", "timed_out"},
-    "supervisor_decision": {"status", "decision", "timestamp", "rationale", "scope_adequate", "another_phase_warranted"},
-    "worker_lifecycle": {"status"},
+                         "process_exit_code", "timed_out", "execution_mode", "termination_reason",
+                         "settled_checkpoints", "final_decision"},
+    "supervisor_decision": {"status", "phase", "decision", "timestamp", "rationale", "scope_adequate", "another_phase_warranted",
+                            "coverage_achieved", "remaining_leads"},
+    "worker_lifecycle": {"status", "aborted"},
 }
 
 
@@ -1396,8 +1398,10 @@ def validate_event_ledger(events):
                 raise ValueError(f"event {number} missing required {kind} fields")
             if kind == "tool_result" and row["status"] not in ("success", "failed", "unavailable"):
                 raise ValueError(f"event {number} invalid tool result status")
-            if kind == "worker_lifecycle" and row["status"] not in ("started", "completed", "aborted", "failed"):
+            if kind == "worker_lifecycle" and row["status"] not in ("started", "settled", "completed", "aborted", "failed", "timed_out", "incomplete"):
                 raise ValueError(f"event {number} invalid worker lifecycle status")
+            if kind == "worker_lifecycle" and "aborted" in row and not isinstance(row["aborted"], bool):
+                raise ValueError(f"event {number} invalid worker lifecycle aborted flag")
             if kind == "test_command" and (not isinstance(row.get("argv"), list) or
                     any(not isinstance(arg, str) for arg in row["argv"])):
                 raise ValueError(f"event {number} invalid test command argv")
@@ -1415,6 +1419,19 @@ def validate_event_ledger(events):
                     raise ValueError(f"event {number} invalid runner process exit code")
                 if "timed_out" in row and not isinstance(row["timed_out"], bool):
                     raise ValueError(f"event {number} invalid runner timeout flag")
+                if "execution_mode" in row and row["execution_mode"] != "rpc-supervised":
+                    raise ValueError(f"event {number} invalid execution_mode")
+                if row.get("execution_mode") == "rpc-supervised" and not {
+                        "session_id", "termination_reason", "settled_checkpoints", "final_decision"} <= set(row):
+                    raise ValueError(f"event {number} incomplete rpc-supervised run metadata")
+                if "termination_reason" in row and row["termination_reason"] not in (
+                        "supervisor_stop", "supervisor_abort", "external_deadline", "pi_exit", "startup_error"):
+                    raise ValueError(f"event {number} invalid termination_reason")
+                if "settled_checkpoints" in row and (not isinstance(row["settled_checkpoints"], int) or
+                        isinstance(row["settled_checkpoints"], bool) or row["settled_checkpoints"] < 0):
+                    raise ValueError(f"event {number} invalid settled_checkpoints")
+                if "final_decision" in row and row["final_decision"] not in ("stop", "missing"):
+                    raise ValueError(f"event {number} invalid final_decision")
             if kind == "supervisor_decision":
                 if row["status"] not in ("missing", "recorded"):
                     raise ValueError(f"event {number} invalid supervisor decision status")
@@ -1431,6 +1448,28 @@ def validate_event_ledger(events):
                         raise ValueError(f"event {number} malformed recorded supervisor decision")
                     if any(not isinstance(row.get(field), bool) for field in ("scope_adequate", "another_phase_warranted")):
                         raise ValueError(f"event {number} recorded supervisor decision requires boolean scope facts")
+                    if "phase" in row and (not isinstance(row["phase"], int) or isinstance(row["phase"], bool) or row["phase"] < 1):
+                        raise ValueError(f"event {number} invalid supervisor decision phase")
+                    if "phase" in row and not {"coverage_achieved", "remaining_leads"} <= set(row):
+                        raise ValueError(f"event {number} phased supervisor decision requires coverage and remaining leads")
+                    if "phase" in row and (not isinstance(row.get("evidence_ref"), dict) or
+                            not isinstance(row["evidence_ref"].get("line"), int) or row["evidence_ref"]["line"] < 1):
+                        raise ValueError(f"event {number} phased supervisor decision requires physical JSONL line evidence")
+                    if "coverage_achieved" in row:
+                        coverage = row["coverage_achieved"]
+                        if not isinstance(coverage, dict) or set(coverage) != {"operational_areas", "source_paths", "tests_and_probes"}:
+                            raise ValueError(f"event {number} invalid coverage_achieved")
+                        for key in ("operational_areas", "source_paths", "tests_and_probes"):
+                            if not isinstance(coverage[key], list) or any(not isinstance(value, str) or not value.strip() for value in coverage[key]):
+                                raise ValueError(f"event {number} invalid coverage list")
+                        for value in coverage["source_paths"]:
+                            rel, win = pathlib.PurePosixPath(value), pathlib.PureWindowsPath(value)
+                            if rel.is_absolute() or win.drive or "\\" in value or rel.as_posix() != value or value in ("", ".") or ".." in rel.parts:
+                                raise ValueError(f"event {number} noncanonical coverage source path")
+                        leads = row.get("remaining_leads")
+                        if not isinstance(leads, list) or any(not isinstance(item, dict) or set(item) != {"area", "lead", "next_step"} or
+                                any(not isinstance(item[key], str) or not item[key].strip() for key in ("area", "lead", "next_step")) for item in leads):
+                            raise ValueError(f"event {number} invalid remaining_leads")
                     if "evidence_ref" not in row:
                         raise ValueError(f"event {number} recorded supervisor decision requires evidence_ref")
             result.setdefault({"tool_invocation": "tool_invocations", "tool_result": "tool_results",
@@ -1455,6 +1494,15 @@ def validate_event_ledger(events):
             target = {"source_search": "source_searches", "candidate": "candidates",
                       "reproduction": "reproduction_attempts", "operation_group": "operation_groups"}[kind]
             result[target].append(row)
+    decisions = result.get("supervisor_decisions", [])
+    phased = [row for row in decisions if row.get("status") == "recorded" and "phase" in row]
+    if phased:
+        if len(phased) != len([row for row in decisions if row.get("status") == "recorded"]):
+            raise ValueError("supervisor decision sequence cannot mix phased and legacy decisions")
+        if [row["phase"] for row in phased] != list(range(1, len(phased) + 1)):
+            raise ValueError("supervisor decision phases must be consecutive")
+        if any(row.get("decision") == "stop" for row in phased[:-1]):
+            raise ValueError("stop decision must be final")
     if events is not None:
         successful_paths = {event["source_path"] for event in result["source_reads"] if event["status"] == "success"}
         result["recorded_counts"] = {
