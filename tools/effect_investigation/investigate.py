@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import datetime
 import hashlib
 import json
 import pathlib
@@ -1290,12 +1291,21 @@ def _progressively_reduce_packet(candidate, report, original_expanded_bytes,
 
 EVENT_FIELDS = {
     "reffector_invocation": {"invocation_id", "target_revision", "argv", "status", "exit_code", "binary_sha256"},
-    "source_read": {"source_path", "start_line", "end_line", "status", "reason"},
-    "source_search": {"query", "scope", "status", "matches"},
+    "source_read": {"source_path", "start_line", "end_line", "status", "reason", "tool_call_id",
+                    "requested_start_line", "requested_line_count"},
+    "source_search": {"query", "scope", "status", "matches", "tool_call_id"},
     "candidate": {"candidate_id", "status"},
     "reproduction": {"candidate_id", "attempt", "outcome"},
     "operation_group": {"group_id", "operation_ids"},
     "termination": {"reason", "wall_duration_ms", "active_duration_ms", "active_duration_status"},
+    "tool_invocation": {"tool_call_id", "tool_name"},
+    "tool_result": {"tool_call_id", "tool_name", "status"},
+    "test_command": {"tool_call_id", "command", "argv", "exit_status"},
+    "session_metadata": {"kind", "provider", "model", "modelId", "thinkingLevel", "usage", "usage_kind", "timestamp", "session_id", "role", "response_id",
+                         "run_id", "started_at", "ended_at", "wall_duration_ms", "source_revision", "analyzer_revision",
+                         "process_exit_code", "timed_out"},
+    "supervisor_decision": {"status", "decision", "timestamp", "rationale", "scope_adequate", "another_phase_warranted"},
+    "worker_lifecycle": {"status"},
 }
 
 
@@ -1311,20 +1321,40 @@ def validate_event_ledger(events):
         kind = event.get("type")
         if kind not in EVENT_FIELDS:
             raise ValueError(f"event {number} has unsupported type")
-        if set(event) - (EVENT_FIELDS[kind] | {"type"}):
+        if set(event) - (EVENT_FIELDS[kind] | {"type", "evidence_ref", "evidence_refs", "session_id", "worker_id"}):
             raise ValueError(f"event {number} has unsupported fields")
         row = {key: value for key, value in event.items() if key != "type"}
+        for field in ("session_id", "worker_id"):
+            if field in row and (not isinstance(row[field], str) or not row[field]):
+                raise ValueError(f"event {number} invalid {field}")
+        if "evidence_refs" in row and not isinstance(row["evidence_refs"], list):
+            raise ValueError(f"event {number} invalid evidence_refs")
+        for evidence_ref in ([row["evidence_ref"]] if "evidence_ref" in row else []) + row.get("evidence_refs", []):
+            has_line = isinstance(evidence_ref, dict) and isinstance(evidence_ref.get("line"), int) and not isinstance(evidence_ref.get("line"), bool) and evidence_ref["line"] >= 1
+            pointer = evidence_ref.get("json_pointer") if isinstance(evidence_ref, dict) else None
+            has_pointer = isinstance(pointer, str) and (pointer == "" or pointer.startswith("/")) and not re.search(r"~(?![01])", pointer)
+            pointer_invalid_when_present = isinstance(evidence_ref, dict) and "json_pointer" in evidence_ref and not has_pointer
+            if (not isinstance(evidence_ref, dict) or set(evidence_ref) - {"input", "line", "event_id", "json_pointer"} or
+                    not isinstance(evidence_ref.get("input"), str) or not evidence_ref["input"] or
+                    pointer_invalid_when_present or not (has_line or has_pointer) or
+                    ("event_id" in evidence_ref and not isinstance(evidence_ref["event_id"], str))):
+                raise ValueError(f"event {number} invalid evidence_ref")
         if kind == "source_read":
             source_path = row.get("source_path")
-            if not isinstance(source_path, str) or not source_path or row.get("status") not in ("success", "failed"):
+            if not isinstance(source_path, str) or not source_path or row.get("status") not in ("success", "failed", "requested", "unavailable"):
                 raise ValueError(f"event {number} invalid source_read")
             relative = pathlib.PurePosixPath(source_path)
             windows = pathlib.PureWindowsPath(source_path)
             if (source_path == "." or relative.is_absolute() or windows.drive or ".." in relative.parts or
                     relative.as_posix() != source_path or windows.as_posix() != source_path):
                 raise ValueError(f"event {number} source_path must be canonical and repository-relative")
+            if "tool_call_id" in row and (not isinstance(row["tool_call_id"], str) or not row["tool_call_id"]):
+                raise ValueError(f"event {number} invalid source_read tool_call_id")
             if "reason" in row and not isinstance(row["reason"], str):
                 raise ValueError(f"event {number} invalid source_read reason")
+            for field in ("requested_start_line", "requested_line_count"):
+                if field in row and row[field] is not None and (not isinstance(row[field], int) or isinstance(row[field], bool) or row[field] < 1):
+                    raise ValueError(f"event {number} invalid {field}")
             if ("start_line" in row) != ("end_line" in row):
                 raise ValueError(f"event {number} source range requires both lines")
             for field in ("start_line", "end_line"):
@@ -1355,6 +1385,58 @@ def validate_event_ledger(events):
                 if field in row and (not isinstance(row[field], int) or isinstance(row[field], bool) or row[field] < 0):
                     raise ValueError(f"event {number} invalid {field}")
             result["termination"] = row
+        elif kind in ("tool_invocation", "tool_result", "test_command", "session_metadata", "supervisor_decision", "worker_lifecycle"):
+            required = {"tool_invocation": ("tool_call_id", "tool_name"),
+                        "tool_result": ("tool_call_id", "tool_name", "status"),
+                        "test_command": ("tool_call_id", "command", "exit_status"),
+                        "session_metadata": ("kind",),
+                        "supervisor_decision": ("status",),
+                        "worker_lifecycle": ("status",)}[kind]
+            if any(not isinstance(row.get(field), str) or not row[field] for field in required):
+                raise ValueError(f"event {number} missing required {kind} fields")
+            if kind == "tool_result" and row["status"] not in ("success", "failed", "unavailable"):
+                raise ValueError(f"event {number} invalid tool result status")
+            if kind == "worker_lifecycle" and row["status"] not in ("started", "completed", "aborted", "failed"):
+                raise ValueError(f"event {number} invalid worker lifecycle status")
+            if kind == "test_command" and (not isinstance(row.get("argv"), list) or
+                    any(not isinstance(arg, str) for arg in row["argv"])):
+                raise ValueError(f"event {number} invalid test command argv")
+            if kind == "session_metadata":
+                for field in ("provider", "model", "modelId", "thinkingLevel", "session_id", "role", "response_id",
+                              "run_id", "started_at", "ended_at", "source_revision", "analyzer_revision", "usage_kind"):
+                    if field in row and (not isinstance(row[field], str) or not row[field]):
+                        raise ValueError(f"event {number} invalid session metadata {field}")
+                if "timestamp" in row and (not isinstance(row["timestamp"], (str, int, float)) or isinstance(row["timestamp"], bool)):
+                    raise ValueError(f"event {number} invalid session timestamp")
+                if "wall_duration_ms" in row and (not isinstance(row["wall_duration_ms"], int) or
+                        isinstance(row["wall_duration_ms"], bool) or row["wall_duration_ms"] < 0):
+                    raise ValueError(f"event {number} invalid run wall duration")
+                if "process_exit_code" in row and (not isinstance(row["process_exit_code"], int) or isinstance(row["process_exit_code"], bool)):
+                    raise ValueError(f"event {number} invalid runner process exit code")
+                if "timed_out" in row and not isinstance(row["timed_out"], bool):
+                    raise ValueError(f"event {number} invalid runner timeout flag")
+            if kind == "supervisor_decision":
+                if row["status"] not in ("missing", "recorded"):
+                    raise ValueError(f"event {number} invalid supervisor decision status")
+                if row["status"] == "recorded":
+                    timestamp = row.get("timestamp")
+                    timestamp_valid = False
+                    if isinstance(timestamp, str):
+                        try:
+                            datetime.datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+                            timestamp_valid = True
+                        except ValueError:
+                            pass
+                    if row.get("decision") not in ("continue", "stop") or not timestamp_valid or not isinstance(row.get("rationale"), str) or not row["rationale"].strip():
+                        raise ValueError(f"event {number} malformed recorded supervisor decision")
+                    if any(not isinstance(row.get(field), bool) for field in ("scope_adequate", "another_phase_warranted")):
+                        raise ValueError(f"event {number} recorded supervisor decision requires boolean scope facts")
+                    if "evidence_ref" not in row:
+                        raise ValueError(f"event {number} recorded supervisor decision requires evidence_ref")
+            result.setdefault({"tool_invocation": "tool_invocations", "tool_result": "tool_results",
+                               "test_command": "test_commands", "session_metadata": "session_metadata",
+                               "supervisor_decision": "supervisor_decisions",
+                               "worker_lifecycle": "worker_lifecycle"}[kind], []).append(row)
         else:
             required_strings = {
                 "source_search": ("query", "scope", "status"),
@@ -1364,6 +1446,8 @@ def validate_event_ledger(events):
             }[kind]
             if any(not isinstance(row.get(field), str) or not row[field] for field in required_strings):
                 raise ValueError(f"event {number} missing required string fields")
+            if kind == "source_search" and "tool_call_id" in row and (not isinstance(row["tool_call_id"], str) or not row["tool_call_id"]):
+                raise ValueError(f"event {number} invalid source_search tool_call_id")
             if kind == "source_search" and "matches" in row and (not isinstance(row["matches"], int) or isinstance(row["matches"], bool) or row["matches"] < 0):
                 raise ValueError(f"event {number} invalid search matches")
             if kind == "operation_group" and (not isinstance(row.get("operation_ids"), list) or any(not isinstance(item, str) or not item for item in row["operation_ids"])):
@@ -1384,6 +1468,11 @@ def validate_event_ledger(events):
             "distinct_candidate_ids": len({event["candidate_id"] for event in result["candidates"]}),
             "reproduction_attempts": len(result["reproduction_attempts"]),
             "distinct_operation_groups": len({event["group_id"] for event in result["operation_groups"]}),
+            "tool_invocations": len(result.get("tool_invocations", [])),
+            "tool_results": len(result.get("tool_results", [])),
+            "test_commands": len(result.get("test_commands", [])),
+            "worker_lifecycle_events": len(result.get("worker_lifecycle", [])),
+            "supervisor_decision_records": len(result.get("supervisor_decisions", [])),
         }
     return result
 

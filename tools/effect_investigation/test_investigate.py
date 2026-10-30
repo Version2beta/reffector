@@ -207,6 +207,11 @@ class InvestigationTests(unittest.TestCase):
             validate_event_ledger([{"type": "termination", "reason": "done", "active_duration_status": "measured"}])
         with self.assertRaises(ValueError):
             validate_event_ledger([{"type": "source_search", "query": "search", "scope": "all", "status": "success", "environment": "unsafe"}])
+        with self.assertRaises(ValueError):
+            validate_event_ledger([{"type": "supervisor_decision", "status": "recorded", "decision": "stop"}])
+        with self.assertRaises(ValueError):
+            validate_event_ledger([{"type": "tool_invocation", "tool_call_id": "x", "tool_name": "read",
+                                    "evidence_ref": {"input": "session.jsonl", "line": 1, "json_pointer": "/a/~2"}}])
 
     def test_build_marks_external_activity_not_provided(self):
         result = build(make_report())

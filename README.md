@@ -98,16 +98,22 @@ also reports measured analysis duration without making ordinary output
 nondeterministic. The whole-source function denominator is explicitly unavailable,
 with a reason; root counts are not source-code coverage.
 
-The investigation packet builder accepts optional externally supplied JSONL
-observations via `--events`. Supported event types are `reffector_invocation`,
-`source_read`, `source_search`, `candidate`, `reproduction`, `operation_group`,
-and `termination`; see `reports/investigation-observability-implementation.md`
-for fields and validation. Without this input, external activity is explicitly
-`not_provided`; supplied event counts describe ledger entries, not verified
-completeness. Packet-builder source excerpts are separate from investigator
-reads. The builder does not launch or observe tools, shells, tests, or active
-time. Invocation arguments are stored as supplied, so omit or redact sensitive
-values; environment variables are not collected.
+The investigation packet builder accepts optional JSONL observations via
+`--events`. Its compatible allowlist includes Reffector invocations, source reads
+and searches, candidate/reproduction/operation-group records, termination, tool
+invocation/results, test commands, session metadata, worker lifecycle, and
+supervisor decisions. See `reports/investigation-observability-implementation.md`
+and `tools/effect_investigation/INVESTIGATION_PROTOCOL.md`. For saved Pi 1.4
+JSONL, `tools/effect_investigation/pi_event_import.py` writes this ledger plus a
+separate coverage report; optional `--run-metadata` and
+`--supervisor-decision` inputs are allowlisted and validated. Counts describe
+only emitted/supplied ledger rows, not completeness or true zero activity.
+The importer preserves references, omits tool output/prompts and Bash arguments,
+and records only recognized executable labels; requested read ranges are not
+verified returned extents. Its simple Bash parser accepts quoted search
+metacharacters and only exact safe Go environment prefixes; pipelines and unknown
+shell forms remain unclassified. Packet-builder excerpts remain separate from
+investigator reads.
 
 `-view functions -json` emits records with this unchanged schema:
 
